@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Lochmueller\Indexing\Indexing\Web;
 
-use Lochmueller\Indexing\Indexing\IndexingInterface;
 use Lochmueller\Indexing\Queue\Message\WebIndexMessage;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
-class WebIndexing implements IndexingInterface
+class WebIndexing
 {
     public function __construct(
         private readonly MessageBusInterface $bus,

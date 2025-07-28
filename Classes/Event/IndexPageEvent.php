@@ -11,5 +11,9 @@ final class IndexPageEvent
     public function __construct(
         public SiteInterface $site,
         public $language,
+        public string $title,
+        public string $content,
+        public int $pageUid,
+        public array $accessGroups,
     ) {}
 }

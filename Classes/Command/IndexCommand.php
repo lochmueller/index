@@ -20,7 +20,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class QueueCommand extends Command
 {
     public function __construct(
-        protected SiteFinder $siteFinder,
+        private SiteFinder $siteFinder,
     ) {
         parent::__construct();
     }
@@ -49,7 +49,7 @@ class QueueCommand extends Command
         return Command::SUCCESS;
     }
 
-    protected function getRelevantSites(InputInterface $input): array
+    private function getRelevantSites(InputInterface $input): array
     {
         $siteIdentifiers = GeneralUtility::trimExplode(',', (string) $input->getArgument('siteIdentifiers'), true);
         if (empty($siteIdentifiers)) {

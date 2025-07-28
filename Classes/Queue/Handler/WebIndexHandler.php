@@ -9,9 +9,9 @@ use Lochmueller\Indexing\Queue\Message\WebIndexMessage;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final class WebIndexHandler
+final readonly class WebIndexHandler
 {
-    public function __construct(protected WebIndexing $webIndexing) {}
+    public function __construct(private WebIndexing $webIndexing) {}
 
     public function __invoke(WebIndexMessage $message): void
     {

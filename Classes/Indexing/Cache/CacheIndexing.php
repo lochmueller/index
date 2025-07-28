@@ -9,14 +9,13 @@ use Lochmueller\Indexing\Enums\IndexType;
 use Lochmueller\Indexing\Event\EndIndexProcessEvent;
 use Lochmueller\Indexing\Event\IndexPageEvent;
 use Lochmueller\Indexing\Event\StartIndexProcessEvent;
-use Lochmueller\Indexing\Indexing\IndexingInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
-readonly class CacheIndexing implements IndexingInterface
+readonly class CacheIndexing
 {
     public function __construct(
         private Context                  $context,
@@ -53,23 +52,16 @@ readonly class CacheIndexing implements IndexingInterface
             return;
         }
 
-
-        $page = [
-            'id' => (int) $pageInformation->getId(),
-            'access' => implode(',', $this->context->getPropertyFromAspect('frontend.user', 'groupIds', [0, -1])),
-            'title' => $this->pageTitleProviderManager->getTitle($request),
-            'content' => strip_tags($tsfe->content),
-            'preview' => '',
-            'uri' => 'https://www.google.de', // @todo perhaps only URI params (check URI building in frontend process)
-        ];
-
         $id = uniqid('cache-indexing', true);
-
-        $this->eventDispatcher->dispatch(new StartIndexProcessEvent(IndexTechnology::Cache, IndexType::Partial, $id));
+        $this->eventDispatcher->dispatch(new StartIndexProcessEvent(IndexTechnology::Cache, IndexType::Partial, $id, microtime(true)));
         $this->eventDispatcher->dispatch(new IndexPageEvent(
             site: $site,
             language: (int) $languageAspect->getId(),
+            title: $this->pageTitleProviderManager->getTitle($request),
+            content: strip_tags($tsfe->content),
+            pageUid: (int) $pageInformation->getId(),
+            accessGroups: $this->context->getPropertyFromAspect('frontend.user', 'groupIds', [0, -1]),
         ));
-        $this->eventDispatcher->dispatch(new EndIndexProcessEvent(IndexTechnology::Cache, IndexType::Partial, $id));
+        $this->eventDispatcher->dispatch(new EndIndexProcessEvent(IndexTechnology::Cache, IndexType::Partial, $id, microtime(true)));
     }
 }

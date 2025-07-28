@@ -13,6 +13,7 @@ final class EndIndexProcessEvent
         public IndexTechnology $technology,
         public IndexType       $type,
         public string          $indexProcessId,
+        public float           $endTime,
     ) {}
 
 }

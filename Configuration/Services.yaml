@@ -1,0 +1,14 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  _instanceof:
+    Lochmueller\Indexing\Indexing\Database\Extender\ExtenderInterface:
+      tags: [ 'indexing.extenders' ]
+    Lochmueller\Indexing\Indexing\Database\Types\TypeInterface:
+      tags: [ 'indexing.types' ]
+
+  Lochmueller\Indexing\:
+    resource: '../Classes/*'

@@ -11,5 +11,8 @@ final class IndexFileEvent
     public function __construct(
         public SiteInterface $site,
         public $language,
+        public string $title,
+        public string $content,
+        public string $fileIdentifier,
     ) {}
 }

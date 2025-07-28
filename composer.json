@@ -1,0 +1,42 @@
+{
+  "name": "lochmueller/indexing",
+  "type": "typo3-cms-extension",
+  "description": "Indexing - Smart and flexible indexing of pages and documents",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "typo3",
+    "index",
+    "search"
+  ],
+  "autoload": {
+    "psr-4": {
+      "Lochmueller\\Indexing\\": "Classes/"
+    }
+  },
+  "require": {
+    "php": "^8.3",
+    "typo3/cms-core": "^13.4",
+    "typo3/cms-extbase": "^13.4"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.84"
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "indexing",
+      "cms-package-dir": "{$vendor-dir}/typo3/cms",
+      "web-dir": ".Build/Web"
+    }
+  },
+  "config": {
+    "vendor-dir": ".Build/vendor",
+    "bin-dir": ".Build/bin",
+    "allow-plugins": {
+      "typo3/cms-composer-installers": true,
+      "typo3/class-alias-loader": true
+    }
+  },
+  "scripts": {
+    "code-fix": "PHP_CS_FIXER_IGNORE_ENV=1 .Build/bin/php-cs-fixer fix Classes --rules=@PER-CS2.0:risky,@PER-CS2.0,declare_strict_types,no_unused_imports --allow-risky yes"
+  }
+}

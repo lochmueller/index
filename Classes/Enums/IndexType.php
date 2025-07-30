@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Indexing\Enums;
+namespace Lochmueller\Index\Enums;
 
 enum IndexType
 {

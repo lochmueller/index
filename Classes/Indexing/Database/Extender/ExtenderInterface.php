@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Indexing\Indexing\Database\Extender;
+namespace Lochmueller\Index\Index\Database\Extender;
 
 interface ExtenderInterface
 {

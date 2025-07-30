@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Indexing\Indexing\Web;
+namespace Lochmueller\Index\Index\Web;
 
-use Lochmueller\Indexing\Queue\Message\WebIndexMessage;
+use Lochmueller\Index\Queue\Message\WebIndexMessage;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
-class WebIndexing
+class WebIndex
 {
     public function __construct(
         private readonly MessageBusInterface $bus,
     ) {}
 
-    public function fillQueueForWebIndexing(SiteInterface $site): void
+    public function fillQueueForWebIndex(SiteInterface $site): void
     {
         // @todo handle the message
         $message = new WebIndexMessage();

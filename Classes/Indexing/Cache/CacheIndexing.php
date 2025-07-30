@@ -2,20 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Indexing\Indexing\Cache;
+namespace Lochmueller\Index\Index\Cache;
 
-use Lochmueller\Indexing\Enums\IndexTechnology;
-use Lochmueller\Indexing\Enums\IndexType;
-use Lochmueller\Indexing\Event\EndIndexProcessEvent;
-use Lochmueller\Indexing\Event\IndexPageEvent;
-use Lochmueller\Indexing\Event\StartIndexProcessEvent;
+use Lochmueller\Index\Enums\IndexTechnology;
+use Lochmueller\Index\Enums\IndexType;
+use Lochmueller\Index\Event\EndIndexProcessEvent;
+use Lochmueller\Index\Event\IndexPageEvent;
+use Lochmueller\Index\Event\StartIndexProcessEvent;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Messenger\Handler\BatchHandlerInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
-readonly class CacheIndexing
+readonly class CacheIndex
 {
     public function __construct(
         private Context                  $context,
@@ -52,7 +53,7 @@ readonly class CacheIndexing
             return;
         }
 
-        $id = uniqid('cache-indexing', true);
+        $id = uniqid('cache-index', true);
         $this->eventDispatcher->dispatch(new StartIndexProcessEvent(IndexTechnology::Cache, IndexType::Partial, $id, microtime(true)));
         $this->eventDispatcher->dispatch(new IndexPageEvent(
             site: $site,

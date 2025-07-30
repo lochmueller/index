@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Indexing\Queue\Handler;
+namespace Lochmueller\Index\Queue\Handler;
 
-use Lochmueller\Indexing\Indexing\Web\WebIndexing;
-use Lochmueller\Indexing\Queue\Message\WebIndexMessage;
+use Lochmueller\Index\Index\Web\WebIndex;
+use Lochmueller\Index\Queue\Message\WebIndexMessage;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
 final readonly class WebIndexHandler
 {
-    public function __construct(private WebIndexing $webIndexing) {}
+    public function __construct(private WebIndex $webIndex) {}
 
     public function __invoke(WebIndexMessage $message): void
     {
-        $this->webIndexing->handleMessage($message);
+        $this->webIndex->handleMessage($message);
     }
 }

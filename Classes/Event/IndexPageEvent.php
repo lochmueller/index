@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Indexing\Event;
+namespace Lochmueller\Index\Event;
 
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 

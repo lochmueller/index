@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Indexing\Event;
+namespace Lochmueller\Index\Event;
 
-use Lochmueller\Indexing\Enums\IndexTechnology;
-use Lochmueller\Indexing\Enums\IndexType;
+use Lochmueller\Index\Enums\IndexTechnology;
+use Lochmueller\Index\Enums\IndexType;
 
 final class StartIndexProcessEvent
 {

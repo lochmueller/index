@@ -5,10 +5,10 @@ services:
     public: false
 
   _instanceof:
-    Lochmueller\Indexing\Indexing\Database\Extender\ExtenderInterface:
-      tags: [ 'indexing.extenders' ]
-    Lochmueller\Indexing\Indexing\Database\Types\TypeInterface:
-      tags: [ 'indexing.types' ]
+    Lochmueller\Index\Index\Database\Extender\ExtenderInterface:
+      tags: [ 'index.extenders' ]
+    Lochmueller\Index\Index\Database\Types\TypeInterface:
+      tags: [ 'index.types' ]
 
-  Lochmueller\Indexing\:
+  Lochmueller\Index\:
     resource: '../Classes/*'

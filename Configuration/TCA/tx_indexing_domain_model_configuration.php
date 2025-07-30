@@ -2,7 +2,7 @@
 
 return [
     'ctrl' => [
-        'title' => 'LLL:EXT:indexing/Resources/Private/Language/locallang.xlf:tx_indexing_domain_model_index_page',
+        'title' => 'LLL:EXT:index/Resources/Private/Language/locallang.xlf:tx_index_domain_model_index_page',
         'label' => 'title',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
@@ -11,7 +11,7 @@ return [
     'columns' => [
         'title' => [
             'exclude' => 0,
-            'title' => 'LLL:EXT:indexing/Resources/Private/Language/locallang.xlf:tx_indexing_domain_model_index_page.title',
+            'title' => 'LLL:EXT:index/Resources/Private/Language/locallang.xlf:tx_index_domain_model_index_page.title',
             'config' => [
                 'type' => 'input',
                 'size' => '30',
@@ -19,14 +19,14 @@ return [
         ],
         'language' => [
             'exclude' => 0,
-            'title' => 'LLL:EXT:indexing/Resources/Private/Language/locallang.xlf:tx_indexing_domain_model_index_page.languages',
+            'title' => 'LLL:EXT:index/Resources/Private/Language/locallang.xlf:tx_index_domain_model_index_page.languages',
             'config' => [
                 'type' => 'languages',
             ],
         ],
         'tags' => [
             'exclude' => 0,
-            'title' => 'LLL:EXT:indexing/Resources/Private/Language/locallang.xlf:tx_indexing_domain_model_index_page.tags',
+            'title' => 'LLL:EXT:index/Resources/Private/Language/locallang.xlf:tx_index_domain_model_index_page.tags',
             'config' => [
                 'type' => 'text',
             ],

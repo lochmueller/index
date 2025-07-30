@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Indexing\Command;
+namespace Lochmueller\Index\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -14,7 +14,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 #[AsCommand(
-    name: 'indexing:queue',
+    name: 'index:queue',
     description: 'Add the right entries to the message queue to trigger the full index process',
 )]
 class QueueCommand extends Command
@@ -40,9 +40,9 @@ class QueueCommand extends Command
             /** @var Site $site */
             $indexType = $site->getConfiguration()['sealIndexType'] ?? '';
             if ($indexType === 'database') {
-                $this->databaseIndexing->indexDatabase($site);
+                $this->databaseIndex->indexDatabase($site);
             } elseif ($indexType === 'web') {
-                $this->webIndexing->fillQueueForWebIndexing($site);
+                $this->webIndex->fillQueueForWebIndex($site);
             }
         }
 

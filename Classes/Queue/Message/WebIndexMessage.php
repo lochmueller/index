@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Indexing\Queue\Message;
+namespace Lochmueller\Index\Queue\Message;
 
 final class WebIndexMessage
 {

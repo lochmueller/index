@@ -1,16 +1,17 @@
 {
-  "name": "lochmueller/indexing",
+  "name": "lochmueller/index",
   "type": "typo3-cms-extension",
-  "description": "Indexing - Smart and flexible indexing of pages and documents",
+  "description": "Index - Smart and flexible indexing of pages and documents",
   "license": "GPL-2.0-or-later",
   "keywords": [
     "typo3",
     "index",
+    "indexing",
     "search"
   ],
   "autoload": {
     "psr-4": {
-      "Lochmueller\\Indexing\\": "Classes/"
+      "Lochmueller\\Index\\": "Classes/"
     }
   },
   "require": {
@@ -23,7 +24,7 @@
   },
   "extra": {
     "typo3/cms": {
-      "extension-key": "indexing",
+      "extension-key": "index",
       "cms-package-dir": "{$vendor-dir}/typo3/cms",
       "web-dir": ".Build/Web"
     }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Index\Index\Web;
+namespace Lochmueller\Index\Indexing\Web;
 
 use Lochmueller\Index\Queue\Message\WebIndexMessage;
 use Symfony\Component\Messenger\Envelope;
@@ -10,7 +10,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
-class WebIndex
+class WebIndexing
 {
     public function __construct(
         private readonly MessageBusInterface $bus,

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Index\Index\Database;
+namespace Lochmueller\Index\Indexing\Database;
 
-use Lochmueller\Index\Index\Database\Types\Page;
+use Lochmueller\Index\Indexing\PageTraversing;
 use Symfony\Component\Yaml\Yaml;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
-class DatabaseIndex
+class DatabaseIndexing
 {
     public function __construct(
         private PageTraversing $pageTraversing,

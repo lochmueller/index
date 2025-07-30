@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\EventListener;
 
-use Lochmueller\Index\Index\Cache\CacheIndex;
+use Lochmueller\Index\Indexing\Cache\CacheIndexing;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
 readonly class AfterCacheableContentIsGeneratedEventListener
 {
     public function __construct(
-        private CacheIndex $cacheIndex,
+        private CacheIndexing $cacheIndex,
     ) {}
 
     #[AsEventListener('index-cache-indexer')]
-    public function indexPageContent(AfterCacheableContentIsGeneratedEvent $event): void
+    public function __invoke(AfterCacheableContentIsGeneratedEvent $event): void
     {
         $this->cacheIndex->indexPageContentViaAfterCacheableContentIsGeneratedEvent($event);
     }

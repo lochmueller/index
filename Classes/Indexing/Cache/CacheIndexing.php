@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Index\Index\Cache;
+namespace Lochmueller\Index\Indexing\Cache;
 
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
@@ -10,13 +10,12 @@ use Lochmueller\Index\Event\EndIndexProcessEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
 use Lochmueller\Index\Event\StartIndexProcessEvent;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Messenger\Handler\BatchHandlerInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
-readonly class CacheIndex
+readonly class CacheIndexing
 {
     public function __construct(
         private Context                  $context,

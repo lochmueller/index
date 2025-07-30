@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Index\Index\Database\Types;
+namespace Lochmueller\Index\Indexing\Database\Types;
 
 abstract class AbstractType implements TypeInterface
 {

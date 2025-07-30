@@ -5,9 +5,9 @@ services:
     public: false
 
   _instanceof:
-    Lochmueller\Index\Index\Database\Extender\ExtenderInterface:
+    Lochmueller\Index\Indexing\Database\Extender\ExtenderInterface:
       tags: [ 'index.extenders' ]
-    Lochmueller\Index\Index\Database\Types\TypeInterface:
+    Lochmueller\Index\Indexing\Database\Types\TypeInterface:
       tags: [ 'index.types' ]
 
   Lochmueller\Index\:

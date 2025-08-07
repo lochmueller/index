@@ -44,7 +44,7 @@ readonly class CacheIndexing implements IndexingInterface
         $site = $request->getAttribute('site');
         $pageInformation = $request->getAttribute('frontend.page.information');
 
-        $configuration = $this->configurationLoader->loadByPage((int) $pageInformation->getId());
+        $configuration = $this->configurationLoader->loadByPageTraversing((int) $pageInformation->getId());
         if ($configuration === null || $configuration->technology !== IndexTechnology::Cache) {
             return;
         }
@@ -85,7 +85,7 @@ readonly class CacheIndexing implements IndexingInterface
     }
 
     #[AsMessageHandler]
-    public function handleIndex(CachePageMessage $message)
+    public function handleMessage(CachePageMessage $message)
     {
         $this->eventDispatcher->dispatch(new IndexPageEvent(
             site: $this->siteFinder->getSiteByIdentifier($message->siteIdentifier),

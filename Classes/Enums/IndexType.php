@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Enums;
 
-enum IndexType
+enum IndexType: string
 {
-    case Full;
-    case Partial;
+    case Full = 'full';
+    case Partial = 'partial';
 }

@@ -17,6 +17,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+// @todo rework the file
+
 #[AsCommand(
     name: 'index:queue',
     description: 'Add the right entries to the message queue to trigger the index process of the different configurations',
@@ -59,7 +61,7 @@ class QueueCommand extends Command
             } elseif ($configuration->technology === IndexTechnology::Frontend) {
                 $this->frontendIndex->fillQueue($configuration);
             }
-            $this->fileIndexing->fillQueue($configuration->fileMounts, $configuration->fileTypes);
+            $this->fileIndexing->fillQueue($configuration);
         }
 
         return Command::SUCCESS;

@@ -23,6 +23,17 @@ class ConfigurationLoader
             }
         }
 
+        return null;
+    }
+    public function loadByPageTraversing(int $pageUid): ?Configuration
+    {
+        $this->preloadConfigurations();
+        foreach (self::$runtimeConfigurationCache as $configuration) {
+            if ($configuration->pageId === $pageUid) {
+                return $configuration;
+            }
+        }
+
         /** @var RootlineUtility $rootLineUtility */
         $rootLineUtility = GeneralUtility::makeInstance(RootlineUtility::class, $pageUid);
         foreach ($rootLineUtility->get() as $page) {

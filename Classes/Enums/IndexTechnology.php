@@ -9,5 +9,5 @@ enum IndexTechnology: string
     case None = 'none';
     case Cache = 'cache';
     case Database = 'database';
-    case Web = 'web';
+    case Frontend = 'frontend';
 }

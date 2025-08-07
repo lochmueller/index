@@ -4,25 +4,28 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database;
 
-use Lochmueller\Index\Indexing\PageTraversing;
+use Lochmueller\Index\Configuration\Configuration;
+use Lochmueller\Index\Indexing\IndexingInterface;
+use Lochmueller\Index\Traversing\FileTraversing;
+use Lochmueller\Index\Traversing\PageTraversing;
 use Symfony\Component\Yaml\Yaml;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
-class DatabaseIndexing
+class DatabaseIndexing implements IndexingInterface
 {
     public function __construct(
         private PageTraversing $pageTraversing,
+        private FileTraversing $fileTraversing,
     ) {}
 
-    public function indexDatabase(SiteInterface $site): void
+    public function fillQueue(Configuration $configuration): void
     {
 
-        $indexConfiguration = Yaml::parse($site->getConfiguration()['sealIndexConfiguration'] ?? '');
+        #$indexConfiguration = Yaml::parse($site->getConfiguration()['sealIndexConfiguration'] ?? '');
 
-        DebuggerUtility::var_dump($indexConfiguration);
+        DebuggerUtility::var_dump($configuration);
         die();
-
 
         foreach ($this->loadTypes($site) as $type) {
             foreach ($type->getItems() as $item) {

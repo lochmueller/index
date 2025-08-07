@@ -1,14 +1,23 @@
 <?php
 
-use Lochmueller\Index\Queue\Message\WebIndexMessage;
+use Lochmueller\Index\Queue\Message\CachePageMessage;
+use Lochmueller\Index\Queue\Message\DatabaseIndexMessage;
+use Lochmueller\Index\Queue\Message\FinishProcessMessage;
+use Lochmueller\Index\Queue\Message\StartProcessMessage;
+use Lochmueller\Index\Queue\Message\FrontendIndexMessage;
 use Psr\Log\LogLevel;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Log\Writer\FileWriter;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 
-// "index"-transport for
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][WebIndexMessage::class] = 'doctrine';
+// @todo why this do not work?!
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][StartProcessMessage::class] = 'doctrine';
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][FinishProcessMessage::class] = 'doctrine';
+
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][CachePageMessage::class] = 'doctrine';
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][FrontendIndexMessage::class] = 'doctrine';
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][DatabaseIndexMessage::class] = 'doctrine';
 
 
 /** @var Environment $context */

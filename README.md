@@ -2,8 +2,7 @@
 
 EXT:index is a TYPO3 Index framework to handle the content generation of a TYPO3 website related to different index
 configurations. This could be used for search engine fill-up processes or other content engines that need the generated
-content of typo3 pages and files. To sped up the indexing the databse and web indexing use the TYPO3 internal message
-bus.
+content of typo3 pages and files. To sped up the indexing the TYPO3 internal message bus is used.
 
 You can use the PSR-14 Events to get the index information or the webhook functions of the core, to move the indexed
 information to external services.

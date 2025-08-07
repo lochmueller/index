@@ -28,6 +28,18 @@
             <trans-unit id="tx_index_domain_model_configuration.technology.description">
                 <source>Technology of the index process.</source>
             </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.file_mounts">
+                <source>File mounts</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.file_mounts.description">
+                <source>The file mounts that should be checked for the index process.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.file_types">
+                <source>File types</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.file_types.description">
+                <source>File types that should be indexed. Please take care of special requirements for different files types.</source>
+            </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.technology.type.none">
                 <source>None</source>
             </trans-unit>
@@ -35,10 +47,19 @@
                 <source>Cache Indexing (like EXT:indexed_search)</source>
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.technology.type.database">
-                <source>Database indexing (like EXT:ke_search) - Keep in mind: Create the "seal:index" scheduler command.</source>
+                <source>Database indexing (like EXT:ke_search)</source>
             </trans-unit>
-            <trans-unit id="tx_index_domain_model_configuration.technology.type.web">
-                <source>Web indexing (like EXT:solr) - Keep in mind: Create the "seal:index" scheduler command and "messenger:consume" with receivers->doctrine command.</source>
+            <trans-unit id="tx_index_domain_model_configuration.technology.type.frontend">
+                <source>Frontend (like EXT:solr via frontend subrequest)</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.tab.general">
+                <source>General</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.tab.pages">
+                <source>Pages</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.tab.files">
+                <source>Files</source>
             </trans-unit>
         </body>
     </file>

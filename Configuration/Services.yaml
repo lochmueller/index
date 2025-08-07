@@ -7,8 +7,9 @@ services:
   _instanceof:
     Lochmueller\Index\Indexing\Database\Extender\ExtenderInterface:
       tags: [ 'index.extenders' ]
-    Lochmueller\Index\Indexing\Database\Types\TypeInterface:
-      tags: [ 'index.types' ]
 
   Lochmueller\Index\:
     resource: '../Classes/*'
+
+  Lochmueller\FileExtractor\FileExtractor:
+    public: true

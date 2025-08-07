@@ -17,6 +17,6 @@ readonly class AfterCacheableContentIsGeneratedEventListener
     #[AsEventListener('index-cache-indexer')]
     public function __invoke(AfterCacheableContentIsGeneratedEvent $event): void
     {
-        $this->cacheIndex->indexPageContentViaAfterCacheableContentIsGeneratedEvent($event);
+        $this->cacheIndex->fillQueue($event);
     }
 }

@@ -13,6 +13,8 @@ class Configuration
         public readonly int $pageId,
         public readonly IndexTechnology $technology,
         public readonly bool $skipNoSearchPages,
+        public readonly array $fileMounts,
+        public readonly array $fileTypes,
     ) {}
 
 }

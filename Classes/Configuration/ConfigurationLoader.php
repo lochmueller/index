@@ -36,6 +36,12 @@ class ConfigurationLoader
         return null;
     }
 
+    public function loadByUid(int $uid): ?Configuration
+    {
+        $this->preloadConfigurations();
+        return self::$runtimeConfigurationCache[$uid] ?? null;
+    }
+
     public function loadBySite(SiteInterface $site): ?Configuration
     {
         return $this->loadByPage($site->getRootPageId());
@@ -57,12 +63,13 @@ class ConfigurationLoader
                 ->executeQuery();
 
             foreach ($result->iterateAssociative() as $item) {
-
-                self::$runtimeConfigurationCache[] = new Configuration(
+                self::$runtimeConfigurationCache[(int) $item['uid']] = new Configuration(
                     configurationId: (int) $item['uid'],
                     pageId: (int) $item['pid'],
                     technology: IndexTechnology::from($item['technology']),
                     skipNoSearchPages: (bool) $item['skip_no_search_pages'],
+                    fileMounts: GeneralUtility::trimExplode(',', $item['file_mounts']),
+                    fileTypes: GeneralUtility::trimExplode(',', $item['file_types']),
                 );
             }
         }

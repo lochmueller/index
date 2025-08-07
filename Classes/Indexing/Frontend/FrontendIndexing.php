@@ -2,31 +2,32 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Index\Indexing\Web;
+namespace Lochmueller\Index\Indexing\Frontend;
 
-use Lochmueller\Index\Queue\Message\WebIndexMessage;
+use Lochmueller\Index\Configuration\Configuration;
+use Lochmueller\Index\Indexing\IndexingInterface;
+use Lochmueller\Index\Queue\Message\FrontendIndexMessage;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
-class WebIndexing
+class FrontendIndexing implements IndexingInterface
 {
     public function __construct(
         private readonly MessageBusInterface $bus,
     ) {}
 
-    public function fillQueueForWebIndex(SiteInterface $site): void
+    public function fillQueue(Configuration $configuration): void
     {
         // @todo handle the message
-        $message = new WebIndexMessage();
+        #$message = new FrontendIndexMessage();
 
         // Send the message async via doctrine transport
         // @todo check https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/13.4.x/Important-103140-AllowToConfigureRateLimiters.html
-        $this->bus->dispatch((new Envelope($message))->with(new TransportNamesStamp('doctrine')));
+        #$this->bus->dispatch((new Envelope($message))->with(new TransportNamesStamp('doctrine')));
     }
 
-    public function handleMessage(WebIndexMessage $message): void
+    public function handleMessage(FrontendIndexMessage $message): void
     {
         // DebuggerUtility::var_dump($message);
 

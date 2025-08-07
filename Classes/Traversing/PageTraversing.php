@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Index\Indexing;
+namespace Lochmueller\Index\Traversing;
 
 class PageTraversing
 {

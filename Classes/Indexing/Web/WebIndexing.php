@@ -22,6 +22,7 @@ class WebIndexing
         $message = new WebIndexMessage();
 
         // Send the message async via doctrine transport
+        // @todo check https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/13.4.x/Important-103140-AllowToConfigureRateLimiters.html
         $this->bus->dispatch((new Envelope($message))->with(new TransportNamesStamp('doctrine')));
     }
 

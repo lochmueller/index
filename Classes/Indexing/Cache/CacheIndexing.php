@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Cache;
 
+use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
-use Lochmueller\Index\Event\EndIndexProcessEvent;
+use Lochmueller\Index\Event\FinishIndexProcessEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
 use Lochmueller\Index\Event\StartIndexProcessEvent;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -21,6 +22,7 @@ readonly class CacheIndexing
         private Context                  $context,
         private PageTitleProviderManager $pageTitleProviderManager,
         private EventDispatcherInterface $eventDispatcher,
+        protected ConfigurationLoader $configurationLoader,
     ) {}
 
     public function indexPageContentViaAfterCacheableContentIsGeneratedEvent(AfterCacheableContentIsGeneratedEvent $event): void
@@ -33,35 +35,46 @@ readonly class CacheIndexing
         $tsfe = $request->getAttribute('frontend.controller');
         /** @var Site $site */
         $site = $request->getAttribute('site');
-        // @todo move to DB configuration
-        $indexType = $site->getConfiguration()['sealIndexType'] ?? '';
-        if ($indexType !== 'cache') {
-            return;
-        }
-
         $pageInformation = $request->getAttribute('frontend.page.information');
-        $pageRecord = $pageInformation->getPageRecord();
 
-        if ($pageRecord['no_search'] ?? false) {
+        $configuration = $this->configurationLoader->loadByPage((int) $pageInformation->getId());
+        if ($configuration === null || $configuration->technology !== IndexTechnology::Cache) {
             return;
         }
-        $languageAspect = $this->context->getAspect('language');
-        if ($languageAspect->getId() !== $languageAspect->getContentId()) {
-            // Index page? No, languageId was different from contentId which indicates that the page contains fall-back
-            // content and that would be falsely indexed as localized content.
+
+        if ($configuration->skipNoSearchPages && $pageInformation->getPageRecord()['no_search'] ?? false) {
             return;
         }
 
         $id = uniqid('cache-index', true);
-        $this->eventDispatcher->dispatch(new StartIndexProcessEvent(IndexTechnology::Cache, IndexType::Partial, $id, microtime(true)));
+
+        $this->eventDispatcher->dispatch(new StartIndexProcessEvent(
+            site: $site,
+            technology: IndexTechnology::Cache,
+            type: IndexType::Partial,
+            indexConfigurationRecordId: $configuration->configurationId,
+            indexProcessId: $id,
+            startTime: microtime(true),
+        ));
         $this->eventDispatcher->dispatch(new IndexPageEvent(
             site: $site,
-            language: (int) $languageAspect->getId(),
+            technology: IndexTechnology::Cache,
+            type: IndexType::Partial,
+            indexConfigurationRecordId: $configuration->configurationId,
+            language: (int) $this->context->getAspect('language')->getId(),
             title: $this->pageTitleProviderManager->getTitle($request),
-            content: strip_tags($tsfe->content),
+            content: $tsfe->content,
             pageUid: (int) $pageInformation->getId(),
             accessGroups: $this->context->getPropertyFromAspect('frontend.user', 'groupIds', [0, -1]),
         ));
-        $this->eventDispatcher->dispatch(new EndIndexProcessEvent(IndexTechnology::Cache, IndexType::Partial, $id, microtime(true)));
+
+        $this->eventDispatcher->dispatch(new FinishIndexProcessEvent(
+            site: $site,
+            technology: IndexTechnology::Cache,
+            type: IndexType::Partial,
+            indexConfigurationRecordId: $configuration->configurationId,
+            indexProcessId: $id,
+            endTime: microtime(true),
+        ));
     }
 }

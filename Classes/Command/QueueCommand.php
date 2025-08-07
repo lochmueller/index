@@ -6,8 +6,8 @@ namespace Lochmueller\Index\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -15,7 +15,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 #[AsCommand(
     name: 'index:queue',
-    description: 'Add the right entries to the message queue to trigger the full index process',
+    description: 'Add the right entries to the message queue to trigger the index process of the different configurations',
 )]
 class QueueCommand extends Command
 {
@@ -27,7 +27,8 @@ class QueueCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument('siteIdentifiers', InputArgument::OPTIONAL, 'Site identifier seperated by comma (,). Empty string -> all sites are checked', '');
+        $this->addOption('limitSiteIdentifiers', null, InputOption::VALUE_REQUIRED, 'Limit to site identifiers seperated by comma (,). Empty string -> all sites are checked', '');
+        $this->addOption('limitConfigurationIdentifiers', null, InputOption::VALUE_REQUIRED, 'Limit to configuration record UIDs seperated by comma (,). Empty string -> all configurations are checked', '');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

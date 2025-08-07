@@ -7,6 +7,39 @@
             <trans-unit id="index">
                 <source>Index</source>
             </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration">
+                <source>Index configuration</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.title">
+                <source>Title</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.title.description">
+                <source>Internal title of the index configuration.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.skip_no_search_pages">
+                <source>Skip no search pages</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.skip_no_search_pages.description">
+                <source>Skip pages that checked the "no search" attribute in the page settings.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.technology">
+                <source>Index technology</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.technology.description">
+                <source>Technology of the index process.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.technology.type.none">
+                <source>None</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.technology.type.cache">
+                <source>Cache Indexing (like EXT:indexed_search)</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.technology.type.database">
+                <source>Database indexing (like EXT:ke_search) - Keep in mind: Create the "seal:index" scheduler command.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.technology.type.web">
+                <source>Web indexing (like EXT:solr) - Keep in mind: Create the "seal:index" scheduler command and "messenger:consume" with receivers->doctrine command.</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

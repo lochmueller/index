@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Enums;
 
-enum IndexTechnology
+enum IndexTechnology: string
 {
-    case Cache;
-    case Database;
-    case Web;
+    case None = 'none';
+    case Cache = 'cache';
+    case Database = 'database';
+    case Web = 'web';
 }

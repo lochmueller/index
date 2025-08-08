@@ -15,20 +15,23 @@ use TYPO3\CMS\Core\Messaging\WebhookMessageInterface;
 class StartIndexProcessWebhookMessage implements WebhookMessageInterface
 {
     public function __construct(
-        // @todo add all fields
+        protected StartIndexProcessEvent $event,
     ) {}
 
     public static function createFromEvent(StartIndexProcessEvent $event): self
     {
-
-        // @todo $event...
-        return new self();
+        return new self($event);
     }
 
     public function jsonSerialize(): mixed
     {
         return [
-            # '' Add Attributes
+            'siteIdentifier' => $this->event->site->getIdentifier(),
+            'technology' => $this->event->technology->value,
+            'type' => $this->event->type->value,
+            'indexConfigurationRecordId' => $this->event->indexConfigurationRecordId,
+            'indexProcessId' => $this->event->indexProcessId,
+            'startTime' => $this->event->startTime,
         ];
     }
 }

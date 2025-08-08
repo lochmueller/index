@@ -5,7 +5,7 @@ services:
     public: false
 
   _instanceof:
-    Lochmueller\Index\Indexing\Database\Extender\ExtenderInterface:
+    Lochmueller\Index\Traversing\Extender\ExtenderInterface:
       tags: [ 'index.extenders' ]
 
   Lochmueller\Index\:

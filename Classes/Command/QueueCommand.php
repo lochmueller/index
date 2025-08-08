@@ -61,7 +61,6 @@ class QueueCommand extends Command
             } elseif ($configuration->technology === IndexTechnology::Frontend) {
                 $this->frontendIndex->fillQueue($configuration);
             }
-            $this->fileIndexing->fillQueue($configuration);
         }
 
         return Command::SUCCESS;

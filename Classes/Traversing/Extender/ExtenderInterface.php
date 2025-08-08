@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Index\Indexing\Database\Extender;
+namespace Lochmueller\Index\Traversing\Extender;
 
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 

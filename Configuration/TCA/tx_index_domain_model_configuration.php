@@ -1,13 +1,19 @@
 <?php
 
 use Lochmueller\Index\Enums\IndexTechnology;
-use Lochmueller\Index\FileExtraction\FileExtractor;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 $lll = 'LLL:EXT:index/Resources/Private/Language/locallang.xlf:';
 
-
-#$extractor = GeneralUtility::makeInstance(FileExtractor::class);
+$extractors = [
+    new \Lochmueller\Index\FileExtraction\Extractor\PdfFileExtraction(),
+    new \Lochmueller\Index\FileExtraction\Extractor\WordFileExtraction(),
+    new \Lochmueller\Index\FileExtraction\Extractor\PowerpointFileExtraction(),
+    new \Lochmueller\Index\FileExtraction\Extractor\ExcelFileExtraction(),
+    new \Lochmueller\Index\FileExtraction\Extractor\ImagesFileExtraction(),
+    new \Lochmueller\Index\FileExtraction\Extractor\AudioFileExtraction(),
+    new \Lochmueller\Index\FileExtraction\Extractor\VideosFileExtraction(),
+    new \Lochmueller\Index\FileExtraction\Extractor\ImagesFileExtraction(),
+];
 
 return [
     'ctrl' => [
@@ -95,49 +101,14 @@ return [
             'config' => [
                 'type' => 'select',
                 'renderType' => 'selectCheckBox',
-                'items' => [
-                    [
-                        'label' => 'Images',
-                        'value' => 'images',
-                        'icon' => 'mimetypes-media-image'
-                    ],
-                    [
-                        'label' => 'Videos',
-                        'value' => 'videos',
-                        'icon' => 'mimetypes-media-video',
-                    ],
-                    [
-                        'label' => 'Audio',
-                        'value' => 'audio',
-                        'icon' => 'mimetypes-media-audio',
-                    ],
-                    [
-                        'label' => 'Archives',
-                        'value' => 'archives',
-                        'icon' => 'mimetypes-compressed',
-                    ],
-
-                    [
-                        'label' => 'PDF',
-                        'value' => 'pdf',
-                        'icon' => 'mimetypes-pdf',
-                    ],
-                    [
-                        'label' => 'Word',
-                        'value' => 'word',
-                        'icon' => 'mimetypes-word',
-                    ],
-                    [
-                        'label' => 'Excel',
-                        'value' => 'excel',
-                        'icon' => 'mimetypes-excel',
-                    ],
-                    [
-                        'label' => 'Powerpoint',
-                        'value' => 'powerpoint',
-                        'icon' => 'mimetypes-powerpoint',
-                    ],
-                ],
+                'items' => array_map(function ($item) {
+                    /** @var $item \Lochmueller\Index\FileExtraction\Extractor\FileExtractionInterface */
+                    return [
+                        'label' => $item->getFileGroupLabel(),
+                        'value' => $item->getFileGroupName(),
+                        'icon' => $item->getFileGroupIconIdentifier(),
+                    ];
+                }, $extractors),
             ],
         ],
     ],
@@ -149,18 +120,20 @@ return [
         IndexTechnology::Cache->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,skip_no_search_pages'],
+                    technology,skip_no_search_pages,
+                    --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
+                    file_mounts,file_types'],
         IndexTechnology::Database->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,skip_no_search_pages,
+                    technology,skip_no_search_pages,configuration,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types
                     '],
         IndexTechnology::Frontend->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,skip_no_search_pages,
+                    technology,skip_no_search_pages,configuration,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types
                     '],

@@ -29,7 +29,7 @@ class FrontendIndexing implements IndexingInterface
 
     public function handleMessage(FrontendIndexMessage $message): void
     {
-        // DebuggerUtility::var_dump($message);
+
 
         // @todo handle message
         // @todo Execute webrequest and index content

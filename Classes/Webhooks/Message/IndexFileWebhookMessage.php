@@ -15,20 +15,21 @@ use TYPO3\CMS\Core\Messaging\WebhookMessageInterface;
 class IndexFileWebhookMessage implements WebhookMessageInterface
 {
     public function __construct(
-        // @todo add all fields
+        protected IndexFileEvent $indexFileEvent,
     ) {}
 
     public static function createFromEvent(IndexFileEvent $event): self
     {
-
-        // @todo $event...
-        return new self();
+        return new self($event);
     }
 
     public function jsonSerialize(): mixed
     {
         return [
-            # '' Add Attributes
+            'indexConfigurationRecordId' => $this->indexFileEvent->indexConfigurationRecordId,
+            'title' => $this->indexFileEvent->title,
+            'content' => $this->indexFileEvent->content,
+            'fileIdentifier' => $this->indexFileEvent->fileIdentifier,
         ];
     }
 }

@@ -34,7 +34,7 @@ class FileTraversing
             /** @var Folder $folder */
             $folder = $this->resourceFactory->getFolderObjectFromCombinedIdentifier($row['identifier']);
             foreach ($folder->getFiles(recursive: true) as $file) {
-                /** @var \TYPO3\CMS\Core\Resource\FileInterface $file */
+                /** @var FileInterface $file */
                 if (in_array($file->getExtension(), $fileExtensions)) {
                     yield $file;
                 }

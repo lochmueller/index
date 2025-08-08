@@ -10,6 +10,7 @@ use Lochmueller\Index\FileExtraction\FileExtractor;
 use Lochmueller\Index\Indexing\IndexingInterface;
 use Lochmueller\Index\Queue\Message\FileMessage;
 use Lochmueller\Index\Traversing\FileTraversing;
+use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -24,6 +25,7 @@ class FileIndexing implements IndexingInterface, LoggerAwareInterface
         private FileTraversing           $fileTraversing,
         private FileExtractor            $fileExtractor,
         private MessageBusInterface      $bus,
+        private ContainerInterface       $container,
         private EventDispatcherInterface $eventDispatcher,
     ) {}
 

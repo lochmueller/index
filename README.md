@@ -29,10 +29,30 @@ for your extension.
 ### Events
 
 There are four 'public' events that you can use in your extension. EXT:index take care of the index processing and
-the async handling of the queue. So you can directly consume the event and add your business logic. Please *DO NOT*
-usage the internal messages that are part of the intx process.
+the async handling of the queue. So you can directly consume the event, add your business logic and run more or less
+complex processes in the event listener. Please *DO NOT* usage the internal messages that are part of the internal
+process.
 
 - **StartIndexProcess** - Start event incl. meta information like technology, type
 - **IndexPageEvent** - Index event for pages incl. title, content and meta information of one page
 - **IndexFileEvent** - Index event for files incl. title, content and meta information of one file
 - **EndIndexProcess** - End event incl. meta information like technology, type
+
+### Symfony DI Tags
+
+@todo
+
+### Webhooks
+
+All four events are available as webhooks. You can use the webhook functions of the core to move the indexed
+information to external services.
+
+### File extraction
+
+The file extraction is based on different third party packages. Please taker care to install the packages, that the
+content fetch process out of the files is working.
+
+## Extension based on EXT:index
+
+- EXT:seal - Search Engine Abstraction Layer
+- (more to come - please create an PR to extend this list)

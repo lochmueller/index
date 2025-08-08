@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Index\Indexing\Database\Extender;
+namespace Lochmueller\Index\Traversing\Extender;
 
-class Address extends AbstractExtender
+class Content extends AbstractExtender
 {
     public function getItems(): iterable
     {

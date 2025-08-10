@@ -7,13 +7,14 @@ namespace Lochmueller\Index\Indexing\Database;
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
+use Lochmueller\Index\Event\IndexPageEvent;
 use Lochmueller\Index\Indexing\File\FileIndexing;
 use Lochmueller\Index\Indexing\IndexingInterface;
-use Lochmueller\Index\Queue\Message\CachePageMessage;
 use Lochmueller\Index\Queue\Message\DatabaseIndexMessage;
 use Lochmueller\Index\Queue\Message\FinishProcessMessage;
 use Lochmueller\Index\Queue\Message\StartProcessMessage;
 use Lochmueller\Index\Traversing\PageTraversing;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -36,15 +37,16 @@ use TYPO3\CMS\Frontend\Page\PageInformation;
 class DatabaseIndexing implements IndexingInterface
 {
     public function __construct(
-        private MessageBusInterface $bus,
-        private SiteFinder          $siteFinder,
-        private PageTraversing      $pageTraversing,
-        private FileIndexing        $fileIndexing,
-        private RecordFactory       $recordFactory,
-        private ContentIndexing $contentIndexing,
-        private readonly ContentDataProcessor $contentDataProcessor,
-        private readonly LanguageAspectFactory $languageAspectFactory,
-        private readonly Context $context,
+        private MessageBusInterface               $bus,
+        private SiteFinder                        $siteFinder,
+        private PageTraversing                    $pageTraversing,
+        private FileIndexing                      $fileIndexing,
+        private RecordFactory                     $recordFactory,
+        private ContentIndexing                   $contentIndexing,
+        private readonly ContentDataProcessor     $contentDataProcessor,
+        private readonly LanguageAspectFactory    $languageAspectFactory,
+        private readonly Context                  $context,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
     public function fillQueue(Configuration $configuration): void
@@ -66,50 +68,14 @@ class DatabaseIndexing implements IndexingInterface
         // @todo use file traversing and
 
 
-
         // $this->recordFactory->createRawRecord('pages', )
 
-
-        // Test Start
-
-
-        /** @var ContentObjectRenderer $cObj */
-        $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $cObj->start([], 'tt_content');
-
-
-        $cObj->setRequest($this->buildFrontendRequest($site, $site->getDefaultLanguage()));
-
-        $records = $cObj->getRecords('tt_content', [
-            'pidInList' => '11',
-        ]);
-        foreach ($records as $key => $record) {
-            $records[$key] = $this->recordFactory->createResolvedRecordFromDatabaseRow('tt_content', $record);
-        }
-
-
-
-
-        foreach ($records as $key => $record) {
-            $content = $this->contentIndexing->getContent($record);
-            // var_dump($content);
-        }
-
-
-
-
-        $this->bus->dispatch(new DatabaseIndexMessage('test'));
-        /*$this->bus->dispatch(new CachePageMessage(
+        $this->bus->dispatch(new DatabaseIndexMessage(
             siteIdentifier: $site->getIdentifier(),
-            technology: IndexTechnology::Cache,
-            type: IndexType::Partial,
+            technology: IndexTechnology::Database,
+            type: IndexType::Full,
             indexConfigurationRecordId: $configuration->configurationId,
-            language: (int)$this->context->getAspect('language')->getId(),
-            title: $this->pageTitleProviderManager->getTitle($request),
-            content: $tsfe->content,
-            pageUid: (int)$pageInformation->getId(),
-            accessGroups: $this->context->getPropertyFromAspect('frontend.user', 'groupIds', [0, -1]),
-        ));*/
+        ));
 
         $this->fileIndexing->fillQueue($configuration);
 
@@ -121,6 +87,7 @@ class DatabaseIndexing implements IndexingInterface
             indexProcessId: $id,
         ));
     }
+
     private function buildFrontendRequest(Site $site, SiteLanguage $siteLanguage): ServerRequestInterface
     {
         // Basis-URI aus der SiteLanguage (Domain + Pfadpräfix)
@@ -154,14 +121,42 @@ class DatabaseIndexing implements IndexingInterface
     #[AsMessageHandler]
     public function handleMessage(DatabaseIndexMessage $message): void
     {
+        /** @var ContentObjectRenderer $cObj */
+        $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        $cObj->start([], 'tt_content');
 
-        // var_dump('HANDLE DB Index');
+        $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
 
-        // Record!!!!
-        // $this->recordFactory->createRawRecord('pages', )
-        // @todo integrate
+        $cObj->setRequest($this->buildFrontendRequest($site, $site->getDefaultLanguage()));
 
-        // RECORD API
+        $records = $cObj->getRecords('tt_content', [
+            'pidInList' => '11',
+        ]);
+        foreach ($records as $key => $record) {
+            $records[$key] = $this->recordFactory->createResolvedRecordFromDatabaseRow('tt_content', $record);
+        }
+
+        $title = ''; // @todo
+        $language = 0; // @todo
+        $pageUid = 11; // @todo
+        $accessGroups = []; // @todo
+
+        $mainContent = '';
+        foreach ($records as $key => $record) {
+            $mainContent .= $this->contentIndexing->getContent($record);
+        }
+
+        $this->eventDispatcher->dispatch(new IndexPageEvent(
+            site: $site,
+            technology: $message->technology,
+            type: $message->type,
+            indexConfigurationRecordId: $message->indexConfigurationRecordId,
+            language: $language,
+            title: $title,
+            content: $mainContent,
+            pageUid: $pageUid,
+            accessGroups: $accessGroups,
+        ));
     }
 
 }

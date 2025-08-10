@@ -64,7 +64,6 @@ class QueueCommand extends Command
         }
 
         return Command::SUCCESS;
-
     }
 
 

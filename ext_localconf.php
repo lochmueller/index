@@ -12,25 +12,18 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 
 // @todo why this do not work?!
-#$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing']['Lochmueller\\Index\\Queue\\Message\\*'] = ['doctrine'];
-#
-#
-#$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][StartProcessMessage::class] = ['doctrine'];
-#$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][FinishProcessMessage::class] = ['doctrine'];
-#
-#$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][CachePageMessage::class] = ['doctrine'];
-#$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][FrontendIndexMessage::class] = ['doctrine'];
-#$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][DatabaseIndexMessage::class] = ['doctrine'];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing']['Lochmueller\\Index\\Queue\\Message\\*'] = ['doctrine'];
 
-
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'] = [
+// @todo Workarround
+/*$GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'] = [
     StartProcessMessage::class => 'doctrine',
     FinishProcessMessage::class => 'doctrine',
     CachePageMessage::class => 'doctrine',
     FrontendIndexMessage::class => 'doctrine',
     DatabaseIndexMessage::class => 'doctrine',
-    #'*' => 'default',
+    '*' => 'default',
 ];
+*/
 
 
 /** @var Environment $context */

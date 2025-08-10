@@ -28,7 +28,7 @@ for your extension.
 
 ### Events
 
-There are four 'public' events that you can use in your extension. EXT:index take care of the index processing and
+There are four 'public' main events that you can use in your extension. EXT:index take care of the index processing and
 the async handling of the queue. So you can directly consume the event, add your business logic and run more or less
 complex processes in the event listener. Please *DO NOT* usage the internal messages that are part of the internal
 process.
@@ -38,9 +38,18 @@ process.
 - **IndexFileEvent** - Index event for files incl. title, content and meta information of one file
 - **EndIndexProcess** - End event incl. meta information like technology, type
 
+There are additional events to customize the index process:
+
+- **ContentType\HandleContentTypeEvent** - Customize or add the rendering of content for database indexing.
+
 ### Symfony DI Tags
 
-@todo
+There are several Symfony DI tags, that create iteratables for internal functions. You can use this to add your own
+integrations:
+
+- **index.content_type** - Rendering definitions for database indexing.
+- **index.file_extractor** - Extract content from files in the index process.
+- **index.extender** - Extend the URI queue in the Page traversing.
 
 ### Webhooks
 

@@ -1,12 +1,13 @@
 {
   "name": "lochmueller/index",
   "type": "typo3-cms-extension",
-  "description": "Index - Smart and flexible indexing of pages and documents",
+  "description": "Index - Smart and flexible indexing of pages and documents for e.h. search engines or AI provider",
   "license": "GPL-2.0-or-later",
   "keywords": [
     "typo3",
     "index",
     "indexing",
+    "traversing",
     "search"
   ],
   "autoload": {
@@ -38,6 +39,6 @@
     }
   },
   "scripts": {
-    "code-fix": "PHP_CS_FIXER_IGNORE_ENV=1 .Build/bin/php-cs-fixer fix Classes --rules=@PER-CS2.0:risky,@PER-CS2.0,declare_strict_types,no_unused_imports --allow-risky yes"
+    "code-fix": ".Build/bin/php-cs-fixer fix Classes --rules=@PER-CS2.0:risky,@PER-CS2.0,declare_strict_types,no_unused_imports --allow-risky yes"
   }
 }

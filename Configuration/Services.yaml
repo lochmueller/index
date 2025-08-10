@@ -4,10 +4,6 @@ services:
     autoconfigure: true
     public: false
 
-  _instanceof:
-    Lochmueller\Index\Traversing\Extender\ExtenderInterface:
-      tags: [ 'index.extenders' ]
-
   Lochmueller\Index\:
     resource: '../Classes/*'
 

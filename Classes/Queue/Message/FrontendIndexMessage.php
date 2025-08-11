@@ -4,8 +4,17 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Queue\Message;
 
-final class FrontendIndexMessage
+use Lochmueller\Index\Enums\IndexTechnology;
+use Lochmueller\Index\Enums\IndexType;
+
+final readonly class FrontendIndexMessage
 {
-    // @todo fill with usefull information
+    public function __construct(
+        /** Meta information */
+        public string          $siteIdentifier,
+        public IndexTechnology $technology,
+        public IndexType       $type,
+        public int             $indexConfigurationRecordId,
+    ) {}
 
 }

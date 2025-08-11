@@ -8,10 +8,10 @@ final class IndexFileEvent
 {
     public function __construct(
         /** Meta information */
-        public int    $indexConfigurationRecordId,
+        public readonly int    $indexConfigurationRecordId,
         /** Content data */
         public string $title,
         public string $content,
-        public string $fileIdentifier,
+        public readonly string $fileIdentifier,
     ) {}
 }

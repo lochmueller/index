@@ -8,7 +8,7 @@ use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
-final class StartIndexProcessEvent
+final readonly class StartIndexProcessEvent
 {
     public function __construct(
         /** Meta information */

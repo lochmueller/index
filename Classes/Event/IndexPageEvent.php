@@ -12,15 +12,15 @@ final class IndexPageEvent
 {
     public function __construct(
         /** Meta information */
-        public SiteInterface   $site,
-        public IndexTechnology $technology,
-        public IndexType       $type,
-        public int             $indexConfigurationRecordId,
+        public readonly SiteInterface   $site,
+        public readonly IndexTechnology $technology,
+        public readonly IndexType       $type,
+        public readonly int             $indexConfigurationRecordId,
         /** Content data */
-        public int             $language,
-        public string          $title,
-        public string          $content,
-        public int             $pageUid,
-        public array           $accessGroups,
+        public readonly int             $language,
+        public string                   $title,
+        public string                   $content,
+        public readonly int             $pageUid,
+        public readonly array           $accessGroups,
     ) {}
 }

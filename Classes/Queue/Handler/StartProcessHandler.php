@@ -13,8 +13,8 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 final readonly class StartProcessHandler
 {
     public function __construct(
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly SiteFinder               $siteFinder,
+        private EventDispatcherInterface $eventDispatcher,
+        private SiteFinder               $siteFinder,
     ) {}
 
     #[AsMessageHandler]

@@ -7,5 +7,5 @@ services:
   Lochmueller\Index\:
     resource: '../Classes/*'
 
-  Lochmueller\FileExtractor\FileExtractor:
+  Lochmueller\Index\FileExtraction\FileExtractor:
     public: true

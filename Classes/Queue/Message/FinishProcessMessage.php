@@ -7,7 +7,7 @@ namespace Lochmueller\Index\Queue\Message;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 
-final class FinishProcessMessage
+final readonly class FinishProcessMessage
 {
     public function __construct(
         /** Meta information */

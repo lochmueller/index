@@ -81,7 +81,7 @@ class ConfigurationLoader
                     skipNoSearchPages: (bool) $item['skip_no_search_pages'],
                     fileMounts: GeneralUtility::trimExplode(',', $item['file_mounts']),
                     fileTypes: GeneralUtility::trimExplode(',', $item['file_types']),
-                    configurationYaml: $item['configuration'],
+                    configuration: (array) json_decode($item['configuration'], true),
                 );
             }
         }

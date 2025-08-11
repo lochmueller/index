@@ -6,9 +6,8 @@ namespace Lochmueller\Index\Command;
 
 use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Lochmueller\Index\Enums\IndexTechnology;
-use Lochmueller\Index\Indexing\Database\DatabaseIndexing;
-use Lochmueller\Index\Indexing\File\FileIndexing;
-use Lochmueller\Index\Indexing\Frontend\FrontendIndexing;
+use Lochmueller\Index\Indexing\Database\DatabaseIndexingQueue;
+use Lochmueller\Index\Indexing\Frontend\FrontendIndexingQueue;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,8 +15,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-
-// @todo rework the file
 
 #[AsCommand(
     name: 'index:queue',
@@ -28,9 +25,8 @@ class QueueCommand extends Command
     public function __construct(
         private readonly SiteFinder          $siteFinder,
         private readonly ConfigurationLoader $configurationLoader,
-        private readonly FileIndexing        $fileIndexing,
-        private readonly DatabaseIndexing    $databaseIndex,
-        private readonly FrontendIndexing    $frontendIndex,
+        private readonly DatabaseIndexingQueue    $databaseIndex,
+        private readonly FrontendIndexingQueue    $frontendIndex,
     ) {
         parent::__construct();
     }
@@ -67,15 +63,15 @@ class QueueCommand extends Command
     }
 
 
-    private function getRelevantSites(InputInterface $input): array
+    private function getRelevantSites(InputInterface $input): iterable
     {
         $siteIdentifiers = GeneralUtility::trimExplode(',', (string) $input->getOption('limitSiteIdentifiers'), true);
         if (empty($siteIdentifiers)) {
-            return $this->siteFinder->getAllSites();
+            yield from $this->siteFinder->getAllSites();
         }
-        return array_map(function ($siteId) {
-            return $this->siteFinder->getSiteByIdentifier($siteId);
-        }, $siteIdentifiers);
+        foreach ($siteIdentifiers as $siteId) {
+            yield $this->siteFinder->getSiteByIdentifier($siteId);
+        }
     }
 
     private function getLimitedConfigurationUids(InputInterface $input): array

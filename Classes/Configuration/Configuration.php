@@ -15,7 +15,7 @@ class Configuration
         public readonly bool $skipNoSearchPages,
         public readonly array $fileMounts,
         public readonly array $fileTypes,
-        public readonly string $configurationYaml,
+        public readonly array $configuration,
     ) {}
 
 }

@@ -7,7 +7,7 @@ namespace Lochmueller\Index\Queue\Message;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 
-final class StartProcessMessage
+final readonly class StartProcessMessage
 {
     public function __construct(
         public string          $siteIdentifier,

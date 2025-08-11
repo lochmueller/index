@@ -4,17 +4,6 @@ use Lochmueller\Index\Enums\IndexTechnology;
 
 $lll = 'LLL:EXT:index/Resources/Private/Language/locallang.xlf:';
 
-$extractors = [
-    new \Lochmueller\Index\FileExtraction\Extractor\PdfFileExtraction(),
-    new \Lochmueller\Index\FileExtraction\Extractor\WordFileExtraction(),
-    new \Lochmueller\Index\FileExtraction\Extractor\PowerpointFileExtraction(),
-    new \Lochmueller\Index\FileExtraction\Extractor\ExcelFileExtraction(),
-    new \Lochmueller\Index\FileExtraction\Extractor\ImagesFileExtraction(),
-    new \Lochmueller\Index\FileExtraction\Extractor\AudioFileExtraction(),
-    new \Lochmueller\Index\FileExtraction\Extractor\VideosFileExtraction(),
-    new \Lochmueller\Index\FileExtraction\Extractor\ImagesFileExtraction(),
-];
-
 return [
     'ctrl' => [
         'title' => $lll . 'tx_index_domain_model_configuration',
@@ -57,7 +46,8 @@ return [
             'label' => 'Index configuration',
             'description' => 'Configuration of the index process via YAML.',
             'config' => [
-                'type' => 'text',
+                'type' => 'json',
+                'default' => '{}',
             ],
         ],
         'languages' => [
@@ -101,14 +91,7 @@ return [
             'config' => [
                 'type' => 'select',
                 'renderType' => 'selectCheckBox',
-                'items' => array_map(function ($item) {
-                    /** @var $item \Lochmueller\Index\FileExtraction\Extractor\FileExtractionInterface */
-                    return [
-                        'label' => $item->getFileGroupLabel(),
-                        'value' => $item->getFileGroupName(),
-                        'icon' => $item->getFileGroupIconIdentifier(),
-                    ];
-                }, $extractors),
+                'itemsProcFunc' => Lochmueller\Index\FileExtraction\FileExtractor::class . '->getBackendItems',
             ],
         ],
     ],

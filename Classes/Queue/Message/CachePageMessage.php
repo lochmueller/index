@@ -7,7 +7,7 @@ namespace Lochmueller\Index\Queue\Message;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 
-final class CachePageMessage
+final readonly class CachePageMessage
 {
     public function __construct(
         /** Meta information */

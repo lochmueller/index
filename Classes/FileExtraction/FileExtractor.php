@@ -8,7 +8,7 @@ use Lochmueller\Index\FileExtraction\Extractor\FileExtractionInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use TYPO3\CMS\Core\Resource\FileInterface;
 
-class FileExtractor
+readonly class FileExtractor
 {
     public function __construct(
         #[AutowireIterator('index.file_extractor')]
@@ -28,7 +28,7 @@ class FileExtractor
     public function resolveFileTypes(array $fileTypes): array
     {
         $extensions = [];
-        foreach ($this->getExtractors() as $extractor) {
+        foreach ($this->fileExtractor as $extractor) {
             foreach ($fileTypes as $fileType) {
                 if ($extractor->getFileGroupName() === $fileType) {
                     $extensions += $extractor->getFileExtensions();
@@ -39,10 +39,22 @@ class FileExtractor
         return array_unique($extensions);
     }
 
+
+
+    public function getBackendItems(array &$params): void
+    {
+        foreach ($this->getExtractors() as $extractor) {
+            $params['items'][] = [
+                'label' => $extractor->getFileGroupLabel(),
+                'value' => $extractor->getFileGroupName(),
+                'icon' => $extractor->getFileGroupIconIdentifier(),
+            ];
+        }
+    }
     /**
      * @return FileExtractionInterface[]
      */
-    public function getExtractors(): iterable
+    private function getExtractors(): iterable
     {
         yield from $this->fileExtractor;
     }

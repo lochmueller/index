@@ -20,8 +20,8 @@ class ContentIndexing implements IndexingInterface, LoggerAwareInterface
     public function __construct(
         /** @var ContentTypeInterface[] */
         #[AutowireIterator('index.content_type')]
-        protected iterable                 $contentTypes,
-        protected EventDispatcherInterface $eventDispatcher,
+        protected readonly iterable                 $contentTypes,
+        protected readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
     public function getContent(Record $record): ?string

@@ -21,6 +21,40 @@ information to external services.
 Feel free to create an [issue](https://github.com/lochmueller/indexing/issues) if you have some more ideas or found a
 bug.
 
+### Configuration
+
+The traversing configuration of the database and frontend indexing is configured via JSON. This is an example
+configuration for content indexing on the pages (database indexing online). and the url build process for news. Only the
+first extender is executed for every page-
+
+Possible types are:
+
+- content (Lochmueller\Index\Traversing\Extender\Content)
+- news (Lochmueller\Index\Traversing\Extender\News)
+- address (Lochmueller\Index\Traversing\Extender\Address)
+
+```json
+{
+  "extender": [
+    {
+      "type": "news",
+      "limitToPages": [
+        13,
+        392
+      ],
+      "recordStorages": [
+        12,
+        24
+      ],
+      "dropOriginalUri": true
+    },
+    {
+      "type": "content"
+    }
+  ]
+}
+```
+
 ## Developer information
 
 The extension provide a framework for easy indexing pages and files. Use this documentation to get the right information
@@ -41,6 +75,9 @@ process.
 There are additional events to customize the index process:
 
 - **ContentType\HandleContentTypeEvent** - Customize or add the rendering of content for database indexing.
+- **Extractor\CustomExtensionFileExtraction** - Event based file extraction - extensions (if not flexible enough, use
+  the DI tag)
+- **Extractor\CustomFileExtraction** - Event based file extraction (if not flexible enough, use the DI tag)
 
 ### Symfony DI Tags
 

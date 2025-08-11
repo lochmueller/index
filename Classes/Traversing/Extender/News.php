@@ -4,22 +4,30 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Traversing\Extender;
 
+use Lochmueller\Index\Configuration\Configuration;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
+
 class News extends AbstractExtender
 {
-    public function getItems(): iterable
-    {
+    public function getItems(
+        Configuration $configuration,
+        array         $extenderConfiguration,
+        SiteInterface $site,
+        int $pageUid,
+    ): iterable {
+
         // @todo index configuration
         // Type (News, Address)
-        // Index configuration:
-        // yaml? // json
-        // index:
-        //     type: news
-        //     page: 123
-        //     storagePids: 123,1231,324
-        //
-        //      type: file
-        //     storages: 0:templates/(pdf|doc),1:otherpath/(pdf)
 
-        // TODO: Implement getItems() method.
+        yield [
+            'uri' => $site->getRouter()->generateUri(BackendUtility::getRecord('pages', $pageUid)),
+            'pageUid' => $pageUid,
+        ];
+    }
+    public function getName(): string
+    {
+        return 'news';
+        ;
     }
 }

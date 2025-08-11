@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Queue\Message;
 
-final class FileMessage
+final readonly class FileMessage
 {
     public function __construct(
         /** Meta information */

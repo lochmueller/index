@@ -8,7 +8,7 @@ use Lochmueller\Index\Indexing\Cache\CacheIndexingQueue;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
-readonly class AfterCacheableContentIsGeneratedEventListener
+final readonly class AfterCacheableContentIsGeneratedEventListener
 {
     public function __construct(
         private CacheIndexingQueue $cacheIndex,

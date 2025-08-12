@@ -52,7 +52,7 @@ class DatabaseIndexingQueue implements IndexingInterface
             ));
         }
 
-        $this->fileIndexing->fillQueue($configuration);
+        $this->fileIndexing->fillQueue($configuration, $site);
 
         $this->bus->dispatch(new FinishProcessMessage(
             siteIdentifier: $site->getIdentifier(),

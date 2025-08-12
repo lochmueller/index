@@ -47,9 +47,6 @@ Possible types are:
         24
       ],
       "dropOriginalUri": true
-    },
-    {
-      "type": "content"
     }
   ]
 }
@@ -102,3 +99,9 @@ content fetch process out of the files is working.
 
 - EXT:seal - Search Engine Abstraction Layer
 - (more to come - please create an PR to extend this list)
+
+## Open tasks and ideas / @todo
+
+- Add multi language support
+- Add access group restriction support
+- Stop Indexing if there is a new configuration on one level

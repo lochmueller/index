@@ -6,7 +6,7 @@ namespace Lochmueller\Index\Event\Extractor;
 
 use TYPO3\CMS\Core\Resource\FileInterface;
 
-class CustomFileExtraction
+final class CustomFileExtraction
 {
     public function __construct(protected readonly FileInterface $file, public ?string $content = null) {}
 

@@ -12,7 +12,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 
-class LogIndexEventListener implements LoggerAwareInterface
+final class LogIndexEventListener implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 

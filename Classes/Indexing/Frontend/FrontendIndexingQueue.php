@@ -12,6 +12,7 @@ use Lochmueller\Index\Indexing\IndexingInterface;
 use Lochmueller\Index\Queue\Message\FinishProcessMessage;
 use Lochmueller\Index\Queue\Message\FrontendIndexMessage;
 use Lochmueller\Index\Queue\Message\StartProcessMessage;
+use Lochmueller\Index\Traversing\PageTraversing;
 use Symfony\Component\Messenger\MessageBusInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
@@ -19,7 +20,8 @@ readonly class FrontendIndexingQueue implements IndexingInterface
 {
     public function __construct(
         private MessageBusInterface $bus,
-        private FileIndexingQueue        $fileIndexing,
+        private FileIndexingQueue   $fileIndexing,
+        private PageTraversing      $pageTraversing,
         private SiteFinder          $siteFinder,
     ) {}
 
@@ -36,16 +38,20 @@ readonly class FrontendIndexingQueue implements IndexingInterface
             indexProcessId: $id,
         ));
 
-        // @todo use file traversing and
 
-        $this->bus->dispatch(new FrontendIndexMessage(
-            siteIdentifier: $site->getIdentifier(),
-            technology: IndexTechnology::Frontend,
-            type: IndexType::Full,
-            indexConfigurationRecordId: $configuration->configurationId,
-        ));
+        $frontendInformation = $this->pageTraversing->getFrontendInformation($configuration);
+        foreach ($frontendInformation as $info) {
+            $this->bus->dispatch(new FrontendIndexMessage(
+                siteIdentifier: $site->getIdentifier(),
+                technology: IndexTechnology::Frontend,
+                type: IndexType::Full,
+                indexConfigurationRecordId: $configuration->configurationId,
+                uri: $info['uri'],
+                pageUid: $info['pageUid'],
+            ));
+        }
 
-        $this->fileIndexing->fillQueue($configuration);
+        $this->fileIndexing->fillQueue($configuration, $site);
 
         $this->bus->dispatch(new FinishProcessMessage(
             siteIdentifier: $site->getIdentifier(),

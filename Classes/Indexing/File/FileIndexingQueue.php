@@ -13,6 +13,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Messenger\MessageBusInterface;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
 class FileIndexingQueue implements IndexingInterface, LoggerAwareInterface
 {
@@ -26,12 +27,13 @@ class FileIndexingQueue implements IndexingInterface, LoggerAwareInterface
     ) {}
 
 
-    public function fillQueue(Configuration $configuration): void
+    public function fillQueue(Configuration $configuration, SiteInterface $site): void
     {
         $extensions = $this->fileExtractor->resolveFileTypes($configuration->fileTypes);
         foreach ($configuration->fileMounts as $fileMount) {
             foreach ($this->fileTraversing->findFilesInFileMountUidRecursive((int) $fileMount, $extensions) as $file) {
                 $this->bus->dispatch(new FileMessage(
+                    siteIdentifier: $site->getIdentifier(),
                     indexConfigurationRecordId: $configuration->configurationId,
                     fileIdentifier: $file->getCombinedIdentifier(),
                 ));

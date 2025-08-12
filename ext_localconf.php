@@ -37,4 +37,11 @@ if ($environment->getContext()->isDevelopment()) {
             ],
         ],
     ];
+    $GLOBALS['TYPO3_CONF_VARS']['LOG']['Lochmueller']['Index']['writerConfiguration'] = [
+        LogLevel::WARNING => [
+            FileWriter::class => [
+                'logFileInfix' => 'index_error'
+            ],
+        ],
+    ];
 }

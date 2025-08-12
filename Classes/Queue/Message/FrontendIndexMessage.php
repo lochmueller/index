@@ -6,6 +6,7 @@ namespace Lochmueller\Index\Queue\Message;
 
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
+use TYPO3\CMS\Core\Http\Uri;
 
 final readonly class FrontendIndexMessage
 {
@@ -15,6 +16,8 @@ final readonly class FrontendIndexMessage
         public IndexTechnology $technology,
         public IndexType       $type,
         public int             $indexConfigurationRecordId,
+        public Uri $uri,
+        public int $pageUid,
     ) {}
 
 }

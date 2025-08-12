@@ -13,6 +13,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use TYPO3\CMS\Core\Site\SiteFinder;
 
 class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
 {
@@ -22,6 +23,7 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
         private readonly FileTraversing           $fileTraversing,
         private readonly FileExtractor            $fileExtractor,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SiteFinder $siteFinder,
     ) {}
 
 
@@ -30,14 +32,23 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
     {
         $file = $this->fileTraversing->getFileByCompinedIdentifier($message->fileIdentifier);
 
+        $base = [
+            $file->getProperty('title'),
+            $file->getProperty('alternative'),
+            $file->getProperty('description'),
+            $file->getProperty('name'),
+        ];
+
+        $content = implode(' ', $base);
         try {
-            $content = $this->fileExtractor->extract($file);
+            $content .= $this->fileExtractor->extract($file);
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
             return;
         }
 
         $this->eventDispatcher->dispatch(new IndexFileEvent(
+            site: $this->siteFinder->getSiteByIdentifier($message->siteIdentifier),
             indexConfigurationRecordId: $message->indexConfigurationRecordId,
             title: $file->getNameWithoutExtension(),
             content: $content,

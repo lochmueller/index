@@ -31,14 +31,13 @@ readonly class FileExtractor
         foreach ($this->fileExtractor as $extractor) {
             foreach ($fileTypes as $fileType) {
                 if ($extractor->getFileGroupName() === $fileType) {
-                    $extensions += $extractor->getFileExtensions();
+                    $extensions = array_merge($extensions, $extractor->getFileExtensions());
                     continue 2;
                 }
             }
         }
         return array_unique($extensions);
     }
-
 
 
     public function getBackendItems(array &$params): void
@@ -51,6 +50,7 @@ readonly class FileExtractor
             ];
         }
     }
+
     /**
      * @return FileExtractionInterface[]
      */

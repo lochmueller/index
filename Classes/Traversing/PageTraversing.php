@@ -28,7 +28,7 @@ class PageTraversing
         $extenderConfiguration = $configuration->configuration['extender'] ?? [];
         $router = $site->getRouter();
 
-        foreach ($this->getRelevantPageUids($configuration->pageId, 30) as $relevantPageUid) {
+        foreach ($this->getRelevantPageUids($configuration->pageId, 15) as $relevantPageUid) {
 
             foreach ($extenderConfiguration as $item) {
                 $dropOriginalUri = isset($item['dropOriginalUri']) && $item['dropOriginalUri'];

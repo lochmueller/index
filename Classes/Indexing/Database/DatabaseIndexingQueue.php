@@ -41,6 +41,9 @@ class DatabaseIndexingQueue implements IndexingInterface
 
         $frontendInformation = $this->pageTraversing->getFrontendInformation($configuration);
 
+
+        // @todo Keine "externder benutzen" und via CE auflösen
+
         foreach ($frontendInformation as $info) {
             $this->bus->dispatch(new DatabaseIndexMessage(
                 siteIdentifier: $site->getIdentifier(),

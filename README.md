@@ -25,11 +25,10 @@ bug.
 
 The traversing configuration of the database and frontend indexing is configured via JSON. This is an example
 configuration for content indexing on the pages (database indexing online). and the url build process for news. Only the
-first extender is executed for every page-
+first extender is executed for every page.
 
 Possible types are:
 
-- content (Lochmueller\Index\Traversing\Extender\Content)
 - news (Lochmueller\Index\Traversing\Extender\News)
 - address (Lochmueller\Index\Traversing\Extender\Address)
 
@@ -54,7 +53,7 @@ Possible types are:
 
 ## Developer information
 
-The extension provide a framework for easy indexing pages and files. Use this documentation to get the right information
+The extension provides a framework for easy indexing pages and files. Use this documentation to get the right information
 for your extension.
 
 ### Events
@@ -69,6 +68,8 @@ process.
 - **IndexFileEvent** - Index event for files incl. title, content and meta information of one file
 - **EndIndexProcess** - End event incl. meta information like technology, type
 
+- // @todo FIFO
+
 There are additional events to customize the index process:
 
 - **ContentType\HandleContentTypeEvent** - Customize or add the rendering of content for database indexing.
@@ -78,7 +79,7 @@ There are additional events to customize the index process:
 
 ### Symfony DI Tags
 
-There are several Symfony DI tags, that create iteratables for internal functions. You can use this to add your own
+There are several Symfony DI tags, that create iterables for internal functions. You can use this to add your own
 integrations:
 
 - **index.content_type** - Rendering definitions for database indexing.
@@ -90,18 +91,28 @@ integrations:
 All four events are available as webhooks. You can use the webhook functions of the core to move the indexed
 information to external services.
 
+// @todo reactions um eine externe indizierung zuzulassen.
+
 ### File extraction
 
-The file extraction is based on different third party packages. Please taker care to install the packages, that the
+The file extraction is based on different third party packages. Please take care to install the packages, that the
 content fetch process out of the files is working.
+
+// @todo suggest aufnehmen
 
 ## Extension based on EXT:index
 
 - EXT:seal - Search Engine Abstraction Layer
-- (more to come - please create an PR to extend this list)
+- (more to come - please create a PR to extend this list)
 
 ## Open tasks and ideas / @todo
 
 - Add multi language support
 - Add access group restriction support
-- Stop Indexing if there is a new configuration on one level
+- Stop Indexing if there is a new configuration on deeper levels
+- Think about bulk processing of messages
+- Rate limiter for own transport to reduce the load on the server. (Transport auch auf dbal selbe tabelle, dann kann der Integrator wählen)
+- Partial indexing via DataHandler und/oder Events
+  - Configuration "Deep"/"Level"
+- Loggen von Fehlern?
+- ProcessId auch in File & Page aufnehmen

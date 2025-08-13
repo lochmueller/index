@@ -73,6 +73,8 @@ readonly class CacheIndexingQueue implements IndexingInterface
             accessGroups: $this->context->getPropertyFromAspect('frontend.user', 'groupIds', [0, -1]),
         ));
 
+        // @todo execute fil indexing
+
         $this->bus->dispatch(new FinishProcessMessage(
             siteIdentifier: $site->getIdentifier(),
             technology: IndexTechnology::Cache,

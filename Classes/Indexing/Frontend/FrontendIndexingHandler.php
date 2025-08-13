@@ -9,7 +9,6 @@ use Lochmueller\Index\Indexing\IndexingInterface;
 use Lochmueller\Index\Queue\Message\FrontendIndexMessage;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
 readonly class FrontendIndexingHandler implements IndexingInterface
@@ -25,17 +24,12 @@ readonly class FrontendIndexingHandler implements IndexingInterface
     {
         $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
 
-        #var_dump((string)$message->uri);
-        #$result = $this->frontendRequestBuilder->buildRequestForPage($message->uri);
-        #var_dump($result);
-        #die();
+        $content = $this->frontendRequestBuilder->buildRequestForPage($message->uri);
 
         $title = '';
-        $content = '';
-
-        // Fetch <title> && <body>
-        // @todo Execute webrequest and index content
-
+        if (preg_match('/<title>([^>]*)<\/title>/', $content, $matches)) {
+            $title = $matches[1];
+        }
 
         $this->eventDispatcher->dispatch(new IndexPageEvent(
             site: $site,

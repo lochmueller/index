@@ -23,5 +23,9 @@ final class LogIndexEventListener implements LoggerAwareInterface
             'site' => isset($event->site) ? $event->site->getIdentifier() : null,
             'technology' => isset($event->technology) ? $event->technology->value : null,
         ]);
+
+
+
+        // @todo Backend Anischt für chronlogishe Ausführung.
     }
 }

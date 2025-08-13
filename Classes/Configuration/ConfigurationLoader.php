@@ -79,8 +79,8 @@ class ConfigurationLoader
                     pageId: (int) $item['pid'],
                     technology: IndexTechnology::from($item['technology']),
                     skipNoSearchPages: (bool) $item['skip_no_search_pages'],
-                    fileMounts: GeneralUtility::trimExplode(',', $item['file_mounts']),
-                    fileTypes: GeneralUtility::trimExplode(',', $item['file_types']),
+                    fileMounts: GeneralUtility::trimExplode(',', $item['file_mounts'] ?? ''),
+                    fileTypes: GeneralUtility::trimExplode(',', $item['file_types'] ?? ''),
                     configuration: (array) json_decode($item['configuration'], true),
                 );
             }

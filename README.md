@@ -113,5 +113,4 @@ content fetch process out of the files is working.
 - Rate limiter for own transport to reduce the load on the server. (Transport auch auf dbal selbe tabelle, dann kann der
   Integrator wählen)
 - Partial indexing via DataHandler und/oder Events
-    - Configuration "Deep"/"Level"
 - Loggen von Fehlern?

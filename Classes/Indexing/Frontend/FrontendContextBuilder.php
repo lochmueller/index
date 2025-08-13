@@ -51,8 +51,6 @@ class FrontendContextBuilder
 
     private function initializeEnvironmentForNonCliCall(bool $cli): void
     {
-        chdir(Environment::getPublicPath());// @todo remove
-
         Environment::initialize(
             Environment::getContext(),
             $cli,

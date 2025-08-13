@@ -7,6 +7,24 @@
             <trans-unit id="index">
                 <source>Index</source>
             </trans-unit>
+            <trans-unit id="tx_index_domain_model_log">
+                <source>Index log</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_log.index_process_id">
+                <source>Index process ID</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_log.start_time">
+                <source>Start time</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_log.end_time">
+                <source>End time</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_log.pages_counter">
+                <source>Pages counter</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_log.files_counter">
+                <source>Files counter</source>
+            </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration">
                 <source>Index configuration</source>
             </trans-unit>
@@ -15,6 +33,12 @@
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.title.description">
                 <source>Internal title of the index configuration.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.levels">
+                <source>Levels</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.levels.description">
+                <source>The number of levels of the index process. 0 -> only current page.</source>
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.skip_no_search_pages">
                 <source>Skip no search pages</source>
@@ -51,6 +75,9 @@
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.technology.type.frontend">
                 <source>Frontend (like EXT:solr via frontend subrequest)</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.technology.type.external">
+                <source>External (is used by reactions and not by manually configuration!)</source>
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.tab.general">
                 <source>General</source>

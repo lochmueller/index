@@ -18,10 +18,17 @@
   "require": {
     "php": "^8.3",
     "typo3/cms-core": "^13.4",
-    "typo3/cms-extbase": "^13.4"
+    "typo3/cms-reactions": "^13.4",
+    "typo3/cms-webhooks": "^13.4"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.84"
+  },
+  "suggest": {
+    "phpoffice/phpspreadsheet": "For file extraction process of Excel files.",
+    "phpoffice/phppresentation": "For file extraction process of Powerpoint files.",
+    "phpoffice/phpword": "For file extraction process of Word files.",
+    "smalot/pdfparser": "For file extraction process of PDF files."
   },
   "extra": {
     "typo3/cms": {

@@ -32,6 +32,7 @@ readonly class CacheIndexingHandler implements IndexingInterface
             title: $message->title,
             content: $message->content,
             pageUid: $message->pageUid,
+            indexProcessId: $message->indexProcessId,
             accessGroups: $message->accessGroups,
         ));
     }

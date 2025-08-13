@@ -29,7 +29,7 @@ readonly class FrontendIndexingQueue implements IndexingInterface
     {
         $site = $this->siteFinder->getSiteByPageId($configuration->pageId);
 
-        $id = uniqid('cache-index', true);
+        $id = uniqid('frontend-index', true);
         $this->bus->dispatch(new StartProcessMessage(
             siteIdentifier: $site->getIdentifier(),
             technology: IndexTechnology::Frontend,
@@ -48,10 +48,11 @@ readonly class FrontendIndexingQueue implements IndexingInterface
                 indexConfigurationRecordId: $configuration->configurationId,
                 uri: $info['uri'],
                 pageUid: $info['pageUid'],
+                indexProcessId: $id,
             ));
         }
 
-        $this->fileIndexing->fillQueue($configuration, $site);
+        $this->fileIndexing->fillQueue($configuration, $site, $id);
 
         $this->bus->dispatch(new FinishProcessMessage(
             siteIdentifier: $site->getIdentifier(),

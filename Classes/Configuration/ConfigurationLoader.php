@@ -81,7 +81,8 @@ class ConfigurationLoader
                     skipNoSearchPages: (bool) $item['skip_no_search_pages'],
                     fileMounts: GeneralUtility::trimExplode(',', $item['file_mounts'] ?? ''),
                     fileTypes: GeneralUtility::trimExplode(',', $item['file_types'] ?? ''),
-                    configuration: (array) json_decode($item['configuration'], true),
+                    configuration: IndexTechnology::from($item['technology']) === IndexTechnology::Frontend ? (array) json_decode($item['configuration'], true) : [],
+                    levels: (int) $item['levels'],
                 );
             }
         }

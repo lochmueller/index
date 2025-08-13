@@ -21,6 +21,7 @@ final readonly class CachePageMessage
         public string          $content,
         public int             $pageUid,
         public array           $accessGroups,
+        public string $indexProcessId,
     ) {}
 
 }

@@ -29,7 +29,7 @@ class DatabaseIndexingQueue implements IndexingInterface
     {
         $site = $this->siteFinder->getSiteByPageId($configuration->pageId);
 
-        $id = uniqid('cache-index', true);
+        $id = uniqid('database-index', true);
         $this->bus->dispatch(new StartProcessMessage(
             siteIdentifier: $site->getIdentifier(),
             technology: IndexTechnology::Database,
@@ -52,10 +52,11 @@ class DatabaseIndexingQueue implements IndexingInterface
                 indexConfigurationRecordId: $configuration->configurationId,
                 uri: $info['uri'],
                 pageUid: $info['pageUid'],
+                indexProcessId: $id,
             ));
         }
 
-        $this->fileIndexing->fillQueue($configuration, $site);
+        $this->fileIndexing->fillQueue($configuration, $site, $id);
 
         $this->bus->dispatch(new FinishProcessMessage(
             siteIdentifier: $site->getIdentifier(),

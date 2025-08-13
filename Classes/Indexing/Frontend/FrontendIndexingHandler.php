@@ -40,6 +40,7 @@ readonly class FrontendIndexingHandler implements IndexingInterface
             title: $title,
             content: $content,
             pageUid: $message->pageUid,
+            indexProcessId: $message->indexProcessId,
             accessGroups: [],
         ));
     }

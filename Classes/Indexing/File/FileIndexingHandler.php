@@ -52,6 +52,7 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
             indexConfigurationRecordId: $message->indexConfigurationRecordId,
             title: $file->getNameWithoutExtension(),
             content: $content,
+            indexProcessId: $message->indexProcessId,
             fileIdentifier: $message->fileIdentifier,
         ));
     }

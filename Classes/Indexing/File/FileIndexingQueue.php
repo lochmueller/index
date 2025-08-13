@@ -27,7 +27,7 @@ class FileIndexingQueue implements IndexingInterface, LoggerAwareInterface
     ) {}
 
 
-    public function fillQueue(Configuration $configuration, SiteInterface $site): void
+    public function fillQueue(Configuration $configuration, SiteInterface $site, string $indexProcessId): void
     {
         $extensions = $this->fileExtractor->resolveFileTypes($configuration->fileTypes);
         foreach ($configuration->fileMounts as $fileMount) {
@@ -36,6 +36,7 @@ class FileIndexingQueue implements IndexingInterface, LoggerAwareInterface
                     siteIdentifier: $site->getIdentifier(),
                     indexConfigurationRecordId: $configuration->configurationId,
                     fileIdentifier: $file->getCombinedIdentifier(),
+                    indexProcessId: $indexProcessId,
                 ));
             }
         }

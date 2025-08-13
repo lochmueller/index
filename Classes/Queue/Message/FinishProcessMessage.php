@@ -14,7 +14,7 @@ final readonly class FinishProcessMessage
         public string   $siteIdentifier,
         public IndexTechnology $technology,
         public IndexType       $type,
-        public int             $indexConfigurationRecordId,
+        public ?int             $indexConfigurationRecordId,
         public string          $indexProcessId,
     ) {}
 

@@ -18,6 +18,7 @@ final readonly class FrontendIndexMessage
         public int             $indexConfigurationRecordId,
         public Uri $uri,
         public int $pageUid,
+        public string $indexProcessId,
     ) {}
 
 }

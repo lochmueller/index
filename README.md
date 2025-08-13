@@ -53,7 +53,8 @@ Possible types are:
 
 ## Developer information
 
-The extension provides a framework for easy indexing pages and files. Use this documentation to get the right information
+The extension provides a framework for easy indexing pages and files. Use this documentation to get the right
+information
 for your extension.
 
 ### Events
@@ -68,7 +69,9 @@ process.
 - **IndexFileEvent** - Index event for files incl. title, content and meta information of one file
 - **EndIndexProcess** - End event incl. meta information like technology, type
 
-- // @todo FIFO
+*Please keep in mind, that the events are pushed directly after another into the message bus. If there are any reasons
+that the
+FIFO is not consistent, we cannot guarantee that the events (especially Start and Finish) are in the right order*
 
 There are additional events to customize the index process:
 
@@ -86,19 +89,16 @@ integrations:
 - **index.file_extractor** - Extract content from files in the index process.
 - **index.extender** - Extend the URI queue in the Page traversing.
 
-### Webhooks
+### Webhooks / Reactions
 
 All four events are available as webhooks. You can use the webhook functions of the core to move the indexed
-information to external services.
-
-// @todo reactions um eine externe indizierung zuzulassen.
+information to external services. It is also possible to add external resources to the internal index process. There are
+two reactions that create indexed pages and files. Feel free to connection instances ;)
 
 ### File extraction
 
 The file extraction is based on different third party packages. Please take care to install the packages, that the
 content fetch process out of the files is working.
-
-// @todo suggest aufnehmen
 
 ## Extension based on EXT:index
 
@@ -110,9 +110,8 @@ content fetch process out of the files is working.
 - Add multi language support
 - Add access group restriction support
 - Stop Indexing if there is a new configuration on deeper levels
-- Think about bulk processing of messages
-- Rate limiter for own transport to reduce the load on the server. (Transport auch auf dbal selbe tabelle, dann kann der Integrator wählen)
+- Rate limiter for own transport to reduce the load on the server. (Transport auch auf dbal selbe tabelle, dann kann der
+  Integrator wählen)
 - Partial indexing via DataHandler und/oder Events
-  - Configuration "Deep"/"Level"
+    - Configuration "Deep"/"Level"
 - Loggen von Fehlern?
-- ProcessId auch in File & Page aufnehmen

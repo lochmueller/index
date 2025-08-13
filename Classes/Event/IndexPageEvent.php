@@ -16,6 +16,7 @@ final class IndexPageEvent
         public readonly IndexTechnology $technology,
         public readonly IndexType       $type,
         public readonly int             $indexConfigurationRecordId,
+        public string          $indexProcessId,
         /** Content data */
         public readonly int             $language,
         public string                   $title,

@@ -55,6 +55,7 @@ class DatabaseIndexingHandler implements IndexingInterface
             title: $title,
             content: $mainContent,
             pageUid: $message->pageUid,
+            indexProcessId: $message->indexProcessId,
             accessGroups: $accessGroups,
         ));
     }

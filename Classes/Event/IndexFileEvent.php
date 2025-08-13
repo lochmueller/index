@@ -12,6 +12,7 @@ final class IndexFileEvent
         /** Meta information */
         public readonly SiteInterface   $site,
         public readonly int    $indexConfigurationRecordId,
+        public string          $indexProcessId,
         /** Content data */
         public string $title,
         public string $content,

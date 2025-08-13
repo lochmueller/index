@@ -12,6 +12,7 @@ final readonly class FileMessage
         public int             $indexConfigurationRecordId,
         /** Content data */
         public string          $fileIdentifier,
+        public string $indexProcessId,
     ) {}
 
 }

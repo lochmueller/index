@@ -13,7 +13,7 @@ final readonly class StartProcessMessage
         public string          $siteIdentifier,
         public IndexTechnology $technology,
         public IndexType       $type,
-        public int             $indexConfigurationRecordId,
+        public ?int            $indexConfigurationRecordId,
         public string          $indexProcessId,
     ) {}
 

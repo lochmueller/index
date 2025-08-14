@@ -1,7 +1,7 @@
 {
   "name": "lochmueller/index",
   "type": "typo3-cms-extension",
-  "description": "Index - Smart and flexible indexing of pages and documents for e.h. search engines or AI provider",
+  "description": "Index - Smart and flexible async indexing of pages and documents for e.g. search engines or AI provider",
   "license": "GPL-2.0-or-later",
   "keywords": [
     "typo3",

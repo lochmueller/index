@@ -34,6 +34,21 @@
             <trans-unit id="tx_index_domain_model_configuration.title.description">
                 <source>Internal title of the index configuration.</source>
             </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.partial_indexing">
+                <source>Partial indexing</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.partial_indexing.description">
+                <source>Trigger partial indexing on selected backend actions to keep the index up2date.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.partial_indexing.type.datamap">
+                <source>Datahandler datamap manipulations.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.partial_indexing.type.cmdmap">
+                <source>Datahandler cmdmap executions.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.partial_indexing.type.clearcache">
+                <source>Datahandler clearcache executions.</source>
+            </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.levels">
                 <source>Levels</source>
             </trans-unit>

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Reaction;
 
+use Lochmueller\Index\Queue\Bus;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 abstract class AbstractIndexExternalReaction
 {
     public function __construct(
-        protected readonly MessageBusInterface    $bus,
+        protected readonly Bus    $bus,
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly StreamFactoryInterface   $streamFactory,
     ) {}

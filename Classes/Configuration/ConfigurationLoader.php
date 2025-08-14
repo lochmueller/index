@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Configuration;
 
-use Lochmueller\Index\Enums\IndexTechnology;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\RootlineUtility;
@@ -69,21 +69,14 @@ class ConfigurationLoader
         if (self::$runtimeConfigurationCache === null) {
             self::$runtimeConfigurationCache = [];
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_index_domain_model_configuration');
+            $queryBuilder->getRestrictions()->removeAll();
+            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
             $result = $queryBuilder->select('*')
                 ->from('tx_index_domain_model_configuration')
                 ->executeQuery();
 
             foreach ($result->iterateAssociative() as $item) {
-                self::$runtimeConfigurationCache[(int) $item['uid']] = new Configuration(
-                    configurationId: (int) $item['uid'],
-                    pageId: (int) $item['pid'],
-                    technology: IndexTechnology::from($item['technology']),
-                    skipNoSearchPages: (bool) $item['skip_no_search_pages'],
-                    fileMounts: GeneralUtility::trimExplode(',', $item['file_mounts'] ?? ''),
-                    fileTypes: GeneralUtility::trimExplode(',', $item['file_types'] ?? ''),
-                    configuration: IndexTechnology::from($item['technology']) === IndexTechnology::Frontend ? (array) json_decode($item['configuration'], true) : [],
-                    levels: (int) $item['levels'],
-                );
+                self::$runtimeConfigurationCache[(int) $item['uid']] = Configuration::createByDatabaseRow($item);
             }
         }
     }

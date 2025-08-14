@@ -1,27 +1,14 @@
 <?php
 
-use Lochmueller\Index\Queue\Message\CachePageMessage;
-use Lochmueller\Index\Queue\Message\DatabaseIndexMessage;
-use Lochmueller\Index\Queue\Message\FileMessage;
-use Lochmueller\Index\Queue\Message\FinishProcessMessage;
-use Lochmueller\Index\Queue\Message\StartProcessMessage;
-use Lochmueller\Index\Queue\Message\FrontendIndexMessage;
+use Lochmueller\Index\Hooks\DataHandlerUpdateHook;
 use Psr\Log\LogLevel;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Log\Writer\Enum\Interval;
-use TYPO3\CMS\Core\Log\Writer\FileWriter;
 use TYPO3\CMS\Core\Log\Writer\RotatingFileWriter;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-// $GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][CachePageMessage::class] = 'doctrine';
-// $GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][DatabaseIndexMessage::class] = 'doctrine';
-// $GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][FileMessage::class] = 'doctrine';
-// $GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][FinishProcessMessage::class] = 'doctrine';
-// $GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][FrontendIndexMessage::class] = 'doctrine';
-// $GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing'][StartProcessMessage::class] = 'doctrine';
-
-// @see https://forge.typo3.org/issues/101699
-// unset($GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing']['*']);
+// @see Bus class and https://forge.typo3.org/issues/101699
+// $GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing']['Lochmueller\\Index\\Queue\\Message\\*'] = 'index';
 
 /** @var Environment $context */
 $environment = GeneralUtility::makeInstance(Environment::class);
@@ -32,7 +19,11 @@ $GLOBALS['TYPO3_CONF_VARS']['LOG']['Lochmueller']['Index']['writerConfiguration'
         RotatingFileWriter::class => [
             'interval' => Interval::DAILY,
             'maxFiles' => 5,
-            'logFileInfix' => 'index'
+            'logFileInfix' => 'index',
         ],
     ],
 ];
+
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['ext:index'] = DataHandlerUpdateHook::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass']['ext:index'] = DataHandlerUpdateHook::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['clearPageCacheEval']['ext:index'] = DataHandlerUpdateHook::class . '->clearCacheCmd';

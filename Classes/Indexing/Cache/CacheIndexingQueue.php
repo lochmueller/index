@@ -9,10 +9,10 @@ use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Indexing\File\FileIndexingQueue;
 use Lochmueller\Index\Indexing\IndexingInterface;
+use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\CachePageMessage;
 use Lochmueller\Index\Queue\Message\FinishProcessMessage;
 use Lochmueller\Index\Queue\Message\StartProcessMessage;
-use Symfony\Component\Messenger\MessageBusInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
 use TYPO3\CMS\Core\Site\Entity\Site;
@@ -21,7 +21,7 @@ use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 readonly class CacheIndexingQueue implements IndexingInterface
 {
     public function __construct(
-        private MessageBusInterface      $bus,
+        private Bus      $bus,
         private Context                  $context,
         private PageTitleProviderManager $pageTitleProviderManager,
         private ConfigurationLoader    $configurationLoader,

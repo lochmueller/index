@@ -7,12 +7,12 @@ namespace Lochmueller\Index\Indexing\File;
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\FileExtraction\FileExtractor;
 use Lochmueller\Index\Indexing\IndexingInterface;
+use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\FileMessage;
 use Lochmueller\Index\Traversing\FileTraversing;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use Symfony\Component\Messenger\MessageBusInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
 class FileIndexingQueue implements IndexingInterface, LoggerAwareInterface
@@ -22,7 +22,7 @@ class FileIndexingQueue implements IndexingInterface, LoggerAwareInterface
     public function __construct(
         private readonly FileTraversing           $fileTraversing,
         private readonly FileExtractor            $fileExtractor,
-        private readonly MessageBusInterface      $bus,
+        private readonly Bus      $bus,
         private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 

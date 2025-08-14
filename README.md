@@ -1,8 +1,8 @@
 # EXT:index
 
-EXT:index is a TYPO3 Index framework to handle the content generation of a TYPO3 website related to different index
+EXT:index is a TYPO3 indexing framework to handle the content generation of a TYPO3 website related to different index
 configurations. This could be used for search engine fill-up processes or other content engines that need the generated
-content of typo3 pages and files. To sped up the indexing the TYPO3 internal message bus is used.
+content of typo3 pages and files (AI provider). To sped up the indexing the TYPO3 internal message bus is used.
 
 You can use the PSR-14 Events to get the index information or the webhook functions of the core, to move the indexed
 information to external services.
@@ -12,7 +12,7 @@ information to external services.
 1. Run `composer require lochmueller/index`
 2. Create at least two scheduler task and take care that the scheduler is executed:
     - `index:queue` (example: every two days in midnight) fill up the message queue with the indexed pages
-    - `messenger:consume doctrine` (base on
+    - `messenger:consume index` (base on
       the [documentation](https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/MessageBus/Index.html#message-bus-consume-command))
       to handle the index processes of the queue.
 3. Create index configurations on pages (example: on the root page of your site)
@@ -109,8 +109,4 @@ content fetch process out of the files is working.
 
 - Add multi language support
 - Add access group restriction support
-- Stop Indexing if there is a new configuration on deeper levels
-- Rate limiter for own transport to reduce the load on the server. (Transport auch auf dbal selbe tabelle, dann kann der
-  Integrator wählen)
-- Partial indexing via DataHandler und/oder Events
-- Loggen von Fehlern?
+- All @todo annotations in the code

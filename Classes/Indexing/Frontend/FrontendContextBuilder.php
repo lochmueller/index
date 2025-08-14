@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Frontend;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Authentication\AbstractUserAuthentication;
 use TYPO3\CMS\Core\Core\Environment;
 
-class FrontendContextBuilder
+class FrontendContextBuilder implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     protected bool $isCliRequest = false;
     private ?AbstractUserAuthentication $originalUser = null;
 
@@ -24,9 +28,10 @@ class FrontendContextBuilder
             $result = $callback();
             $this->restore();
             return $result;
-        } catch (\Throwable $e) {
+        } catch (\Exception $exception) {
             $this->restore();
-            throw $e;
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            throw $exception;
         }
     }
 

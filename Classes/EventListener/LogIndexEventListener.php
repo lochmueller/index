@@ -11,6 +11,7 @@ use Lochmueller\Index\Event\StartIndexProcessEvent;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -48,6 +49,7 @@ final class LogIndexEventListener implements LoggerAwareInterface
             $record['start_time'] = (int) $event->startTime;
         } elseif ($event instanceof FinishIndexProcessEvent) {
             $record['end_time'] = (int) $event->endTime;
+            $this->deleteOldEntries();
         } elseif ($event instanceof IndexPageEvent) {
             $record['pages_counter'] = ((int) $record['pages_counter']) + 1;
         } elseif ($event instanceof IndexFileEvent) {
@@ -58,6 +60,16 @@ final class LogIndexEventListener implements LoggerAwareInterface
             $connection->insert('tx_index_domain_model_log', $record);
         } else {
             $connection->update('tx_index_domain_model_log', $record, ['index_process_id' => $event->indexProcessId]);
+        }
+    }
+
+    protected function deleteOldEntries(): void
+    {
+        $extensionConfiguration = (new ExtensionConfiguration())->get('index');
+        $keepIndexLogEntriesDays = isset($extensionConfiguration['keepIndexLogEntriesDays']) ? (int) $extensionConfiguration['keepIndexLogEntriesDays'] : 14;
+        if ($keepIndexLogEntriesDays) {
+            $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_index_domain_model_log');
+            $connection->executeQuery('DELETE FROM tx_index_domain_model_log WHERE start_time < ' . (time() - $keepIndexLogEntriesDays * 86400));
         }
     }
 }

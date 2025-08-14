@@ -1,0 +1,2 @@
+# cat=General; type=int; label=Keep index log entries days: The amount of days to keep the index log entries. Older entries will be removed. 0 means no limit.
+keepIndexLogEntriesDays=14

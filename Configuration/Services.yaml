@@ -7,5 +7,27 @@ services:
   Lochmueller\Index\:
     resource: '../Classes/*'
 
-  Lochmueller\Index\FileExtraction\FileExtractor:
-    public: true
+  messenger.transport.index:
+    factory: [ '@TYPO3\CMS\Core\Messenger\DoctrineTransportFactory', 'createTransport' ]
+    class: 'Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransport'
+    arguments:
+      $options:
+        queue_name: 'index'
+    tags:
+      - name: 'messenger.sender'
+        identifier: 'index'
+      - name: 'messenger.receiver'
+        identifier: 'index'
+
+  messenger.rate_limiter.index:
+    class: 'Symfony\Component\RateLimiter\RateLimiterFactory'
+    arguments:
+      $config:
+        id: 'index'
+        policy: 'sliding_window'
+        limit: 60
+        interval: '1 minute'
+      $storage: '@TYPO3\CMS\Core\RateLimiter\Storage\CachingFrameworkStorage'
+    tags:
+      - name: 'messenger.rate_limiter'
+        identifier: 'index'

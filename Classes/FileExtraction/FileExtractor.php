@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Lochmueller\Index\FileExtraction;
 
 use Lochmueller\Index\FileExtraction\Extractor\FileExtractionInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use TYPO3\CMS\Core\Resource\FileInterface;
 
+#[Autoconfigure(public: true)]
 readonly class FileExtractor
 {
     public function __construct(

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lochmueller\Index\Traversing;
 
 use Lochmueller\Index\Configuration\Configuration;
+use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\Connection;
@@ -17,9 +18,10 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class PageTraversing
 {
     public function __construct(
-        private SiteFinder $siteFinder,
+        private SiteFinder            $siteFinder,
         #[AutowireIterator('index.extender')]
-        protected iterable $extender,
+        protected iterable            $extender,
+        protected ConfigurationLoader $configurationLoader,
     ) {}
 
     public function getFrontendInformation(Configuration $configuration): iterable
@@ -28,7 +30,7 @@ class PageTraversing
         $extenderConfiguration = $configuration->configuration['extender'] ?? [];
         $router = $site->getRouter();
 
-        foreach ($this->getRelevantPageUids($configuration->pageId, $configuration->levels) as $relevantPageUid) {
+        foreach ($this->getRelevantPageUids($configuration) as $relevantPageUid) {
             foreach ($extenderConfiguration as $item) {
                 $dropOriginalUri = isset($item['dropOriginalUri']) && $item['dropOriginalUri'];
                 if (!isset($item['limitToPages']) || (isset($item['limitToPages']) && is_array($item['limitToPages']) && in_array($relevantPageUid, $item['limitToPages'], true))) {
@@ -53,8 +55,20 @@ class PageTraversing
         }
     }
 
-    protected function getRelevantPageUids(int $id, int $depth): iterable
+    protected function getRelevantPageUids(Configuration $configuration, ?int $id = null, ?int $depth = null): iterable
     {
+        if ($id === null) {
+            $id = $configuration->pageId;
+        }
+        if ($depth === null) {
+            $depth = $configuration->levels;
+        }
+
+        $pageConfiguration = $this->configurationLoader->loadByPage($id);
+        if ($pageConfiguration instanceof Configuration && $pageConfiguration->configurationId !== $configuration->configurationId) {
+            // Stop traversing on new configurations
+            return;
+        }
         yield $id;
         if ($id && $depth > 0) {
             /** @var QueryBuilder $queryBuilder */
@@ -71,7 +85,7 @@ class PageTraversing
 
             $statement = $queryBuilder->executeQuery();
             foreach ($statement->iterateAssociative() as $row) {
-                yield from $this->getRelevantPageUids($row['uid'], $depth - 1);
+                yield from $this->getRelevantPageUids($configuration, (int) $row['uid'], $depth - 1);
             }
         }
     }

@@ -42,8 +42,8 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
         $content = implode(' ', $base);
         try {
             $content .= $this->fileExtractor->extract($file);
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
+        } catch (\Exception $exception) {
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             return;
         }
 

@@ -1,5 +1,6 @@
 <?php
 
+use Lochmueller\Index\Enums\IndexPartialTrigger;
 use Lochmueller\Index\Enums\IndexTechnology;
 
 $lll = 'LLL:EXT:index/Resources/Private/Language/locallang.xlf:';
@@ -39,7 +40,23 @@ return [
                         'label' => $lll . 'tx_index_domain_model_configuration.technology.type.' . $enum->value,
                         'value' => $enum->value,
                     ];
-                }, IndexTechnology::cases()),
+                }, array_filter(IndexTechnology::cases(), function ($item) {
+                    return $item !== IndexTechnology::External;
+                })),
+            ],
+        ],
+        'partial_indexing' => [
+            'label' => $lll . 'tx_index_domain_model_configuration.partial_indexing',
+            'description' => $lll . 'tx_index_domain_model_configuration.partial_indexing.description',
+            'config' => [
+                'type' => 'select',
+                'renderType' => 'selectCheckBox',
+                'items' => array_map(function ($enum) use ($lll) {
+                    return [
+                        'label' => $lll . 'tx_index_domain_model_configuration.partial_indexing.type.' .$enum->value,
+                        'value' => $enum->value,
+                    ];
+                }, IndexPartialTrigger::cases()),
             ],
         ],
         'configuration' => [
@@ -50,14 +67,14 @@ return [
                 'default' => '{}',
             ],
         ],
-        'languages' => [
+        'languages' => [ // @todo integrate
             'exclude' => 0,
             'title' => $lll . 'tx_index_domain_model_index_page.languages',
             'config' => [
                 'type' => 'languages',
             ],
         ],
-        'tags' => [
+        'tags' => [ // @todo integrate
             'exclude' => 0,
             'title' => $lll . 'tx_index_domain_model_index_page.tags',
             'config' => [
@@ -118,19 +135,16 @@ return [
         IndexTechnology::Database->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,skip_no_search_pages,levels,
+                    technology,skip_no_search_pages,levels,partial_indexing,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types
                     '],
         IndexTechnology::Frontend->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,skip_no_search_pages,levels,configuration,
+                    technology,skip_no_search_pages,levels,configuration,partial_indexing,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types
                     '],
-    ],
-    'palettes' => [
-        '1' => ['showitem' => ''],
     ],
 ];

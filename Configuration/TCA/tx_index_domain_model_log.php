@@ -1,6 +1,7 @@
 <?php
 
-use Lochmueller\Index\Enums\IndexTechnology;
+declare(strict_types=1);
+
 
 $lll = 'LLL:EXT:index/Resources/Private/Language/locallang.xlf:';
 
@@ -62,7 +63,7 @@ return [
         ],
     ],
     'types' => [
-        '0' => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
+        '0' => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     index_process_id, start_time, end_time, pages_counter, files_counter'],
     ],
 ];

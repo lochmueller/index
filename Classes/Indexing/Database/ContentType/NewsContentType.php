@@ -21,6 +21,14 @@ class NewsContentType implements ContentTypeInterface
 
     public function getContent(Record $record): string
     {
+        /** @var \TYPO3\CMS\Core\Domain\FlexFormFieldValues $flexFormConfiguration */
+        $flexFormConfiguration = $record->get('pi_flexform');
+
+        // $settings = $flexFormConfiguration->get('sDEF')->get('settings');
+
+        #var_dump($settings->get('startingpoint'));
+        #var_dump($record->getUid());
+        #var_dump('Call');
         // @todo implement DB resolving
         return 'Dummy';
     }

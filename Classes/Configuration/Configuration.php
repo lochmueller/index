@@ -20,6 +20,7 @@ class Configuration
         public readonly array           $fileTypes,
         public readonly array           $configuration,
         public readonly array            $partialIndexing,
+        public readonly array            $languages,
         public ?IndexType               $overrideIndexType = null,
     ) {}
 
@@ -35,6 +36,7 @@ class Configuration
             configuration: IndexTechnology::from($row['technology']) === IndexTechnology::Frontend ? (array) json_decode($row['configuration'], true) : [],
             levels: (int) $row['levels'],
             partialIndexing: GeneralUtility::trimExplode(',', $row['partial_indexing'] ?? '', true),
+            languages: GeneralUtility::intExplode(',', $row['languages'] ?? '', true),
         );
     }
 

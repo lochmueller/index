@@ -19,7 +19,12 @@ class Bus
 
     public function dispatch(object $message): void
     {
-        $this->bus->dispatch(new Envelope($message)->with(new TransportNamesStamp(['index'])));
+        $transport = $GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing']['Lochmueller\\Index\\Queue\\Message\\*'] ?? null;
+        if ($transport) {
+            $this->bus->dispatch(new Envelope($message)->with(new TransportNamesStamp([$transport])));
+        } else {
+            $this->bus->dispatch($message);
+        }
     }
 
 }

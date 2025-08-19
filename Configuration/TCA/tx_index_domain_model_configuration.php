@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Lochmueller\Index\Enums\IndexPartialTrigger;
 use Lochmueller\Index\Enums\IndexTechnology;
 
@@ -53,7 +55,7 @@ return [
                 'renderType' => 'selectCheckBox',
                 'items' => array_map(function ($enum) use ($lll) {
                     return [
-                        'label' => $lll . 'tx_index_domain_model_configuration.partial_indexing.type.' .$enum->value,
+                        'label' => $lll . 'tx_index_domain_model_configuration.partial_indexing.type.' . $enum->value,
                         'value' => $enum->value,
                     ];
                 }, IndexPartialTrigger::cases()),
@@ -67,18 +69,14 @@ return [
                 'default' => '{}',
             ],
         ],
-        'languages' => [ // @todo integrate
+        'languages' => [
             'exclude' => 0,
-            'title' => $lll . 'tx_index_domain_model_index_page.languages',
+            'label' => $lll . 'tx_index_domain_model_configuration.languages',
+            'description' => $lll . 'tx_index_domain_model_configuration.languages.description',
             'config' => [
-                'type' => 'languages',
-            ],
-        ],
-        'tags' => [ // @todo integrate
-            'exclude' => 0,
-            'title' => $lll . 'tx_index_domain_model_index_page.tags',
-            'config' => [
-                'type' => 'text',
+                'type' => 'select',
+                'renderType' => 'selectCheckBox',
+                'itemsProcFunc' => Lochmueller\Index\Backend\TcaSelection::class . '->countrySelection',
             ],
         ],
         'skip_no_search_pages' => [
@@ -122,27 +120,27 @@ return [
         ],
     ],
     'types' => [
-        IndexTechnology::None->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
+        IndexTechnology::None->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
                     technology'],
-        IndexTechnology::Cache->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
+        IndexTechnology::Cache->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,skip_no_search_pages,levels,
+                    technology,languages,skip_no_search_pages,levels,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types'],
-        IndexTechnology::Database->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
+        IndexTechnology::Database->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,skip_no_search_pages,levels,partial_indexing,
+                    technology,languages,skip_no_search_pages,levels,partial_indexing,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types
                     '],
-        IndexTechnology::Frontend->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general, 
+        IndexTechnology::Frontend->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,skip_no_search_pages,levels,configuration,partial_indexing,
+                    technology,languages,skip_no_search_pages,levels,configuration,partial_indexing,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types
                     '],

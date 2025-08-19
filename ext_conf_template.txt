@@ -1,2 +1,5 @@
 # cat=General; type=int; label=Keep index log entries days: The amount of days to keep the index log entries. Older entries will be removed. 0 means no limit.
 keepIndexLogEntriesDays=14
+
+# cat=General; type=boolean; label=Default transport in Development context: Send all messages via sync/default transport in the development environment
+defaultTransportInDevelopmentContext=0

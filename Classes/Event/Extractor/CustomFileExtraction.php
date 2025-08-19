@@ -8,6 +8,10 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 
 final class CustomFileExtraction
 {
-    public function __construct(protected readonly FileInterface $file, public ?string $content = null) {}
+    public function __construct(
+        protected readonly ?FileInterface $file = null,
+        public ?string $content = null,
+        public array $extensions = [],
+    ) {}
 
 }

@@ -11,7 +11,6 @@ use Lochmueller\Index\Queue\Message\DatabaseIndexMessage;
 use Lochmueller\Index\Traversing\RecordSelection;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
@@ -22,7 +21,7 @@ class DatabaseIndexingHandler implements IndexingInterface
         private ContentIndexing                   $contentIndexing,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly RecordSelection          $recordSelection,
-        private readonly ConfigurationLoader $configurationLoader,
+        private readonly ConfigurationLoader      $configurationLoader,
     ) {}
 
     #[AsMessageHandler]
@@ -32,17 +31,16 @@ class DatabaseIndexingHandler implements IndexingInterface
         $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
 
         $configuration = $this->configurationLoader->loadByUid($message->indexConfigurationRecordId);
-        $pageRow = BackendUtility::getRecord('pages', $message->pageUid);
+        $pageRow = $this->recordSelection->findPage($message->pageUid, $message->language);
         if ($configuration->skipNoSearchPages && $pageRow['no_search'] ?? false) {
             return;
         }
 
         $title = $pageRow['title'] . ' | ' . $site->getAttribute('websiteTitle');
-        $language = 0;
         $accessGroups = [];
 
         $mainContent = '';
-        foreach ($this->recordSelection->findRecordsOnPage('tt_content', [$message->pageUid]) as $record) {
+        foreach ($this->recordSelection->findRecordsOnPage('tt_content', [$message->pageUid], $message->language) as $record) {
             $mainContent .= $this->contentIndexing->getContent($record);
         }
 
@@ -51,7 +49,7 @@ class DatabaseIndexingHandler implements IndexingInterface
             technology: $message->technology,
             type: $message->type,
             indexConfigurationRecordId: $message->indexConfigurationRecordId,
-            language: $language,
+            language: $message->language,
             title: $title,
             content: $mainContent,
             pageUid: $message->pageUid,

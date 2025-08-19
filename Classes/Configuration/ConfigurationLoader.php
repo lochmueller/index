@@ -25,6 +25,7 @@ class ConfigurationLoader
 
         return null;
     }
+
     public function loadByPageTraversing(int $pageUid): ?Configuration
     {
         $this->preloadConfigurations();
@@ -56,6 +57,21 @@ class ConfigurationLoader
     public function loadBySite(SiteInterface $site): ?Configuration
     {
         return $this->loadByPage($site->getRootPageId());
+    }
+
+    public function loadAllBySite(SiteInterface $site): iterable
+    {
+        $this->preloadConfigurations();
+        $rootPageId = $site->getRootPageId();
+        foreach (self::$runtimeConfigurationCache as $configuration) {
+            $rootLineUtility = GeneralUtility::makeInstance(RootlineUtility::class, $configuration->pageId);
+            $rootLineIds = array_map(function ($entry) {
+                return $entry['uid'];
+            }, $rootLineUtility->get());
+            if (in_array($rootPageId, $rootLineIds)) {
+                yield $configuration;
+            }
+        }
     }
 
     public function getAll(): array

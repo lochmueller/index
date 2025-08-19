@@ -18,15 +18,15 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 #[AsCommand(
     name: 'index:queue',
-    description: 'Add the right entries to the message queue to trigger the index process of the different configurations',
+    description: 'Add the right entries to the message queue to trigger the index process of the different configurations.',
 )]
 class QueueCommand extends Command
 {
     public function __construct(
-        private readonly SiteFinder          $siteFinder,
-        private readonly ConfigurationLoader $configurationLoader,
-        private readonly DatabaseIndexingQueue    $databaseIndex,
-        private readonly FrontendIndexingQueue    $frontendIndex,
+        private readonly SiteFinder            $siteFinder,
+        private readonly ConfigurationLoader   $configurationLoader,
+        private readonly DatabaseIndexingQueue $databaseIndex,
+        private readonly FrontendIndexingQueue $frontendIndex,
     ) {
         parent::__construct();
     }
@@ -39,19 +39,7 @@ class QueueCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $configurations = $this->getLimitedConfigurationUids($input);
-        if (empty($configurations)) {
-            $sites = $this->getRelevantSites($input);
-            foreach ($sites as $site) {
-                $siteConfig = $this->configurationLoader->loadBySite($site);
-                if ($siteConfig) {
-                    $configurations[] = $siteConfig;
-                }
-            }
-        }
-
-        foreach ($configurations as $configurationUid) {
-            $configuration = is_int($configurationUid) ? $this->configurationLoader->loadByUid($configurationUid) : $configurationUid;
+        foreach ($this->getConfigurations($input) as $configuration) {
             if ($configuration->technology === IndexTechnology::Database) {
                 $this->databaseIndex->fillQueue($configuration);
             } elseif ($configuration->technology === IndexTechnology::Frontend) {
@@ -60,6 +48,22 @@ class QueueCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    protected function getConfigurations(InputInterface $input): iterable
+    {
+        $configurations = $this->getLimitedConfigurationUids($input);
+        if (!empty($configurations)) {
+            foreach ($configurations as $uid) {
+                yield $this->configurationLoader->loadByUid($uid);
+            }
+            return;
+        }
+
+        $sites = $this->getRelevantSites($input);
+        foreach ($sites as $site) {
+            yield from $this->configurationLoader->loadAllBySite($site);
+        }
     }
 
 

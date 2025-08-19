@@ -21,10 +21,10 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 readonly class FrontendIndexingQueue implements IndexingInterface
 {
     public function __construct(
-        private Bus $bus,
-        private FileIndexingQueue   $fileIndexing,
-        private PageTraversing      $pageTraversing,
-        private SiteFinder          $siteFinder,
+        private Bus               $bus,
+        private FileIndexingQueue $fileIndexing,
+        private PageTraversing    $pageTraversing,
+        private SiteFinder        $siteFinder,
     ) {}
 
     public function fillQueue(Configuration $configuration, bool $skipFiles = false): void
@@ -41,7 +41,6 @@ readonly class FrontendIndexingQueue implements IndexingInterface
             indexConfigurationRecordId: $configuration->configurationId,
             indexProcessId: $id,
         ));
-
 
         $frontendInformation = $this->pageTraversing->getFrontendInformation($configuration);
         foreach ($frontendInformation as $info) {

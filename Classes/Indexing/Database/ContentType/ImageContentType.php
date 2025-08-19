@@ -30,6 +30,6 @@ class ImageContentType implements ContentTypeInterface
             $result[] = $image->getDescription();
         }
 
-        return '<div>' . implode(' ', $result) . '</div>';
+        return '<div>' . $this->headerContentType->getContent($record) . ' - ' . implode(' ', $result) . '</div>';
     }
 }

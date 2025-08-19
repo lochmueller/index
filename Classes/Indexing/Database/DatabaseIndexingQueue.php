@@ -44,10 +44,6 @@ class DatabaseIndexingQueue implements IndexingInterface
 
 
         $frontendInformation = $this->pageTraversing->getFrontendInformation($configuration);
-
-
-        // @todo Keine "externder benutzen" und via CE auflösen
-
         foreach ($frontendInformation as $info) {
             $this->bus->dispatch(new DatabaseIndexMessage(
                 siteIdentifier: $site->getIdentifier(),
@@ -56,10 +52,10 @@ class DatabaseIndexingQueue implements IndexingInterface
                 indexConfigurationRecordId: $configuration->configurationId,
                 uri: $info['uri'],
                 pageUid: $info['pageUid'],
+                language: $info['language']->getLanguageId(),
                 indexProcessId: $id,
             ));
         }
-
 
         if (!$skipFiles) {
             $this->fileIndexing->fillQueue($configuration, $site, $id);

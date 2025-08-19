@@ -28,6 +28,6 @@ class MediaContentType implements ContentTypeInterface
             $result[] = $media->getDescription();
         }
 
-        return '<div>' . implode(' ', $result) . '</div>';
+        return '<div>' . $this->headerContentType->getContent($record) . ' - ' . implode(' ', $result) . '</div>';
     }
 }

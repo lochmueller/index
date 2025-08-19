@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+// @todo Add access group restriction support
 class PageTraversing
 {
     public function __construct(
@@ -22,6 +23,7 @@ class PageTraversing
         #[AutowireIterator('index.extender')]
         protected iterable            $extender,
         protected ConfigurationLoader $configurationLoader,
+        protected RecordSelection     $recordSelection,
     ) {}
 
     public function getFrontendInformation(Configuration $configuration): iterable
@@ -30,28 +32,52 @@ class PageTraversing
         $extenderConfiguration = $configuration->configuration['extender'] ?? [];
         $router = $site->getRouter();
 
+        $targetLanguages = [];
+        $languages = $site->getLanguages();
+        if (empty($configuration->languages)) {
+            $targetLanguages = $languages;
+        } else {
+            foreach ($configuration->languages as $languageId) {
+                foreach ($languages as $language) {
+                    if ($language->getLanguageId() === $languageId) {
+                        $targetLanguages[$language->getLanguageId()] = $language;
+                    }
+                }
+            }
+        }
+
         foreach ($this->getRelevantPageUids($configuration) as $relevantPageUid) {
-            foreach ($extenderConfiguration as $item) {
-                $dropOriginalUri = isset($item['dropOriginalUri']) && $item['dropOriginalUri'];
-                if (!isset($item['limitToPages']) || (isset($item['limitToPages']) && is_array($item['limitToPages']) && in_array($relevantPageUid, $item['limitToPages'], true))) {
-                    // Handled via extender
-                    foreach ($this->extender as $extender) {
-                        if ($extender->getName() === $item['type'] ?? '') {
-                            yield from $extender->getItems($configuration, $item, $site, $relevantPageUid);
-                            if ($dropOriginalUri) {
-                                continue 3;
-                            } else {
+            foreach ($targetLanguages as $language) {
+                $row = $this->recordSelection->findPage($relevantPageUid, $language->getLanguageId());
+                if ($row === null) {
+                    continue;
+                }
+
+                foreach ($extenderConfiguration as $item) {
+                    $dropOriginalUri = isset($item['dropOriginalUri']) && $item['dropOriginalUri'];
+                    if (!isset($item['limitToPages']) || (isset($item['limitToPages']) && is_array($item['limitToPages']) && in_array($relevantPageUid, $item['limitToPages'], true))) {
+                        // Handled via extender
+                        foreach ($this->extender as $extender) {
+                            if ($extender->getName() === $item['type'] ?? '') {
+                                yield from $extender->getItems($configuration, $item, $site, $relevantPageUid, $language, $row);
+                                if ($dropOriginalUri) {
+                                    continue 3;
+                                }
                                 continue 2;
                             }
                         }
                     }
                 }
-            }
 
-            yield [
-                'uri' => $router->generateUri(BackendUtility::getRecord('pages', $relevantPageUid)),
-                'pageUid' => $relevantPageUid,
-            ];
+                $arguments = ['_language' => $language];
+                yield [
+                    'uri' => $router->generateUri(BackendUtility::getRecord('pages', $relevantPageUid), $arguments),
+                    'arguments' => $arguments,
+                    'pageUid' => $relevantPageUid,
+                    'language' => $language,
+                    'row' => $row,
+                ];
+            }
         }
     }
 

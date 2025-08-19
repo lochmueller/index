@@ -17,5 +17,6 @@ final class IndexFileEvent
         public string $title,
         public string $content,
         public readonly string $fileIdentifier,
+        public readonly string $uri = '',
     ) {}
 }

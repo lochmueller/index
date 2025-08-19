@@ -6,18 +6,18 @@ namespace Lochmueller\Index\Indexing\Database\ContentType;
 
 use TYPO3\CMS\Core\Domain\Record;
 
-class TextContentType implements ContentTypeInterface
+class TableContentType implements ContentTypeInterface
 {
     public function __construct(protected HeaderContentType $headerContentType) {}
 
     public function canHandle(Record $record): bool
     {
-        return $record->getRecordType() === 'text';
+        return $record->getRecordType() === 'table';
     }
 
     public function getContent(Record $record): string
     {
-        $return = $this->headerContentType->getContent($record);
-        return $return . '<div>' . $record->get('bodytext') . '</div>';
+
+        return '<div>' . $this->headerContentType->getContent($record) . ' - ' . $record->get('bodytext') . '</div>';
     }
 }

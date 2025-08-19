@@ -104,9 +104,3 @@ content fetch process out of the files is working.
 
 - EXT:seal - Search Engine Abstraction Layer
 - (more to come - please create a PR to extend this list)
-
-## Open tasks and ideas / @todo
-
-- Add multi language support
-- Add access group restriction support
-- All @todo annotations in the code

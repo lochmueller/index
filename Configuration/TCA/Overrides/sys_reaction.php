@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Lochmueller\Index\Reaction\IndexExternalFileReaction;
 use Lochmueller\Index\Reaction\IndexExternalPageReaction;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -13,7 +15,7 @@ ExtensionManagementUtility::addTcaSelectItem(
         'label' => IndexExternalPageReaction::getDescription(),
         'value' => IndexExternalPageReaction::getType(),
         'icon' => IndexExternalPageReaction::getIconIdentifier(),
-    ]
+    ],
 );
 ExtensionManagementUtility::addTcaSelectItem(
     'sys_reaction',
@@ -22,5 +24,5 @@ ExtensionManagementUtility::addTcaSelectItem(
         'label' => IndexExternalFileReaction::getDescription(),
         'value' => IndexExternalFileReaction::getType(),
         'icon' => IndexExternalFileReaction::getIconIdentifier(),
-    ]
+    ],
 );

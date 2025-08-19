@@ -6,20 +6,18 @@ namespace Lochmueller\Index\Queue\Message;
 
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
-use TYPO3\CMS\Core\Http\Uri;
 
-final readonly class DatabaseIndexMessage
+final readonly class ExternalPageIndexMessage
 {
     public function __construct(
         /** Meta information */
         public string          $siteIdentifier,
         public IndexTechnology $technology,
         public IndexType       $type,
-        public int             $indexConfigurationRecordId,
-        public Uri $uri,
-        public int $pageUid,
+        public string $uri,
+        public string $title,
+        public string $content,
         public string $indexProcessId,
-        public int $language,
     ) {}
 
 }

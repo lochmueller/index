@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\FileExtraction\Extractor;
 
-use Lochmueller\Index\Event\Extractor\CustomExtensionsFileExtraction;
 use Lochmueller\Index\Event\Extractor\CustomFileExtraction;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Core\Resource\FileInterface;
@@ -30,9 +29,9 @@ class EventFileExtraction implements FileExtractionInterface
 
     public function getFileExtensions(): array
     {
-        /** @var CustomExtensionsFileExtraction $event */
-        $event = $this->eventDispatcher->dispatch(new CustomExtensionsFileExtraction());
-        return $event->fileExtensions;
+        /** @var CustomFileExtraction $event */
+        $event = $this->eventDispatcher->dispatch(new CustomFileExtraction());
+        return $event->extensions;
     }
 
     public function getFileContent(FileInterface $file): string

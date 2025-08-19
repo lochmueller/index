@@ -49,6 +49,12 @@
             <trans-unit id="tx_index_domain_model_configuration.partial_indexing.type.clearcache">
                 <source>Datahandler clearcache executions.</source>
             </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.languages">
+                <source>Languages</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.languages.description">
+                <source>Limit to languages. No selection means all languages.</source>
+            </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.levels">
                 <source>Levels</source>
             </trans-unit>

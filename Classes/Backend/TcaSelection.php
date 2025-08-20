@@ -11,7 +11,7 @@ class TcaSelection
     public function countrySelection(array &$params): void
     {
 
-        if (!($params['site'] ?? null) instanceof \TYPO3\CMS\Core\Site\Entity\SiteInterface) {
+        if (!($params['site'] ?? null) instanceof SiteInterface) {
             return;
         }
         /** @var SiteInterface $site */

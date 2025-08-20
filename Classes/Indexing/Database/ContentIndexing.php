@@ -24,19 +24,28 @@ class ContentIndexing implements IndexingInterface, LoggerAwareInterface
         protected readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
-    public function getContent(Record $record): ?string
+    public function getVariants(Record $record, \SplQueue &$queue): void
     {
-        $content = null;
+        foreach ($this->contentTypes as $contentType) {
+            if ($contentType->canHandle($record)) {
+                $contentType->addVariants($record, $queue);
+                break;
+            }
+        }
+    }
+
+    public function addContent(Record $record, DatabaseIndexingDto $dto): ?string
+    {
         $defaultHandled = false;
         foreach ($this->contentTypes as $contentType) {
             if ($contentType->canHandle($record)) {
-                $content = $contentType->getContent($record);
+                $contentType->addContent($record, $dto);
                 $defaultHandled = true;
                 break;
             }
         }
 
-        $handleEvent = new HandleContentTypeEvent($record, $defaultHandled, $content);
+        $handleEvent = new HandleContentTypeEvent($record, $defaultHandled, $dto->content, $dto);
         $handleEvent = $this->eventDispatcher->dispatch($handleEvent);
 
         if ($handleEvent->content === null) {

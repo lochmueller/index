@@ -7,9 +7,7 @@ namespace Lochmueller\Index\Hooks;
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Lochmueller\Index\Enums\IndexPartialTrigger;
-use Lochmueller\Index\Enums\IndexTechnology;
-use Lochmueller\Index\Indexing\Database\DatabaseIndexingQueue;
-use Lochmueller\Index\Indexing\Frontend\FrontendIndexingQueue;
+use Lochmueller\Index\Indexing\ActiveIndexing;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
@@ -20,8 +18,7 @@ class DataHandlerUpdateHook
 {
     public function __construct(
         protected ConfigurationLoader   $configurationLoader,
-        protected DatabaseIndexingQueue $databaseIndexingQueue,
-        protected FrontendIndexingQueue $frontendIndexingQueue,
+        protected ActiveIndexing $activeIndexing,
     ) {}
 
     public function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, DataHandler $dataHandler): void
@@ -74,11 +71,7 @@ class DataHandlerUpdateHook
             return;
         }
 
-        if ($configuration->technology === IndexTechnology::Database) {
-            $this->databaseIndexingQueue->fillQueue($configuration->modifyForPartialIndexing($pageId), true);
-        } elseif ($configuration->technology === IndexTechnology::Frontend) {
-            $this->frontendIndexingQueue->fillQueue($configuration->modifyForPartialIndexing($pageId), true);
-        }
+        $this->activeIndexing->fillQueue($configuration->modifyForPartialIndexing($pageId), true);
     }
 
 }

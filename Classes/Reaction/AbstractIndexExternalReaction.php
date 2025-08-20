@@ -9,7 +9,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Reactions\Model\ReactionInstruction;
 
@@ -42,10 +42,7 @@ abstract class AbstractIndexExternalReaction
         $siteIdentifier = $payload['meta']['siteIdentifier'] ?? '';
         try {
             $site = $this->siteFinder->getSiteByIdentifier($siteIdentifier);
-            if (!$site instanceof SiteInterface) {
-                throw new \Exception('Site not found');
-            }
-        } catch (\Exception $e) {
+        } catch (SiteNotFoundException $e) {
             $data = [
                 'success' => false,
                 'error' => 'Site not found',

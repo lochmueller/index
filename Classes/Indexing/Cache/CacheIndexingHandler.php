@@ -21,18 +21,18 @@ readonly class CacheIndexingHandler implements IndexingInterface
     ) {}
 
     #[AsMessageHandler]
-    public function __invoke(CachePageMessage $message)
+    public function __invoke(CachePageMessage $message): void
     {
         $this->eventDispatcher->dispatch(new IndexPageEvent(
             site: $this->siteFinder->getSiteByIdentifier($message->siteIdentifier),
             technology: IndexTechnology::Cache,
             type: IndexType::Partial,
             indexConfigurationRecordId: $message->indexConfigurationRecordId,
+            indexProcessId: $message->indexProcessId,
             language: $message->language,
             title: $message->title,
             content: $message->content,
             pageUid: $message->pageUid,
-            indexProcessId: $message->indexProcessId,
             accessGroups: $message->accessGroups,
         ));
     }

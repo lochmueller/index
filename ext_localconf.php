@@ -15,9 +15,7 @@ $level = $environment->getContext()->isDevelopment() ? LogLevel::DEBUG : LogLeve
 
 $GLOBALS['TYPO3_CONF_VARS']['LOG']['Lochmueller']['Index']['writerConfiguration'] = [
     $level => [
-        RotatingFileWriter::class => [
-            'interval' => Interval::DAILY,
-            'maxFiles' => 5,
+        \TYPO3\CMS\Core\Log\Writer\FileWriter::class => [
             'logFileInfix' => 'index',
         ],
     ],

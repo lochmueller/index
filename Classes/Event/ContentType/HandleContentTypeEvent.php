@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Event\ContentType;
 
+use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use TYPO3\CMS\Core\Domain\Record;
 
 final class HandleContentTypeEvent
@@ -12,5 +13,6 @@ final class HandleContentTypeEvent
         public readonly Record $record,
         public readonly bool   $defaultHandled,
         public ?string          $content,
+        public DatabaseIndexingDto $dto,
     ) {}
 }

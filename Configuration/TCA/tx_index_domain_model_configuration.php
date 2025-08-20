@@ -144,5 +144,12 @@ return [
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types
                     '],
+        IndexTechnology::Http->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
+                    title,
+                    --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
+                    technology,languages,skip_no_search_pages,levels,configuration,partial_indexing,
+                    --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
+                    file_mounts,file_types
+                    '],
     ],
 ];

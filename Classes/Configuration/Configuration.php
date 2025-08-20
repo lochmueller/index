@@ -31,10 +31,10 @@ class Configuration
             pageId: (int) $row['pid'],
             technology: IndexTechnology::from($row['technology']),
             skipNoSearchPages: (bool) $row['skip_no_search_pages'],
+            levels: (int) $row['levels'],
             fileMounts: GeneralUtility::trimExplode(',', $row['file_mounts'] ?? ''),
             fileTypes: GeneralUtility::trimExplode(',', $row['file_types'] ?? ''),
-            configuration: IndexTechnology::from($row['technology']) === IndexTechnology::Frontend ? (array) json_decode($row['configuration'], true) : [],
-            levels: (int) $row['levels'],
+            configuration: in_array(IndexTechnology::from($row['technology']), [IndexTechnology::Frontend, IndexTechnology::Http]) ? (array) json_decode($row['configuration'], true) : [],
             partialIndexing: GeneralUtility::trimExplode(',', $row['partial_indexing'] ?? '', true),
             languages: GeneralUtility::intExplode(',', $row['languages'] ?? '', true),
         );

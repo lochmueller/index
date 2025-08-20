@@ -46,11 +46,11 @@ class ExternalIndexingHandler
             technology: $message->technology,
             type: $message->type,
             indexConfigurationRecordId: -1,
+            indexProcessId: $message->indexProcessId,
             language: 0,
             title: $message->title,
             content: $message->content,
             pageUid: -1,
-            indexProcessId: $message->indexProcessId,
             accessGroups: [],
             uri: $message->uri,
         ));

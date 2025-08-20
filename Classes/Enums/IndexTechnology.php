@@ -10,5 +10,6 @@ enum IndexTechnology: string
     case Cache = 'cache';
     case Database = 'database';
     case Frontend = 'frontend';
+    case Http = 'http';
     case External = 'external';
 }

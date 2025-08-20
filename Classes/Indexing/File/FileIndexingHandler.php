@@ -50,9 +50,9 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
         $this->eventDispatcher->dispatch(new IndexFileEvent(
             site: $this->siteFinder->getSiteByIdentifier($message->siteIdentifier),
             indexConfigurationRecordId: $message->indexConfigurationRecordId,
+            indexProcessId: $message->indexProcessId,
             title: $file->getNameWithoutExtension(),
             content: $content,
-            indexProcessId: $message->indexProcessId,
             fileIdentifier: $message->fileIdentifier,
         ));
     }

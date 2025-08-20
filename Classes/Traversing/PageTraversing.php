@@ -48,14 +48,14 @@ class PageTraversing
 
         foreach ($this->getRelevantPageUids($configuration) as $relevantPageUid) {
             foreach ($targetLanguages as $language) {
-                $row = $this->recordSelection->findPage($relevantPageUid, $language->getLanguageId());
+                $row = $this->recordSelection->findRenderablePage($relevantPageUid, $language->getLanguageId());
                 if ($row === null) {
                     continue;
                 }
 
                 foreach ($extenderConfiguration as $item) {
                     $dropOriginalUri = isset($item['dropOriginalUri']) && $item['dropOriginalUri'];
-                    if (!isset($item['limitToPages']) || (isset($item['limitToPages']) && is_array($item['limitToPages']) && in_array($relevantPageUid, $item['limitToPages'], true))) {
+                    if (!isset($item['limitToPages']) || (is_array($item['limitToPages']) && in_array($relevantPageUid, $item['limitToPages'], true))) {
                         // Handled via extender
                         foreach ($this->extender as $extender) {
                             if ($extender->getName() === $item['type'] ?? '') {

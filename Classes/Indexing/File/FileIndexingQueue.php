@@ -26,7 +26,6 @@ class FileIndexingQueue implements IndexingInterface, LoggerAwareInterface
         private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
-
     public function fillQueue(Configuration $configuration, SiteInterface $site, string $indexProcessId): void
     {
         $extensions = $this->fileExtractor->resolveFileTypes($configuration->fileTypes);
@@ -41,5 +40,4 @@ class FileIndexingQueue implements IndexingInterface, LoggerAwareInterface
             }
         }
     }
-
 }

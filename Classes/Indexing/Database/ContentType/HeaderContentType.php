@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database\ContentType;
 
+use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use TYPO3\CMS\Core\Domain\Record;
 
-class HeaderContentType implements ContentTypeInterface
+class HeaderContentType extends SimpleContentType
 {
     public function canHandle(Record $record): bool
     {
         return $record->getRecordType() === 'header';
     }
 
-    public function getContent(Record $record): string
+    public function addContent(Record $record, DatabaseIndexingDto $dto): void
     {
         $layout = (int) $record->get('header_layout');
         if ($layout > 10) {
-            return '';
+            return;
         } elseif ($layout === 0) {
             $layout = 1;
         }
@@ -29,6 +30,6 @@ class HeaderContentType implements ContentTypeInterface
             $return .= '<p>' . $subheader . '</p>';
         }
 
-        return $return;
+        $dto->content .= $return;
     }
 }

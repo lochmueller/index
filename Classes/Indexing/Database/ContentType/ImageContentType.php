@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database\ContentType;
 
+use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Resource\Collection\LazyFileReferenceCollection;
 use TYPO3\CMS\Core\Resource\FileReference;
 
-class ImageContentType implements ContentTypeInterface
+class ImageContentType extends SimpleContentType
 {
     public function __construct(protected HeaderContentType $headerContentType) {}
 
@@ -17,9 +18,9 @@ class ImageContentType implements ContentTypeInterface
         return $record->getRecordType() === 'image';
     }
 
-    public function getContent(Record $record): string
+    public function addContent(Record $record, DatabaseIndexingDto $dto): void
     {
-
+        $this->headerContentType->addContent($record, $dto);
         /** @var LazyFileReferenceCollection $images */
         $images = $record->get('image');
 
@@ -30,6 +31,6 @@ class ImageContentType implements ContentTypeInterface
             $result[] = $image->getDescription();
         }
 
-        return '<div>' . $this->headerContentType->getContent($record) . ' - ' . implode(' ', $result) . '</div>';
+        $dto->content .= implode(' ', $result);
     }
 }

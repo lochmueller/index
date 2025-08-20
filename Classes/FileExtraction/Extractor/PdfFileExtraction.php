@@ -38,7 +38,7 @@ class PdfFileExtraction implements FileExtractionInterface
         $parser = new Parser();
         $pdf = $parser->parseFile($file->getForLocalProcessing(false));
 
-        return (string) $pdf->getText();
+        return $pdf->getText();
     }
 
 }

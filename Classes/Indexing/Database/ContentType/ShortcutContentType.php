@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Lochmueller\Index\Indexing\Database\ContentType;
 
 use Lochmueller\Index\Indexing\Database\ContentIndexing;
+use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use TYPO3\CMS\Core\Domain\Record;
 
-class ShortcutContentType implements ContentTypeInterface
+class ShortcutContentType extends SimpleContentType
 {
     public function __construct(
         protected ContentIndexing $contentIndexing,
@@ -18,12 +19,10 @@ class ShortcutContentType implements ContentTypeInterface
         return $record->getRecordType() === 'shortcut';
     }
 
-    public function getContent(Record $record): string
+    public function addContent(Record $record, DatabaseIndexingDto $dto): void
     {
-        $content = [];
-        foreach ($record->get('records') as $records) {
-            $content[] = $this->contentIndexing->getContent($records);
+        foreach ($record->get('records') as $internalRecord) {
+            $this->contentIndexing->addContent($internalRecord, $dto);
         }
-        return implode(' ', $content);
     }
 }

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database\ContentType;
 
+use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use TYPO3\CMS\Core\Domain\Record;
 
-class TextContentType implements ContentTypeInterface
+class TextContentType extends SimpleContentType
 {
     public function __construct(protected HeaderContentType $headerContentType) {}
 
@@ -15,9 +16,9 @@ class TextContentType implements ContentTypeInterface
         return $record->getRecordType() === 'text';
     }
 
-    public function getContent(Record $record): string
+    public function addContent(Record $record, DatabaseIndexingDto $dto): void
     {
-        $return = $this->headerContentType->getContent($record);
-        return $return . '<div>' . $record->get('bodytext') . '</div>';
+        $this->headerContentType->addContent($record, $dto);
+        $dto->content .= $record->get('bodytext');
     }
 }

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Lochmueller\Index\Command;
 
 use Lochmueller\Index\Configuration\ConfigurationLoader;
-use Lochmueller\Index\Enums\IndexTechnology;
-use Lochmueller\Index\Indexing\Database\DatabaseIndexingQueue;
-use Lochmueller\Index\Indexing\Frontend\FrontendIndexingQueue;
+use Lochmueller\Index\Indexing\ActiveIndexing;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,8 +23,7 @@ class QueueCommand extends Command
     public function __construct(
         private readonly SiteFinder            $siteFinder,
         private readonly ConfigurationLoader   $configurationLoader,
-        private readonly DatabaseIndexingQueue $databaseIndex,
-        private readonly FrontendIndexingQueue $frontendIndex,
+        private readonly ActiveIndexing $activeIndexing,
     ) {
         parent::__construct();
     }
@@ -40,11 +37,7 @@ class QueueCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         foreach ($this->getConfigurations($input) as $configuration) {
-            if ($configuration->technology === IndexTechnology::Database) {
-                $this->databaseIndex->fillQueue($configuration);
-            } elseif ($configuration->technology === IndexTechnology::Frontend) {
-                $this->frontendIndex->fillQueue($configuration);
-            }
+            $this->activeIndexing->fillQueue($configuration);
         }
 
         return Command::SUCCESS;

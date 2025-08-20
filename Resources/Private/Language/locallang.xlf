@@ -95,7 +95,10 @@
                 <source>Database indexing (like EXT:ke_search)</source>
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.technology.type.frontend">
-                <source>Frontend (like EXT:solr via frontend subrequest)</source>
+                <source>Frontend (via frontend subrequest)</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.technology.type.http">
+                <source>Http (like EXT:solr via HTTP frontend request)</source>
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.technology.type.external">
                 <source>External (is used by reactions and not by manually configuration!)</source>

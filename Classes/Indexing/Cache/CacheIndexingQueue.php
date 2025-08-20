@@ -64,7 +64,7 @@ readonly class CacheIndexingQueue implements IndexingInterface
             technology: IndexTechnology::Cache,
             type: IndexType::Partial,
             indexConfigurationRecordId: $configuration->configurationId,
-            language: (int) $this->context->getAspect('language')->getId(),
+            language: $this->context->getAspect('language')->getId(),
             title: $this->pageTitleProviderManager->getTitle($request),
             content: $tsfe->content,
             pageUid: (int) $pageInformation->getId(),

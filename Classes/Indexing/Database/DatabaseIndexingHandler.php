@@ -31,7 +31,10 @@ class DatabaseIndexingHandler implements IndexingInterface
         $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
 
         $configuration = $this->configurationLoader->loadByUid($message->indexConfigurationRecordId);
-        $pageRow = $this->recordSelection->findPage($message->pageUid, $message->language);
+        $pageRow = $this->recordSelection->findRenderablePage($message->pageUid, $message->language);
+        if ($pageRow === null) {
+            return;
+        }
         if ($configuration->skipNoSearchPages && $pageRow['no_search'] ?? false) {
             return;
         }
@@ -39,23 +42,33 @@ class DatabaseIndexingHandler implements IndexingInterface
         $title = $pageRow['title'] . ' | ' . $site->getAttribute('websiteTitle');
         $accessGroups = [];
 
-        $mainContent = '';
+        /** @var \SplQueue $items */
+        $items = new \SplQueue();
+        $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, [], $site);
+
         foreach ($this->recordSelection->findRecordsOnPage('tt_content', [$message->pageUid], $message->language) as $record) {
-            $mainContent .= $this->contentIndexing->getContent($record);
+            $this->contentIndexing->getVariants($record, $items);
+            foreach ($items as $item) {
+                $this->contentIndexing->addContent($record, $item);
+            }
         }
 
-        $this->eventDispatcher->dispatch(new IndexPageEvent(
-            site: $site,
-            technology: $message->technology,
-            type: $message->type,
-            indexConfigurationRecordId: $message->indexConfigurationRecordId,
-            language: $message->language,
-            title: $title,
-            content: $mainContent,
-            pageUid: $message->pageUid,
-            indexProcessId: $message->indexProcessId,
-            accessGroups: $accessGroups,
-        ));
+        foreach ($items as $item) {
+            $item->arguments['_language'] = $message->language;
+            $this->eventDispatcher->dispatch(new IndexPageEvent(
+                site: $site,
+                technology: $message->technology,
+                type: $message->type,
+                indexConfigurationRecordId: $message->indexConfigurationRecordId,
+                indexProcessId: $message->indexProcessId,
+                language: $message->language,
+                title: $item->title,
+                content: $item->content,
+                pageUid: $item->pageUid,
+                accessGroups: $accessGroups,
+                uri: (string)$site->getRouter()->generateUri($item->pageUid, $item->arguments),
+            ));
+        }
     }
 
 }

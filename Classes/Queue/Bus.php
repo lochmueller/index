@@ -11,10 +11,10 @@ use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 /**
  * Wrapper class around the Message bus to avoid https://forge.typo3.org/issues/101699 and create async events!
  */
-class Bus
+readonly class Bus
 {
     public function __construct(
-        protected readonly MessageBusInterface $bus,
+        protected MessageBusInterface $bus,
     ) {}
 
     public function dispatch(object $message): void

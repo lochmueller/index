@@ -15,11 +15,11 @@ use Lochmueller\Index\Queue\Message\StartProcessMessage;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
-class ExternalIndexingQueue implements IndexingInterface
+readonly class ExternalIndexingQueue implements IndexingInterface
 {
     public function __construct(
-        protected readonly Bus        $bus,
-        protected readonly SiteFinder $siteFinder,
+        protected Bus        $bus,
+        protected SiteFinder $siteFinder,
     ) {}
 
     public function fillQueue(SiteInterface $site, array $info, bool $isPage = false): void

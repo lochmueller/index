@@ -66,7 +66,7 @@ class DatabaseIndexingHandler implements IndexingInterface
                 content: $item->content,
                 pageUid: $item->pageUid,
                 accessGroups: $accessGroups,
-                uri: (string)$site->getRouter()->generateUri($item->pageUid, $item->arguments),
+                uri: (string) $site->getRouter()->generateUri($item->pageUid, $item->arguments),
             ));
         }
     }

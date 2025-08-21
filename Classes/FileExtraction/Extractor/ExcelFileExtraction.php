@@ -31,9 +31,8 @@ class ExcelFileExtraction implements FileExtractionInterface
 
     public function getFileContent(FileInterface $file): string
     {
-        if (!class_exists(IOFactory::class)) {
-            throw new \RuntimeException('Package phpoffice/phpspreadsheet is not installed. Please execute "composer require phpoffice/phpspreadsheet"', 1263781);
-        }
+        !class_exists(IOFactory::class) || throw new \RuntimeException('Package phpoffice/phpspreadsheet is not installed. Please execute "composer require phpoffice/phpspreadsheet"', 1263781);
+
         $phpSpreadsheet = IOFactory::load($file->getForLocalProcessing(false));
         $text = '';
 

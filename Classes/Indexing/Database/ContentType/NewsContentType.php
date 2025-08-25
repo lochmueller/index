@@ -32,7 +32,7 @@ class NewsContentType implements ContentTypeInterface
 
         $this->headerContentType->addContent($record, $dto);
         $table = 'tx_news_domain_model_news';
-        $newsRecord = $this->recordSelection->mapRecord($table, BackendUtility::getRecord('tx_news_domain_model_news', $newsId));
+        $newsRecord = $this->recordSelection->mapRecord($table, BackendUtility::getRecord($table, $newsId));
 
         $dto->title = $newsRecord->get('title') . ' | ' . $dto->site->getAttribute('websiteTitle');
 

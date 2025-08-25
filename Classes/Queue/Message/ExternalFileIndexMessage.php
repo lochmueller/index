@@ -12,6 +12,7 @@ final readonly class ExternalFileIndexMessage
     public function __construct(
         /** Meta information */
         public string          $siteIdentifier,
+        public int             $language,
         public IndexTechnology $technology,
         public IndexType       $type,
         public string $uri,

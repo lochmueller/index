@@ -50,8 +50,8 @@ readonly class HttpIndexingQueue implements IndexingInterface
                 technology: IndexTechnology::Http,
                 type: $indexType,
                 indexConfigurationRecordId: $configuration->configurationId,
-                uri: $info['uri'],
-                pageUid: $info['pageUid'],
+                uri: $info->uri,
+                pageUid: $info->pageUid,
                 indexProcessId: $id,
             ));
         }

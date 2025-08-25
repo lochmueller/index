@@ -22,7 +22,7 @@ readonly class ExternalIndexingQueue implements IndexingInterface
         protected SiteFinder $siteFinder,
     ) {}
 
-    public function fillQueue(SiteInterface $site, array $info, bool $isPage = false): void
+    public function fillQueue(SiteInterface $site, int $language, array $info, bool $isPage = false): void
     {
         $id = uniqid('external-index', true);
         $this->bus->dispatch(new StartProcessMessage(
@@ -36,6 +36,7 @@ readonly class ExternalIndexingQueue implements IndexingInterface
         if ($isPage) {
             $this->bus->dispatch(new ExternalPageIndexMessage(
                 siteIdentifier: $site->getIdentifier(),
+                language: $language,
                 technology: IndexTechnology::External,
                 type: IndexType::Partial,
                 uri: $info['uri'] ?? '',
@@ -47,6 +48,7 @@ readonly class ExternalIndexingQueue implements IndexingInterface
 
             $this->bus->dispatch(new ExternalFileIndexMessage(
                 siteIdentifier: $site->getIdentifier(),
+                language: $language,
                 technology: IndexTechnology::External,
                 type: IndexType::Partial,
                 uri: $info['uri'] ?? '',

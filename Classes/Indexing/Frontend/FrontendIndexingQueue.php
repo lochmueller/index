@@ -49,8 +49,8 @@ readonly class FrontendIndexingQueue implements IndexingInterface
                 technology: IndexTechnology::Frontend,
                 type: $indexType,
                 indexConfigurationRecordId: $configuration->configurationId,
-                uri: $info['uri'],
-                pageUid: $info['pageUid'],
+                uri: $info->uri,
+                pageUid: $info->pageUid,
                 indexProcessId: $id,
             ));
         }

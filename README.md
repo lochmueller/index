@@ -51,6 +51,24 @@ Possible types are:
 }
 ```
 
+### Index mechanisms
+
+Same information about the different index mechanisms + advantages or disadvantages.
+
+- *Cache* - Easy in the configuration. No active full index process. Indexing is done in the regular cache fill process.
+  No hard impact to the page performance.
+- *Database* - Very fast build process of the page content with separated PHP integrations. Custom content elements need
+  separated class integrations.
+- *External* - Not direct selectable in the backend! Used for content that is send via webhook to the EXT:reactions
+  endpoint. This content use the same path in the index workflow.
+- *File* - Not direct selectable in the backend! Is used in the regular index process to select additional files in the
+  index process.
+- *Frontend* - Use a internal subrequest and execute the regular frontend middleware stack. The integration have to use
+  the middleware in the right way. Fast then "real frontend requests" and create the real HTML markup.
+- *Http* - If there are problems with "Frontend" you can select Http. This create real frontend requests that are send
+  via network. Please keep password protection in mind. Very slow and have load on the server.
+- *None* - Use it to exclude the current page(tree) in the traversing process of the parent configuration.
+
 ## Developer information
 
 The extension provides a framework for easy indexing pages and files. Use this documentation to get the right
@@ -76,14 +94,12 @@ FIFO is not consistent, we cannot guarantee that the events (especially Start an
 There are additional events to customize the index process:
 
 - **ContentType\HandleContentTypeEvent** - Customize or add the rendering of content for database indexing.
-- **Extractor\CustomExtensionFileExtraction** - Event based file extraction - extensions (if not flexible enough, use
-  the DI tag)
 - **Extractor\CustomFileExtraction** - Event based file extraction (if not flexible enough, use the DI tag)
 
 ### Symfony DI Tags
 
 There are several Symfony DI tags, that create iterables for internal functions. You can use this to add your own
-integrations:
+integrations. These are very "internal" options to extend the index process:
 
 - **index.content_type** - Rendering definitions for database indexing.
 - **index.file_extractor** - Extract content from files in the index process.

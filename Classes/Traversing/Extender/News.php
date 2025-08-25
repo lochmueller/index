@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Lochmueller\Index\Traversing\Extender;
 
 use Lochmueller\Index\Configuration\Configuration;
+use Lochmueller\Index\Traversing\FrontendInformationDto;
 use Lochmueller\Index\Traversing\RecordSelection;
 use TYPO3\CMS\Core\Routing\PageRouter;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 
-class News extends AbstractExtender
+class News implements ExtenderInterface
 {
     public function __construct(
         private readonly RecordSelection $recordSelection,
@@ -36,13 +37,14 @@ class News extends AbstractExtender
                         'news' => $record->getUid(),
                     ],
                 ];
-                yield [
-                    'uri' => $router->generateUri($pageUid, $arguments),
-                    'arguments' => $arguments,
-                    'pageUid' => $pageUid,
-                    'language' => $siteLanguage,
-                    'row' => $row,
-                ];
+
+                yield new FrontendInformationDto(
+                    uri: $router->generateUri($pageUid, $arguments),
+                    arguments: $arguments,
+                    pageUid: $pageUid,
+                    language: $siteLanguage,
+                    row: $row,
+                );
             }
         }
     }

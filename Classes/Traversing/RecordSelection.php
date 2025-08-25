@@ -59,7 +59,7 @@ class RecordSelection
 
         foreach ($queryBuilder->executeQuery()->iterateAssociative() as $row) {
             if ($languageUid) {
-                $overlay = $pageRepository->getLanguageOverlay('tx_myext_domain_model_foo', $row, new LanguageAspect($languageUid, $languageUid));
+                $overlay = $pageRepository->getLanguageOverlay($table, $row, new LanguageAspect($languageUid, $languageUid));
                 if ($overlay !== null) {
                     $record = $this->mapRecord($table, $overlay);
                     /** @var \TYPO3\CMS\Core\Domain\Record\LanguageInfo $langInfo */
@@ -104,6 +104,22 @@ class RecordSelection
             }
         }
         return $row;
+    }
+
+
+    public function findRecordByUid(string $table, int $uid): ?array
+    {
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
+        $queryBuilder->getRestrictions()->removeAll();
+        $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
+        $queryBuilder->select('*')
+            ->from($table)
+            ->where(
+                $queryBuilder->expr()->eq('uid', $uid),
+            );
+        $rows = $queryBuilder->executeQuery()->fetchAllAssociative();
+
+        return $rows[0] ?? null;
     }
 
     protected function isExcludedDoktype(array $row): bool

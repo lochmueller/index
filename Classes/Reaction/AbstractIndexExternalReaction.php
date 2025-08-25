@@ -50,7 +50,9 @@ abstract class AbstractIndexExternalReaction
             return $this->jsonResponse($data, 400);
         }
 
-        $this->externalIndexingQueue->fillQueue($site, $payload['data'], $this->isPage());
+        $language = (int) ($payload['meta']['language'] ?? 0);
+
+        $this->externalIndexingQueue->fillQueue($site, $language, $payload['data'], $this->isPage());
 
         return $this->jsonResponse([
             'success' => true,

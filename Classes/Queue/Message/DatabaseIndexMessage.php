@@ -6,7 +6,7 @@ namespace Lochmueller\Index\Queue\Message;
 
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
-use TYPO3\CMS\Core\Http\Uri;
+use Psr\Http\Message\UriInterface;
 
 final readonly class DatabaseIndexMessage
 {
@@ -16,10 +16,10 @@ final readonly class DatabaseIndexMessage
         public IndexTechnology $technology,
         public IndexType       $type,
         public int             $indexConfigurationRecordId,
-        public Uri $uri,
-        public int $pageUid,
-        public string $indexProcessId,
-        public int $language,
+        public UriInterface    $uri,
+        public int             $pageUid,
+        public string          $indexProcessId,
+        public int             $language,
     ) {}
 
 }

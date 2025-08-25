@@ -50,10 +50,10 @@ class DatabaseIndexingQueue implements IndexingInterface
                 technology: IndexTechnology::Database,
                 type: $indexType,
                 indexConfigurationRecordId: $configuration->configurationId,
-                uri: $info['uri'],
-                pageUid: $info['pageUid'],
+                uri: $info->uri,
+                pageUid: $info->pageUid,
                 indexProcessId: $id,
-                language: $info['language']->getLanguageId(),
+                language: $info->language->getLanguageId(),
             ));
         }
 

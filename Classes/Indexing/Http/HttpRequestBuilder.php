@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Lochmueller\Index\Indexing\Http;
 
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Http\RequestFactory;
-use TYPO3\CMS\Core\Http\Uri;
 
 class HttpRequestBuilder implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
+
     public function __construct(protected ClientInterface $client, protected RequestFactory $requestFactory) {}
 
-    public function buildRequestForPage(Uri $uri): string
+    public function buildRequestForPage(UriInterface $uri): string
     {
         $request = $this->requestFactory->createRequest('GET', $uri);
         try {

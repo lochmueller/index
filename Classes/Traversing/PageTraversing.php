@@ -26,6 +26,9 @@ class PageTraversing
         protected RecordSelection     $recordSelection,
     ) {}
 
+    /**
+     * @return iterable<FrontendInformationDto>
+     */
     public function getFrontendInformation(Configuration $configuration): iterable
     {
         $site = $this->siteFinder->getSiteByPageId($configuration->pageId);
@@ -70,13 +73,14 @@ class PageTraversing
                 }
 
                 $arguments = ['_language' => $language];
-                yield [
-                    'uri' => $router->generateUri(BackendUtility::getRecord('pages', $relevantPageUid), $arguments),
-                    'arguments' => $arguments,
-                    'pageUid' => $relevantPageUid,
-                    'language' => $language,
-                    'row' => $row,
-                ];
+
+                yield new FrontendInformationDto(
+                    uri: $router->generateUri(BackendUtility::getRecord('pages', $relevantPageUid), $arguments),
+                    arguments: $arguments,
+                    pageUid: $relevantPageUid,
+                    language: $language,
+                    row: $row,
+                );
             }
         }
     }

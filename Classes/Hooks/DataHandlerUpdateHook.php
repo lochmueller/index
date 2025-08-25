@@ -9,7 +9,9 @@ use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Lochmueller\Index\Enums\IndexPartialTrigger;
 use Lochmueller\Index\Indexing\ActiveIndexing;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\MathUtility;
 
@@ -17,8 +19,10 @@ use TYPO3\CMS\Core\Utility\MathUtility;
 class DataHandlerUpdateHook
 {
     public function __construct(
-        protected ConfigurationLoader   $configurationLoader,
-        protected ActiveIndexing $activeIndexing,
+        protected ConfigurationLoader      $configurationLoader,
+        protected ActiveIndexing           $activeIndexing,
+        #[Autowire(service: 'cache.runtime')]
+        private readonly FrontendInterface $cache,
     ) {}
 
     public function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, DataHandler $dataHandler): void
@@ -56,8 +60,7 @@ class DataHandlerUpdateHook
 
     protected function triggerPartialIndexProcessForPage(int $pageId, IndexPartialTrigger $trigger): void
     {
-        static $alreadyTriggered = [];
-
+        $alreadyTriggered = (array) $this->cache->get('index-already-triggered');
         $configuration = $this->configurationLoader->loadByPageTraversing($pageId);
         if (!$configuration instanceof Configuration || !in_array($trigger->value, $configuration->partialIndexing, true)) {
             return;
@@ -67,6 +70,7 @@ class DataHandlerUpdateHook
             return;
         }
         $alreadyTriggered[] = $pageId;
+        $this->cache->set('index-already-triggered', $alreadyTriggered);
         if ($pageId === 0) {
             return;
         }

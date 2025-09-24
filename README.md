@@ -2,7 +2,7 @@
 
 EXT:index is a TYPO3 indexing framework to handle the content generation of a TYPO3 website related to different index
 configurations. This could be used for search engine fill-up processes or other content engines that need the generated
-content of typo3 pages and files (AI provider). To sped up the indexing the TYPO3 internal message bus is used.
+content of typo3 pages and files (AI provider). To speed up the indexing the TYPO3 internal message bus is used.
 
 You can use the PSR-14 Events to get the index information or the webhook functions of the core, to move the indexed
 information to external services.
@@ -59,27 +59,26 @@ Same information about the different index mechanisms + advantages or disadvanta
   No hard impact to the page performance.
 - *Database* - Very fast build process of the page content with separated PHP integrations. Custom content elements need
   separated class integrations.
-- *External* - Not direct selectable in the backend! Used for content that is send via webhook to the EXT:reactions
-  endpoint. This content use the same path in the index workflow.
-- *File* - Not direct selectable in the backend! Is used in the regular index process to select additional files in the
+- *External* - Not directly selectable in the backend! Used for content that is sent via webhook to the EXT:reactions
+  endpoint. This content uses the same path in the index workflow.
+- *File* - Not directly selectable in the backend! Is used in the regular index process to select additional files in the
   index process.
-- *Frontend* - Use a internal subrequest and execute the regular frontend middleware stack. The integration have to use
-  the middleware in the right way. Fast then "real frontend requests" and create the real HTML markup.
-- *Http* - If there are problems with "Frontend" you can select Http. This create real frontend requests that are send
-  via network. Please keep password protection in mind. Very slow and have load on the server.
+- *Frontend* - Uses an internal subrequest and executes the regular frontend middleware stack. The integrations have to use
+  the middleware in the right way. Faster than "real frontend requests" and creating the real HTML markup.
+- *Http* - If there are problems with "Frontend" you can select Http. This creates real frontend requests that are sent
+  via network. Please keep password protection in mind. Very slow and significant load on the server.
 - *None* - Use it to exclude the current page(tree) in the traversing process of the parent configuration.
 
 ## Developer information
 
 The extension provides a framework for easy indexing pages and files. Use this documentation to get the right
-information
-for your extension.
+information for your extension.
 
 ### Events
 
-There are four 'public' main events that you can use in your extension. EXT:index take care of the index processing and
+There are four 'public' main events that you can use in your extension. EXT:index takes care of the index processing and
 the async handling of the queue. So you can directly consume the event, add your business logic and run more or less
-complex processes in the event listener. Please *DO NOT* usage the internal messages that are part of the internal
+complex processes in the event listener. Please *DO NOT* use the internal messages that are part of the internal
 process.
 
 - **StartIndexProcess** - Start event incl. meta information like technology, type
@@ -87,9 +86,9 @@ process.
 - **IndexFileEvent** - Index event for files incl. title, content and meta information of one file
 - **EndIndexProcess** - End event incl. meta information like technology, type
 
-*Please keep in mind, that the events are pushed directly after another into the message bus. If there are any reasons
-that the
-FIFO is not consistent, we cannot guarantee that the events (especially Start and Finish) are in the right order*
+*Please keep in mind, that the events are pushed directly, one after another, into the message bus.
+If there are any reasons that the FIFO (first in, first out) is not consistent, we cannot guarantee
+that the events (especially Start and Finish) are in the right order*
 
 There are additional events to customize the index process:
 
@@ -113,8 +112,8 @@ two reactions that create indexed pages and files. Feel free to connection insta
 
 ### File extraction
 
-The file extraction is based on different third party packages. Please take care to install the packages, that the
-content fetch process out of the files is working.
+The file extraction is based on different third party packages. Please take care to install the packages, so that the
+process to fetch content out of files is working.
 
 ## Extension based on EXT:index
 

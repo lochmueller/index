@@ -12,7 +12,7 @@ information to external services.
 1. Run `composer require lochmueller/index`
 2. Create at least two scheduler task and take care that the scheduler is executed:
     - `index:queue` (example: every two days in midnight) fill up the message queue with the indexed pages
-    - `messenger:consume index` (base on
+    - `messenger:consume index` (based on
       the [documentation](https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/MessageBus/Index.html#message-bus-consume-command))
       to handle the index processes of the queue.
 3. Create index configurations on pages (example: on the root page of your site)

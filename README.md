@@ -7,7 +7,7 @@ content of typo3 pages and files (AI provider). To speed up the indexing the TYP
 You can use the PSR-14 Events to get the index information or the webhook functions of the core, to move the indexed
 information to external services.
 
-This extension was funded by the [TYPO3 Association](https://typo3.org) [commnuity ideas](https://typo3.org/article/members-have-selected-five-ideas-to-be-funded-in-quarter-3-2025)
+This extension was funded by the [TYPO3 Association](https://typo3.org): [commnuity ideas](https://typo3.org/article/members-have-selected-five-ideas-to-be-funded-in-quarter-3-2025) & [final blogpost] (https://typo3.org/article/typo3-meets-seal-a-breath-of-fresh-air-for-search)
 
 ## Installation & Configuration
 

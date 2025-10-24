@@ -121,3 +121,11 @@ process to fetch content out of files is working.
 
 - EXT:seal - Search Engine Abstraction Layer
 - (more to come - please create a PR to extend this list)
+
+## Ideas for EXT:index
+
+- Full support for EXT:container
+- Full support for EXT:mask
+- Full support for EXT:bootstrap_package
+- Full support for EXT:content_blocks
+- Full support for EXT:calendarize

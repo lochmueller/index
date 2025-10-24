@@ -42,7 +42,6 @@ class DatabaseIndexingQueue implements IndexingInterface
             indexProcessId: $id,
         ));
 
-
         $frontendInformation = $this->pageTraversing->getFrontendInformation($configuration);
         foreach ($frontendInformation as $info) {
             $this->bus->dispatch(new DatabaseIndexMessage(

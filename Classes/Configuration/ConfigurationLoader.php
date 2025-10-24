@@ -85,7 +85,6 @@ class ConfigurationLoader
         if (self::$runtimeConfigurationCache === null) {
             self::$runtimeConfigurationCache = [];
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_index_domain_model_configuration');
-            $queryBuilder->getRestrictions()->removeAll();
             $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
             $result = $queryBuilder->select('*')
                 ->from('tx_index_domain_model_configuration')

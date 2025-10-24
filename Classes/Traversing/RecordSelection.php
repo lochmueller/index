@@ -35,7 +35,6 @@ class RecordSelection
         $languageCapability = $schema->getCapability(TcaSchemaCapability::Language);
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
-        $queryBuilder->getRestrictions()->removeAll();
         $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
 
         // No empty storages
@@ -110,7 +109,6 @@ class RecordSelection
     public function findRecordByUid(string $table, int $uid): ?array
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
-        $queryBuilder->getRestrictions()->removeAll();
         $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
         $queryBuilder->select('*')
             ->from($table)

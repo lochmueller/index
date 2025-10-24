@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lochmueller\Index\Traversing;
 
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
@@ -25,7 +26,7 @@ class FileTraversing
     }
 
     /**
-     * @return FileInterface[]
+     * @return File[]
      */
     public function findFilesInFileMountUidRecursive(int $fileMountUid, array $fileExtensions): iterable
     {
@@ -34,7 +35,7 @@ class FileTraversing
             /** @var Folder $folder */
             $folder = $this->resourceFactory->getFolderObjectFromCombinedIdentifier($row['identifier']);
             foreach ($folder->getFiles(recursive: true) as $file) {
-                /** @var FileInterface $file */
+                /** @var File $file */
                 if (in_array($file->getExtension(), $fileExtensions)) {
                     yield $file;
                 }

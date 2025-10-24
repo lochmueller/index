@@ -33,7 +33,9 @@ class PdfFileExtraction implements FileExtractionInterface
     {
         !class_exists(Parser::class) || throw new \RuntimeException('Package smalot/pdfparser is not installed. Please execute composer require smalot/pdfparser', 1263781);
 
+        /** @phpstan-ignore-next-line  */
         $parser = new Parser();
+        /** @phpstan-ignore-next-line  */
         $pdf = $parser->parseFile($file->getForLocalProcessing(false));
 
         return $pdf->getText();

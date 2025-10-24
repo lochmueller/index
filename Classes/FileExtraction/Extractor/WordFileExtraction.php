@@ -33,6 +33,7 @@ class WordFileExtraction implements FileExtractionInterface
     {
         !class_exists(IOFactory::class) || throw new \RuntimeException('Package phpoffice/phpword is not installed. Please execute "composer require phpoffice/phpword"', 1263781);
 
+        /** @phpstan-ignore class.notFound  */
         $phpWord = IOFactory::load($file->getForLocalProcessing(false));
         $text = '';
         foreach ($phpWord->getSections() as $section) {

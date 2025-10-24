@@ -34,11 +34,14 @@ class PowerpointFileExtraction implements FileExtractionInterface
     {
         !class_exists(IOFactory::class) || throw new \RuntimeException('Package phpoffice/phppresentation is not installed. Please execute "composer require phpoffice/phppresentation"', 1263781);
 
+        /** @phpstan-ignore-next-line  */
         $phpPowerpoint = IOFactory::load($file->getForLocalProcessing(false));
         $text = '';
         foreach ($phpPowerpoint->getAllSlides() as $slide) {
             foreach ($slide->getShapeCollection() as $shape) {
+                /** @phpstan-ignore-next-line  */
                 if ($shape instanceof RichText) {
+                    /** @phpstan-ignore-next-line  */
                     $text .= $shape->getPlainText() . "\n";
                 }
             }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database;
 
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
+use TYPO3\CMS\Core\Site\Entity\Site;
 
 class DatabaseIndexingDto
 {
@@ -14,7 +14,7 @@ class DatabaseIndexingDto
         public readonly int $pageUid,
         public readonly int $languageUid,
         public array        $arguments,
-        public readonly SiteInterface $site,
+        public readonly Site $site,
     ) {}
 
 }

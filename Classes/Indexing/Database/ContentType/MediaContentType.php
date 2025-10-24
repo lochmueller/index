@@ -26,7 +26,7 @@ class MediaContentType extends SimpleContentType
 
         $result = [];
         foreach ($mediaElements->getIterator() as $media) {
-            /** @var $media FileReference */
+            /** @var FileReference $media */
             $result[] = $media->getTitle();
             $result[] = $media->getDescription();
         }

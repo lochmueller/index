@@ -18,11 +18,14 @@
   "require": {
     "php": "^8.3",
     "typo3/cms-core": "^13.4",
+    "typo3/cms-frontend": "^13.4",
+    "typo3/cms-backend": "^13.4",
     "typo3/cms-reactions": "^13.4",
     "typo3/cms-webhooks": "^13.4"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.84"
+    "friendsofphp/php-cs-fixer": "^3.84",
+    "phpstan/phpstan": "^2.1"
   },
   "suggest": {
     "phpoffice/phpspreadsheet": "For file extraction process of Excel files.",
@@ -46,6 +49,11 @@
     }
   },
   "scripts": {
-    "code-fix": ".Build/bin/php-cs-fixer fix Classes --rules=@PER-CS2.0:risky,@PER-CS2.0,declare_strict_types,no_unused_imports --allow-risky yes"
+    "code-fix": [
+      "@php-cs-fixer",
+      "@phpstan"
+    ],
+    "phpstan": ".Build/bin/phpstan analyse Classes --memory-limit 1G --level 3",
+    "php-cs-fixer": ".Build/bin/php-cs-fixer fix Classes --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes"
   }
 }

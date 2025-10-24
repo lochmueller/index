@@ -26,7 +26,7 @@ class ImageContentType extends SimpleContentType
 
         $result = [];
         foreach ($images->getIterator() as $image) {
-            /** @var $image FileReference */
+            /** @var FileReference $image */
             $result[] = $image->getTitle();
             $result[] = $image->getDescription();
         }

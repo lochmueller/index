@@ -8,7 +8,7 @@ use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Traversing\FrontendInformationDto;
 use Lochmueller\Index\Traversing\RecordSelection;
 use TYPO3\CMS\Core\Routing\PageRouter;
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 
 class Address implements ExtenderInterface
@@ -20,7 +20,7 @@ class Address implements ExtenderInterface
     public function getItems(
         Configuration $configuration,
         array         $extenderConfiguration,
-        SiteInterface $site,
+        Site $site,
         int           $pageUid,
         SiteLanguage  $siteLanguage,
         array         $row,

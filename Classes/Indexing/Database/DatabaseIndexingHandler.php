@@ -42,17 +42,41 @@ class DatabaseIndexingHandler implements IndexingInterface
         $title = $pageRow['title'] . ' | ' . $site->getAttribute('websiteTitle');
         $accessGroups = [];
 
-        /** @var \SplQueue $items */
-        $items = new \SplQueue();
-        $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, [], $site);
+        $contentElements = $this->recordSelection->findRecordsOnPage('tt_content', [$message->pageUid], $message->language);
 
-        foreach ($this->recordSelection->findRecordsOnPage('tt_content', [$message->pageUid], $message->language) as $record) {
-            $this->contentIndexing->getVariants($record, $items);
-            foreach ($items as $item) {
-                $this->contentIndexing->addContent($record, $item);
+        if ($configuration->contentIndexing) {
+            foreach ($contentElements as $record) {
+                /** @var \SplQueue $items */
+                $items = new \SplQueue();
+                $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, [], $site);
+
+                $this->contentIndexing->getVariants($record, $items);
+                foreach ($items as $item) {
+                    $this->contentIndexing->addContent($record, $item);
+                }
+
+                $this->indexItems($items, $message, $site, $accessGroups, 'c' . $record->getUid());
             }
+        } else {
+            /** @var \SplQueue $items */
+            $items = new \SplQueue();
+            $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, [], $site);
+
+            foreach ($contentElements as $record) {
+                $this->contentIndexing->getVariants($record, $items);
+                foreach ($items as $item) {
+                    $this->contentIndexing->addContent($record, $item);
+                }
+            }
+
+            $this->indexItems($items, $message, $site, $accessGroups);
         }
 
+
+    }
+
+    protected function indexItems(array $items, DatabaseIndexMessage $message, Site $site, $accessGroups, $fragment = '')
+    {
         foreach ($items as $item) {
             $item->arguments['_language'] = $message->language;
             $this->eventDispatcher->dispatch(new IndexPageEvent(
@@ -66,7 +90,7 @@ class DatabaseIndexingHandler implements IndexingInterface
                 content: $item->content,
                 pageUid: $item->pageUid,
                 accessGroups: $accessGroups,
-                uri: (string) $site->getRouter()->generateUri($item->pageUid, $item->arguments),
+                uri: (string) $site->getRouter()->generateUri($item->pageUid, $item->arguments, $fragment),
             ));
         }
     }

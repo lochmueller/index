@@ -112,6 +112,12 @@
             <trans-unit id="tx_index_domain_model_configuration.tab.files">
                 <source>Files</source>
             </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.content_indexing">
+                <source>Content indexing</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.content_indexing.description">
+                <source>Index content elements separately</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

@@ -93,6 +93,14 @@ return [
                 'type' => 'check',
             ],
         ],
+        'content_indexing' => [
+            'exclude' => 0,
+            'label' => $lll . 'tx_index_domain_model_configuration.content_indexing',
+            'description' => $lll . 'tx_index_domain_model_configuration.content_indexing.description',
+            'config' => [
+                'type' => 'check',
+            ],
+        ],
         'levels' => [
             'exclude' => 0,
             'label' => $lll . 'tx_index_domain_model_configuration.levels',
@@ -161,7 +169,7 @@ return [
         IndexTechnology::Database->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,languages,skip_no_search_pages,levels,partial_indexing,
+                    technology,languages,skip_no_search_pages,content_indexing,levels,partial_indexing,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types,
                     --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,

@@ -75,7 +75,7 @@ class DatabaseIndexingHandler implements IndexingInterface
 
     }
 
-    protected function indexItems(array $items, DatabaseIndexMessage $message, Site $site, $accessGroups, $fragment = '')
+    protected function indexItems(\SplQueue $items, DatabaseIndexMessage $message, Site $site, $accessGroups, $fragment = '')
     {
         foreach ($items as $item) {
             $item->arguments['_language'] = $message->language;

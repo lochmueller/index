@@ -69,7 +69,7 @@ return [
         ],
         'configuration' => [
             'label' => 'Index configuration',
-            'description' => 'Configuration of the index process via YAML.',
+            'description' => 'Configuration of the index process via JSON.', // @todo move to language file
             'config' => [
                 'type' => 'json',
                 'default' => '{}',

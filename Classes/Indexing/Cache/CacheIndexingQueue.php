@@ -45,7 +45,7 @@ readonly class CacheIndexingQueue implements IndexingInterface
             return;
         }
 
-        if ($configuration->skipNoSearchPages && $pageInformation->getPageRecord()['no_search'] ?? false) {
+        if ($configuration->skipNoSearchPages && ($pageInformation->getPageRecord()['no_search'] ?? false)) {
             return;
         }
 

@@ -45,7 +45,6 @@ readonly class ExternalIndexingQueue implements IndexingInterface
                 indexProcessId: $id,
             ));
         } else {
-
             $this->bus->dispatch(new ExternalFileIndexMessage(
                 siteIdentifier: $site->getIdentifier(),
                 language: $language,

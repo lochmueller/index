@@ -15,6 +15,11 @@
       "Lochmueller\\Index\\": "Classes/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Lochmueller\\Index\\Tests\\": "Tests/"
+    }
+  },
   "require": {
     "php": "^8.3",
     "typo3/cms-core": "^13.4",
@@ -24,6 +29,7 @@
     "typo3/cms-webhooks": "^13.4"
   },
   "require-dev": {
+    "typo3/testing-framework": "^8.0",
     "friendsofphp/php-cs-fixer": "^3.84",
     "phpstan/phpstan": "^2.1",
     "b13/container": "^3.1"
@@ -51,10 +57,18 @@
   },
   "scripts": {
     "code-fix": [
-      "@php-cs-fixer",
+      "@php-cs-fixer"
+    ],
+    "code-check": [
       "@phpstan"
     ],
-    "phpstan": ".Build/bin/phpstan analyse Classes --memory-limit 1G --level 3",
-    "php-cs-fixer": ".Build/bin/php-cs-fixer fix Classes --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes"
+    "code-test": [
+      "phpunit -c Tests/UnitTests.xml"
+    ],
+    "phpstan": ".Build/bin/phpstan analyse Classes --memory-limit 1G --level 5",
+    "php-cs-fixer": [
+      ".Build/bin/php-cs-fixer fix Classes --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes",
+      ".Build/bin/php-cs-fixer fix Tests --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes"
+    ]
   }
 }

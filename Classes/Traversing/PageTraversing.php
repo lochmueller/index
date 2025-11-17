@@ -61,7 +61,7 @@ class PageTraversing
                     if (!isset($item['limitToPages']) || (is_array($item['limitToPages']) && in_array($relevantPageUid, $item['limitToPages'], true))) {
                         // Handled via extender
                         foreach ($this->extender as $extender) {
-                            if ($extender->getName() === $item['type'] ?? '') {
+                            if ($extender->getName() === ($item['type'] ?? '')) {
                                 yield from $extender->getItems($configuration, $item, $site, $relevantPageUid, $language, $row);
                                 if ($dropOriginalUri) {
                                     continue 3;

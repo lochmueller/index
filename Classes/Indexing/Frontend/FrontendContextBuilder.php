@@ -35,9 +35,6 @@ class FrontendContextBuilder implements LoggerAwareInterface
         }
     }
 
-
-    private array $backedUpEnvironment = [];
-
     private function prepare(): void
     {
         $this->originalUser = $GLOBALS['BE_USER'];

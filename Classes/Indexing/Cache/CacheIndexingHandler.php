@@ -10,21 +10,32 @@ use Lochmueller\Index\Event\IndexPageEvent;
 use Lochmueller\Index\Indexing\IndexingInterface;
 use Lochmueller\Index\Queue\Message\CachePageMessage;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
-readonly class CacheIndexingHandler implements IndexingInterface
+class CacheIndexingHandler implements IndexingInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
-        private SiteFinder               $siteFinder,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SiteFinder               $siteFinder,
     ) {}
 
     #[AsMessageHandler]
     public function __invoke(CachePageMessage $message): void
     {
+        try {
+            $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
+        } catch (\Exception $exception) {
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            return;
+        }
+
         $this->eventDispatcher->dispatch(new IndexPageEvent(
-            site: $this->siteFinder->getSiteByIdentifier($message->siteIdentifier),
+            site: $site,
             technology: IndexTechnology::Cache,
             type: IndexType::Partial,
             indexConfigurationRecordId: $message->indexConfigurationRecordId,

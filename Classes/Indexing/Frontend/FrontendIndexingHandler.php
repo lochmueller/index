@@ -8,23 +8,31 @@ use Lochmueller\Index\Event\IndexPageEvent;
 use Lochmueller\Index\Indexing\IndexingInterface;
 use Lochmueller\Index\Queue\Message\FrontendIndexMessage;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
-readonly class FrontendIndexingHandler implements IndexingInterface
+class FrontendIndexingHandler implements IndexingInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
     public function __construct(
-        private SiteFinder               $siteFinder,
-        private FrontendRequestBuilder   $frontendRequestBuilder,
-        private EventDispatcherInterface $eventDispatcher,
+        private readonly SiteFinder               $siteFinder,
+        private readonly FrontendRequestBuilder   $frontendRequestBuilder,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
     #[AsMessageHandler]
     public function __invoke(FrontendIndexMessage $message): void
     {
-        $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
+        try {
+            $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
 
-        $content = $this->frontendRequestBuilder->buildRequestForPage($message->uri);
+            $content = $this->frontendRequestBuilder->buildRequestForPage($message->uri);
+        } catch (\Exception $exception) {
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            return;
+        }
 
         $title = '';
         if (preg_match('/<title>([^>]*)<\/title>/', $content, $matches)) {

@@ -22,17 +22,16 @@
   },
   "require": {
     "php": "^8.3",
-    "typo3/cms-core": "^13.4",
-    "typo3/cms-frontend": "^13.4",
-    "typo3/cms-backend": "^13.4",
-    "typo3/cms-reactions": "^13.4",
-    "typo3/cms-webhooks": "^13.4"
+    "typo3/cms-core": "^13.4||^14.0",
+    "typo3/cms-frontend": "^13.4||^14.0",
+    "typo3/cms-backend": "^13.4||^14.0",
+    "typo3/cms-reactions": "^13.4||^14.0",
+    "typo3/cms-webhooks": "^13.4||^14.0"
   },
   "require-dev": {
-    "typo3/testing-framework": "^8.0",
+    "typo3/testing-framework": "^8.0||^9.3",
     "friendsofphp/php-cs-fixer": "^3.84",
-    "phpstan/phpstan": "^2.1",
-    "b13/container": "^3.1"
+    "phpstan/phpstan": "^2.1"
   },
   "suggest": {
     "phpoffice/phpspreadsheet": "For file extraction process of Excel files.",
@@ -67,8 +66,8 @@
     ],
     "phpstan": ".Build/bin/phpstan analyse Classes --memory-limit 1G --level 5",
     "php-cs-fixer": [
-      ".Build/bin/php-cs-fixer fix Classes --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes",
-      ".Build/bin/php-cs-fixer fix Tests --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes"
+      ".Build/bin/php-cs-fixer fix Classes --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes --allow-unsupported-php-version yes",
+      ".Build/bin/php-cs-fixer fix Tests --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes --allow-unsupported-php-version yes"
     ]
   }
 }

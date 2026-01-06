@@ -71,8 +71,11 @@ class QueueCommand extends Command
         }
     }
 
+    /**
+     * return int[]
+     */
     private function getLimitedConfigurationUids(InputInterface $input): array
     {
-        return GeneralUtility::trimExplode(',', (string) $input->getOption('limitConfigurationIdentifiers'), true);
+        return GeneralUtility::intExplode(',', (string) $input->getOption('limitConfigurationIdentifiers'), true);
     }
 }

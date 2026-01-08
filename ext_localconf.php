@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Lochmueller\Index\Hooks\DataHandlerUpdateHook;
 use Psr\Log\LogLevel;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
@@ -27,8 +29,8 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing']['Lochmueller\\Index\\
 
 if ($environment->getContext()->isDevelopment()) {
     $extensionConfiguration = (new ExtensionConfiguration())->get('index');
-    $defaultTransportInDevelopmentContext = isset($extensionConfiguration['defaultTransportInDevelopmentContext']) && (bool)$extensionConfiguration['defaultTransportInDevelopmentContext'];
-    if($defaultTransportInDevelopmentContext) {
+    $defaultTransportInDevelopmentContext = isset($extensionConfiguration['defaultTransportInDevelopmentContext']) && (bool) $extensionConfiguration['defaultTransportInDevelopmentContext'];
+    if ($defaultTransportInDevelopmentContext) {
         unset($GLOBALS['TYPO3_CONF_VARS']['SYS']['messenger']['routing']['Lochmueller\\Index\\Queue\\Message\\*']);
     }
 }

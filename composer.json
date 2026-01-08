@@ -62,12 +62,10 @@
       "@phpstan"
     ],
     "code-test": [
-      "phpunit -c Tests/UnitTests.xml"
+      "@phpunit"
     ],
-    "phpstan": ".Build/bin/phpstan analyse Classes --memory-limit 1G --level 5",
-    "php-cs-fixer": [
-      ".Build/bin/php-cs-fixer fix Classes --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes --allow-unsupported-php-version yes",
-      ".Build/bin/php-cs-fixer fix Tests --rules=@PER-CS3.0:risky,@PER-CS3.0,declare_strict_types,no_unused_imports --allow-risky yes --allow-unsupported-php-version yes"
-    ]
+    "phpunit": "phpunit -c Tests/UnitTests.xml",
+    "phpstan": "phpstan analyse Classes --memory-limit 1G --level 5",
+    "php-cs-fixer": "php-cs-fixer fix --allow-unsupported-php-version yes"
   }
 }

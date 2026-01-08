@@ -23,6 +23,6 @@ final class IndexPageEvent
         public string                   $content,
         public readonly int             $pageUid,
         public readonly array           $accessGroups,
-        public readonly string           $uri = '',
+        public readonly string          $uri = '',
     ) {}
 }

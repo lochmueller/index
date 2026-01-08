@@ -51,7 +51,7 @@ class ExternalIndexingHandler
             title: $message->title,
             content: $message->content,
             pageUid: -1,
-            accessGroups: [],
+            accessGroups: $message->accessGroups,
             uri: $message->uri,
         ));
 

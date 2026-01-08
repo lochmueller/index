@@ -43,6 +43,7 @@ readonly class ExternalIndexingQueue implements IndexingInterface
                 title: $info['title'] ?? '',
                 content: $info['content'] ?? '',
                 indexProcessId: $id,
+                accessGroups: $info['accessGroups'] ?? [],
             ));
         } else {
             $this->bus->dispatch(new ExternalFileIndexMessage(

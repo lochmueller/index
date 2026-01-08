@@ -15,10 +15,11 @@ final readonly class ExternalPageIndexMessage
         public int             $language,
         public IndexTechnology $technology,
         public IndexType       $type,
-        public string $uri,
-        public string $title,
-        public string $content,
-        public string $indexProcessId,
+        public string          $uri,
+        public string          $title,
+        public string          $content,
+        public string          $indexProcessId,
+        public array           $accessGroups = [],
     ) {}
 
 }

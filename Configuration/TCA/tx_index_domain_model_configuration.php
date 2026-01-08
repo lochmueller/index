@@ -68,8 +68,8 @@ return [
             ],
         ],
         'configuration' => [
-            'label' => 'Index configuration',
-            'description' => 'Configuration of the index process via JSON.', // @todo move to language file
+            'label' => $lll . 'tx_index_domain_model_configuration.configuration',
+            'description' => $lll . 'tx_index_domain_model_configuration.configuration.description',
             'config' => [
                 'type' => 'json',
                 'default' => '{}',

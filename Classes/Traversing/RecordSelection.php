@@ -106,7 +106,7 @@ class RecordSelection
     }
 
 
-    public function findRecordByUid(string $table, int $uid): ?array
+    public function findRecordByUid(string $table, int $uid): ?Record
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
         $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
@@ -117,7 +117,7 @@ class RecordSelection
             );
         $rows = $queryBuilder->executeQuery()->fetchAllAssociative();
 
-        return $rows[0] ?? null;
+        return isset($rows[0]) ? $this->mapRecord($table, $rows[0]) : null;
     }
 
     protected function isExcludedDoktype(array $row): bool

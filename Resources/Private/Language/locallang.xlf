@@ -19,6 +19,12 @@
             <trans-unit id="tx_index_domain_model_log.end_time">
                 <source>End time</source>
             </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.configuration">
+                <source>Configuration</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.configuration.description">
+                <source>Configuration of the index process via JSON.</source>
+            </trans-unit>
             <trans-unit id="tx_index_domain_model_log.pages_counter">
                 <source>Pages counter</source>
             </trans-unit>

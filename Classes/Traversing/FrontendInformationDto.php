@@ -12,6 +12,7 @@ readonly class FrontendInformationDto
     /**
      * @param array<string, mixed> $arguments
      * @param array<string, mixed> $row
+     * @param int[] $accessGroups
      */
     public function __construct(
         public UriInterface $uri,
@@ -19,5 +20,6 @@ readonly class FrontendInformationDto
         public int          $pageUid,
         public SiteLanguage $language,
         public array        $row,
+        public array        $accessGroups = [],
     ) {}
 }

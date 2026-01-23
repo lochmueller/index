@@ -53,7 +53,7 @@ class FrontendIndexingHandler implements IndexingInterface, LoggerAwareInterface
             title: $title,
             content: $content,
             pageUid: $message->pageUid,
-            accessGroups: [], // @todo access_groups
+            accessGroups: $message->accessGroups,
         ));
     }
 

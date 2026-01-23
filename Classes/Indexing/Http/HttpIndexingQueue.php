@@ -53,6 +53,7 @@ readonly class HttpIndexingQueue implements IndexingInterface
                 uri: $info->uri,
                 pageUid: $info->pageUid,
                 indexProcessId: $id,
+                accessGroups: $info->accessGroups,
             ));
         }
 

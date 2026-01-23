@@ -53,6 +53,7 @@ class DatabaseIndexingQueue implements IndexingInterface
                 pageUid: $info->pageUid,
                 indexProcessId: $id,
                 language: $info->language->getLanguageId(),
+                accessGroups: $info->accessGroups,
             ));
         }
 

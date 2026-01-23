@@ -6,6 +6,7 @@ namespace Lochmueller\Index\Traversing;
 
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\Utility\AccessGroupParser;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -14,7 +15,6 @@ use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-// @todo access_groups
 class PageTraversing
 {
     /**
@@ -82,6 +82,7 @@ class PageTraversing
                     pageUid: $relevantPageUid,
                     language: $language,
                     row: $row,
+                    accessGroups: AccessGroupParser::parse($row['fe_group'] ?? ''),
                 );
             }
         }

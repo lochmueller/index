@@ -10,6 +10,9 @@ use Psr\Http\Message\UriInterface;
 
 final readonly class DatabaseIndexMessage
 {
+    /**
+     * @param int[] $accessGroups
+     */
     public function __construct(
         /** Meta information */
         public string          $siteIdentifier,
@@ -20,6 +23,6 @@ final readonly class DatabaseIndexMessage
         public int             $pageUid,
         public string          $indexProcessId,
         public int             $language,
+        public array           $accessGroups = [],
     ) {}
-
 }

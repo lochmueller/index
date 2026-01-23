@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Traversing;
 
+use Lochmueller\Index\Database\Query\Restriction\NonContainerElementsRestrictionContainer;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
@@ -28,14 +29,27 @@ class RecordSelection
     /**
      * @return Record[]
      */
-    public function findRecordsOnPage(string $table, array $pageUids, int $languageUid = 0): iterable
-    {
+    public function findRecordsOnPage(
+        string $table,
+        array $pageUids,
+        int $languageUid = 0,
+        array $restrictions = [
+            FrontendRestrictionContainer::class,
+            NonContainerElementsRestrictionContainer::class,
+        ],
+    ): iterable {
         $schema = $this->tcaSchemaFactory->get($table);
         /** @var LanguageAwareSchemaCapability $languageCapability */
         $languageCapability = $schema->getCapability(TcaSchemaCapability::Language);
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
-        $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
+        foreach ($restrictions as $restriction) {
+            if (is_object($restriction)) {
+                $queryBuilder->getRestrictions()->add($restriction);
+            } else {
+                $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance($restriction));
+            }
+        }
 
         // No empty storages
         $pageUids[] = -99;

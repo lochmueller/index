@@ -6,21 +6,21 @@ namespace Lochmueller\Index\Tests\Unit\Traversing;
 
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use Lochmueller\Index\Traversing\FrontendInformationDto;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 
 class FrontendInformationDtoTest extends AbstractTest
 {
-    private UriInterface&MockObject $uriMock;
+    private UriInterface&Stub $uriMock;
 
-    private SiteLanguage&MockObject $languageMock;
+    private SiteLanguage&Stub $languageMock;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->uriMock = $this->createMock(UriInterface::class);
-        $this->languageMock = $this->createMock(SiteLanguage::class);
+        $this->uriMock = $this->createStub(UriInterface::class);
+        $this->languageMock = $this->createStub(SiteLanguage::class);
     }
 
     /**

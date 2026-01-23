@@ -39,17 +39,17 @@ class TcaSelectionTest extends AbstractTest
 
     public function testCountrySelectionAddsLanguagesFromSite(): void
     {
-        $language1 = $this->createMock(SiteLanguage::class);
+        $language1 = $this->createStub(SiteLanguage::class);
         $language1->method('getTitle')->willReturn('English');
         $language1->method('getLanguageId')->willReturn(0);
         $language1->method('getFlagIdentifier')->willReturn('flags-gb');
 
-        $language2 = $this->createMock(SiteLanguage::class);
+        $language2 = $this->createStub(SiteLanguage::class);
         $language2->method('getTitle')->willReturn('German');
         $language2->method('getLanguageId')->willReturn(1);
         $language2->method('getFlagIdentifier')->willReturn('flags-de');
 
-        $site = $this->createMock(SiteInterface::class);
+        $site = $this->createStub(SiteInterface::class);
         $site->method('getLanguages')->willReturn([$language1, $language2]);
 
         $params = ['site' => $site];
@@ -71,12 +71,12 @@ class TcaSelectionTest extends AbstractTest
 
     public function testCountrySelectionAppendsToExistingItems(): void
     {
-        $language = $this->createMock(SiteLanguage::class);
+        $language = $this->createStub(SiteLanguage::class);
         $language->method('getTitle')->willReturn('French');
         $language->method('getLanguageId')->willReturn(2);
         $language->method('getFlagIdentifier')->willReturn('flags-fr');
 
-        $site = $this->createMock(SiteInterface::class);
+        $site = $this->createStub(SiteInterface::class);
         $site->method('getLanguages')->willReturn([$language]);
 
         $params = [
@@ -95,7 +95,7 @@ class TcaSelectionTest extends AbstractTest
 
     public function testCountrySelectionHandlesEmptyLanguages(): void
     {
-        $site = $this->createMock(SiteInterface::class);
+        $site = $this->createStub(SiteInterface::class);
         $site->method('getLanguages')->willReturn([]);
 
         $params = ['site' => $site];

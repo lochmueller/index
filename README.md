@@ -2,25 +2,25 @@
 
 EXT:index is a TYPO3 indexing framework to handle the content generation of a TYPO3 website related to different index
 configurations. This could be used for search engine fill-up processes or other content engines that need the generated
-content of typo3 pages and files (AI provider). To speed up the indexing the TYPO3 internal message bus is used.
+content of TYPO3 pages and files (AI provider). To speed up the indexing, the TYPO3 internal message bus is used.
 
-You can use the PSR-14 Events to get the index information or the webhook functions of the core, to move the indexed
+You can use the PSR-14 events to get the index information or the webhook functions of the core to move the indexed
 information to external services. Please do not use the internal messages, because they are handled internally in the
 extension.
 
-This extension was funded by the [TYPO3 Association](https://typo3.org): [commnuity ideas](https://typo3.org/article/members-have-selected-five-ideas-to-be-funded-in-quarter-3-2025) & [final blogpost](https://typo3.org/article/typo3-meets-seal-a-breath-of-fresh-air-for-search)
+This extension was funded by the [TYPO3 Association](https://typo3.org): [community ideas](https://typo3.org/article/members-have-selected-five-ideas-to-be-funded-in-quarter-3-2025) & [final blogpost](https://typo3.org/article/typo3-meets-seal-a-breath-of-fresh-air-for-search)
 
 ## Installation & Configuration
 
 1. Run `composer require lochmueller/index`
-2. Create at least two scheduler task and take care that the scheduler is executed:
-    - `index:queue` (example: every two days in midnight) fill up the message queue with the indexed pages, via full
+2. Create at least two scheduler tasks and take care that the scheduler is executed:
+    - `index:queue` (example: every two days at midnight) fills up the message queue with the indexed pages via full
       index
     - `messenger:consume index` (based on
       the [documentation](https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/MessageBus/Index.html#message-bus-consume-command))
-      to handle the index processes of the queue.
+      to handle the index processes of the queue
 3. Create index configurations on pages (example: on the root page of your site or subpages)
-4. Use the extension, that is based on EXT:index and have fun.
+4. Use the extension that is based on EXT:index and have fun
 
 Feel free to create an [issue](https://github.com/lochmueller/indexing/issues) if you have some more ideas or found a
 bug.
@@ -28,7 +28,7 @@ bug.
 ### Configuration
 
 The traversing configuration of the database and frontend indexing is configured via JSON. This is an example
-configuration for content indexing on the pages (database indexing online) and the url build process for news. Only the
+configuration for content indexing on the pages (database indexing online) and the URL build process for news. Only the
 first valid (`limitToPages`) extender is executed for every page.
 
 Possible types are:
@@ -65,29 +65,29 @@ different index mechanism on different sub pages.
     - Easy in the configuration.
     - No active full index process.
     - Indexing is done in the regular cache fill process.
-      -No hard impact to the page performance.
+    - No hard impact on the page performance.
 - *Database*
     - Regular full indexing.
-    - Very fast build process of the page content with separated PHP integrations.
-    - Custom content elements need separated class integrations.
-    - Create only a light version of the HTML markup
+    - Very fast build process of the page content with separate PHP integrations.
+    - Custom content elements need separate class integrations.
+    - Creates only a light version of the HTML markup.
 - *External*
-    - Not directly selectable in the backend!
+    - Not directly selectable in the backend.
     - Used for content that is sent via webhook to the EXT:reactions endpoint.
     - This content uses the same path in the index workflow (internal message + event).
 - *File*
-    - Not directly selectable in the backend!
-    - Is used in the regular index process to select additional files in the index process.
+    - Not directly selectable in the backend.
+    - Is used in the regular index process to select additional files.
 - *Frontend*
     - Uses an internal subrequest and executes the regular frontend middleware stack.
     - The TYPO3 system and all extensions have to use the middleware in the right way.
     - Faster than "real frontend requests".
     - Creates the real HTML markup of pages.
 - *Http*
-    - If there are problems with "Frontend" you can select Http.
+    - If there are problems with "Frontend", you can select Http.
     - This creates real frontend requests that are sent via network.
     - Please keep password protection in mind.
-    - Very slow and significant higher load on the server.
+    - Very slow and significantly higher load on the server.
     - Creates the real HTML markup of pages.
 - *None*
     - Use it to exclude the current page & subpages in the traversing process of the parent configuration.
@@ -99,15 +99,15 @@ information for your extension.
 
 ### Events
 
-There are four `public` main events that you can use in your extension. EXT:index takes care of the index processing and
+There are four public main events that you can use in your extension. EXT:index takes care of the index processing and
 the async handling of the queue. So you can directly consume the event, add your business logic and run more or less
 complex processes in the event listener. Please *DO NOT* use the internal messages that are part of the internal
 process.
 
-- **StartIndexProcess** - Start event incl. meta information like technology, type
+- **StartIndexProcessEvent** - Start event incl. meta information like technology, type
 - **IndexPageEvent** - Index event for pages incl. title, content and meta information of one page
 - **IndexFileEvent** - Index event for files incl. title, content and meta information of one file
-- **EndIndexProcess** - End event incl. meta information like technology, type
+- **FinishIndexProcessEvent** - End event incl. meta information like technology, type
 
 *Please keep in mind, that the messages are pushed directly, one after another, into the message bus.
 If there are any reasons that the FIFO (first in, first out) is not consistent, we cannot guarantee
@@ -131,7 +131,7 @@ integrations. These are very "internal" options to extend the index process:
 
 All four events are available as webhooks. You can use the webhook functions of the core to move the indexed
 information to external services. It is also possible to add external resources to the internal index process. There are
-two reactions that create indexed pages and files. Feel free to connection instances ;)
+two reactions that create indexed pages and files. Feel free to connect instances ;)
 
 ### File extraction
 

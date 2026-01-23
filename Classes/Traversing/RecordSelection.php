@@ -10,6 +10,7 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
+use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionInterface;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
@@ -46,11 +47,9 @@ class RecordSelection
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
         foreach ($restrictions as $restriction) {
-            if (is_object($restriction)) {
-                $queryBuilder->getRestrictions()->add($restriction);
-            } else {
-                $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance($restriction));
-            }
+            /** @var QueryRestrictionInterface $restrictionInstance */
+            $restrictionInstance = is_object($restriction) ? $restriction : GeneralUtility::makeInstance($restriction);
+            $queryBuilder->getRestrictions()->add($restrictionInstance);
         }
 
         // No empty storages

@@ -44,7 +44,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
             }
 
             $title = $pageRow['title'] . ' | ' . $site->getAttribute('websiteTitle');
-            $accessGroups = [];  // @todo
+            $accessGroups = [];  // @todo access_groups
 
             $contentElements = $this->recordSelection->findRecordsOnPage('tt_content', [$message->pageUid], $message->language);
 

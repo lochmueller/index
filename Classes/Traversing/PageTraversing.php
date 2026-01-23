@@ -15,7 +15,7 @@ use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-// @todo Add access group restriction support
+// @todo access_groups
 class PageTraversing
 {
     /**

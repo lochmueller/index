@@ -50,7 +50,7 @@ class HttpIndexingHandler implements IndexingInterface, LoggerAwareInterface
             title: $title,
             content: $content,
             pageUid: $message->pageUid,
-            accessGroups: [], // @todo
+            accessGroups: [], // @todo access_groups
         ));
     }
 

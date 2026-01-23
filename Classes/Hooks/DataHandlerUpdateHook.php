@@ -25,6 +25,9 @@ class DataHandlerUpdateHook
         private readonly FrontendInterface $cache,
     ) {}
 
+    /**
+     * @param array<string, mixed> $fieldArray
+     */
     public function processDatamap_afterDatabaseOperations(
         string $status,
         string $table,
@@ -45,10 +48,10 @@ class DataHandlerUpdateHook
         string $command,
         string $table,
         int|string $id,
-        $value,
+        mixed $value,
         DataHandler $dataHandler,
-        $pasteUpdate,
-        $pasteDatamap,
+        mixed $pasteUpdate,
+        mixed $pasteDatamap,
     ): void {
         if (MathUtility::canBeInterpretedAsInteger($id)) {
             $record = BackendUtility::getRecord($table, $id);
@@ -60,9 +63,11 @@ class DataHandlerUpdateHook
         }
     }
 
-    public function clearCacheCmd($params, DataHandler $dataHandler): void
+    /**
+     * @param array<string, mixed> $params
+     */
+    public function clearCacheCmd(array $params, DataHandler $dataHandler): void
     {
-
         $pageIds = $params['pageIdArray'] ?? [];
         foreach ($pageIds as $pageId) {
             $this->triggerPartialIndexProcessForPage((int) $pageId, IndexPartialTrigger::Clearcache);

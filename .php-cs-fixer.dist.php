@@ -12,6 +12,9 @@ return (new Config())
     ->setRules([
         '@PER-CS3.0' => true,
         '@PER-CS3.0:risky' => true,
+        '@PHP8x3Migration' => true,
+        '@PHP8x3Migration:risky' => true,
+        '@PHPUnit10x0Migration:risky' => true,
         'declare_strict_types' => true,
         'no_unused_imports' => true
     ])

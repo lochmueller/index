@@ -44,14 +44,10 @@ return [
                 'type' => 'select',
                 'renderType' => 'selectSingle',
                 'default' => IndexTechnology::None->value,
-                'items' => array_map(function ($enum) use ($lll) {
-                    return [
-                        'label' => $lll . 'tx_index_domain_model_configuration.technology.type.' . $enum->value,
-                        'value' => $enum->value,
-                    ];
-                }, array_filter(IndexTechnology::cases(), function ($item) {
-                    return $item !== IndexTechnology::External;
-                })),
+                'items' => array_map(fn($enum) => [
+                    'label' => $lll . 'tx_index_domain_model_configuration.technology.type.' . $enum->value,
+                    'value' => $enum->value,
+                ], array_filter(IndexTechnology::cases(), fn($item) => $item !== IndexTechnology::External)),
             ],
         ],
         'partial_indexing' => [
@@ -60,12 +56,10 @@ return [
             'config' => [
                 'type' => 'select',
                 'renderType' => 'selectCheckBox',
-                'items' => array_map(function ($enum) use ($lll) {
-                    return [
-                        'label' => $lll . 'tx_index_domain_model_configuration.partial_indexing.type.' . $enum->value,
-                        'value' => $enum->value,
-                    ];
-                }, IndexPartialTrigger::cases()),
+                'items' => array_map(fn($enum) => [
+                    'label' => $lll . 'tx_index_domain_model_configuration.partial_indexing.type.' . $enum->value,
+                    'value' => $enum->value,
+                ], IndexPartialTrigger::cases()),
             ],
         ],
         'configuration' => [

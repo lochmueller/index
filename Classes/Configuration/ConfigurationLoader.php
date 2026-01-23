@@ -70,9 +70,7 @@ class ConfigurationLoader
         $rootPageId = $site->getRootPageId();
         foreach (self::$runtimeConfigurationCache as $configuration) {
             $rootLineUtility = GeneralUtility::makeInstance(RootlineUtility::class, $configuration->pageId);
-            $rootLineIds = array_map(function ($entry) {
-                return $entry['uid'];
-            }, $rootLineUtility->get());
+            $rootLineIds = array_map(fn($entry) => $entry['uid'], $rootLineUtility->get());
             if (in_array($rootPageId, $rootLineIds)) {
                 yield $configuration;
             }

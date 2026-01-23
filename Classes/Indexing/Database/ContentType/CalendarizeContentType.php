@@ -48,6 +48,9 @@ class CalendarizeContentType implements ContentTypeInterface
         */
     }
 
+    /**
+     * @param \SplQueue<DatabaseIndexingDto> $queue
+     */
     public function addVariants(Record $record, \SplQueue &$queue): void
     {
         /** @var DatabaseIndexingDto $dto */
@@ -70,6 +73,9 @@ class CalendarizeContentType implements ContentTypeInterface
         }
     }
 
+    /**
+     * @return iterable<Record>
+     */
     protected function getIndexRecords(Record $record, int $languageUid): iterable
     {
         // @todo integrate calendarize index selection

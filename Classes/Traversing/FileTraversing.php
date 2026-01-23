@@ -26,7 +26,8 @@ class FileTraversing
     }
 
     /**
-     * @return File[]
+     * @param string[] $fileExtensions
+     * @return iterable<File>
      */
     public function findFilesInFileMountUidRecursive(int $fileMountUid, array $fileExtensions): iterable
     {

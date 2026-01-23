@@ -24,6 +24,9 @@ class WordFileExtraction implements FileExtractionInterface
         return 'mimetypes-word';
     }
 
+    /**
+     * @return string[]
+     */
     public function getFileExtensions(): array
     {
         return ['doc', 'dot', 'docm', 'docx', 'dotm', 'dotx', 'sxw', 'rtf'];
@@ -38,7 +41,7 @@ class WordFileExtraction implements FileExtractionInterface
         $text = '';
         foreach ($phpWord->getSections() as $section) {
             foreach ($section->getElements() as $element) {
-                if (method_exists($element, 'getText')) {
+                if (method_exists($element, 'getText') && is_object($element)) {
                     $text .= $element->getText() . "\n";
                 }
             }

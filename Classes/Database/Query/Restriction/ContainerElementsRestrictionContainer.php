@@ -14,6 +14,9 @@ class ContainerElementsRestrictionContainer implements QueryRestrictionInterface
 {
     public function __construct(protected int $containerParent) {}
 
+    /**
+     * @param array<string, string> $queriedTables
+     */
     public function buildExpression(array $queriedTables, ExpressionBuilder $expressionBuilder): CompositeExpression
     {
         $constraints = [];

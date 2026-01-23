@@ -10,6 +10,13 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class Configuration
 {
+    /**
+     * @param string[] $fileMounts
+     * @param string[] $fileTypes
+     * @param array<string, mixed> $configuration
+     * @param string[] $partialIndexing
+     * @param int[] $languages
+     */
     public function __construct(
         public readonly int             $configurationId,
         public int                      $pageId,
@@ -25,6 +32,9 @@ class Configuration
         public ?IndexType               $overrideIndexType = null,
     ) {}
 
+    /**
+     * @param array<string, mixed> $row
+     */
     public static function createByDatabaseRow(array $row): Configuration
     {
         return new self(

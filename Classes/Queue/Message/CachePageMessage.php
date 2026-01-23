@@ -9,6 +9,9 @@ use Lochmueller\Index\Enums\IndexType;
 
 final readonly class CachePageMessage
 {
+    /**
+     * @param int[] $accessGroups
+     */
     public function __construct(
         /** Meta information */
         public string          $siteIdentifier,

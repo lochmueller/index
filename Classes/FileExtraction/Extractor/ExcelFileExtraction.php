@@ -24,6 +24,9 @@ class ExcelFileExtraction implements FileExtractionInterface
         return 'mimetypes-excel';
     }
 
+    /**
+     * @return string[]
+     */
     public function getFileExtensions(): array
     {
         return ['xls', 'xlsm', 'xlsx', 'xltm', 'xltx', 'sxc',];

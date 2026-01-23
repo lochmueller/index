@@ -17,6 +17,11 @@ class Address implements ExtenderInterface
         private readonly RecordSelection $recordSelection,
     ) {}
 
+    /**
+     * @param array<string, mixed> $extenderConfiguration
+     * @param array<string, mixed> $row
+     * @return iterable<FrontendInformationDto>
+     */
     public function getItems(
         Configuration $configuration,
         array         $extenderConfiguration,

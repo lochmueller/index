@@ -8,6 +8,9 @@ use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
 class TcaSelection
 {
+    /**
+     * @param array<string, mixed> $params
+     */
     public function countrySelection(array &$params): void
     {
 

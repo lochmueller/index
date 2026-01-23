@@ -23,6 +23,9 @@ class TextFileExtraction implements FileExtractionInterface
         return 'mimetypes-text-text';
     }
 
+    /**
+     * @return string[]
+     */
     public function getFileExtensions(): array
     {
         return ['txt'];

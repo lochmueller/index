@@ -22,6 +22,9 @@ readonly class ExternalIndexingQueue implements IndexingInterface
         protected SiteFinder $siteFinder,
     ) {}
 
+    /**
+     * @param array<string, mixed> $info
+     */
     public function fillQueue(SiteInterface $site, int $language, array $info, bool $isPage = false): void
     {
         $id = uniqid('external-index', true);

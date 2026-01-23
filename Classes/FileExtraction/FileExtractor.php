@@ -12,6 +12,9 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 #[Autoconfigure(public: true)]
 readonly class FileExtractor
 {
+    /**
+     * @param iterable<FileExtractionInterface> $fileExtractor
+     */
     public function __construct(
         #[AutowireIterator('index.file_extractor')]
         protected iterable $fileExtractor,
@@ -27,6 +30,10 @@ readonly class FileExtractor
         return null;
     }
 
+    /**
+     * @param string[] $fileTypes
+     * @return string[]
+     */
     public function resolveFileTypes(array $fileTypes): array
     {
         $extensions = [];
@@ -42,6 +49,9 @@ readonly class FileExtractor
     }
 
 
+    /**
+     * @param array<string, mixed> $params
+     */
     public function getBackendItems(array &$params): void
     {
         foreach ($this->getExtractors() as $extractor) {

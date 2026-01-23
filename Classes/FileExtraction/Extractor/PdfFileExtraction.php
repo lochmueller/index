@@ -24,6 +24,9 @@ class PdfFileExtraction implements FileExtractionInterface
         return 'mimetypes-pdf';
     }
 
+    /**
+     * @return string[]
+     */
     public function getFileExtensions(): array
     {
         return ['pdf'];

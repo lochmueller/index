@@ -25,10 +25,14 @@ class DataHandlerUpdateHook
         private readonly FrontendInterface $cache,
     ) {}
 
-    public function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, DataHandler $dataHandler): void
-    {
+    public function processDatamap_afterDatabaseOperations(
+        string $status,
+        string $table,
+        int|string $id,
+        array $fieldArray,
+        DataHandler $dataHandler,
+    ): void {
         if (MathUtility::canBeInterpretedAsInteger($id)) {
-
             $record = BackendUtility::getRecord($table, $id);
             if ($record) {
                 $field = $table === 'pages' ? 'uid' : 'pid';
@@ -37,8 +41,15 @@ class DataHandlerUpdateHook
         }
     }
 
-    public function processCmdmap_postProcess($command, $table, $id, $value, DataHandler $dataHandler, $pasteUpdate, $pasteDatamap): void
-    {
+    public function processCmdmap_postProcess(
+        string $command,
+        string $table,
+        int|string $id,
+        $value,
+        DataHandler $dataHandler,
+        $pasteUpdate,
+        $pasteDatamap,
+    ): void {
         if (MathUtility::canBeInterpretedAsInteger($id)) {
             $record = BackendUtility::getRecord($table, $id);
             if ($record) {

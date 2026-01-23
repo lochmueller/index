@@ -12,6 +12,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class NonContainerElementsRestrictionContainer implements QueryRestrictionInterface
 {
+    /**
+     * @param array<string, string> $queriedTables
+     */
     public function buildExpression(array $queriedTables, ExpressionBuilder $expressionBuilder): CompositeExpression
     {
         $constraints = [];

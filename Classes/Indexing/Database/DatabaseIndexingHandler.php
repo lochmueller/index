@@ -78,7 +78,11 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
         }
     }
 
-    protected function indexItems(\SplQueue $items, DatabaseIndexMessage $message, Site $site, $accessGroups, $fragment = '')
+    /**
+     * @param \SplQueue<DatabaseIndexingDto> $items
+     * @param int[] $accessGroups
+     */
+    protected function indexItems(\SplQueue $items, DatabaseIndexMessage $message, Site $site, array $accessGroups, string $fragment = ''): void
     {
         foreach ($items as $item) {
             $item->arguments['_language'] = $message->language;

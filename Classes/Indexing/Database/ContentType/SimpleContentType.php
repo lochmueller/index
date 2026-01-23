@@ -10,6 +10,9 @@ use TYPO3\CMS\Core\Domain\Record;
 #[AutoconfigureTag(name: 'index.content_type')]
 abstract class SimpleContentType implements ContentTypeInterface
 {
+    /**
+     * @param \SplQueue<\Lochmueller\Index\Indexing\Database\DatabaseIndexingDto> $queue
+     */
     public function addVariants(Record $record, \SplQueue &$queue): void {}
 
 }

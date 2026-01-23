@@ -40,6 +40,9 @@ class ContentBlockContentType extends SimpleContentType
         #$dto->content .= $return;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function getContentBlockList(): array
     {
         static $contentBlockList = null;

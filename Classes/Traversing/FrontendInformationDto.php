@@ -9,6 +9,10 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 
 readonly class FrontendInformationDto
 {
+    /**
+     * @param array<string, mixed> $arguments
+     * @param array<string, mixed> $row
+     */
     public function __construct(
         public UriInterface $uri,
         public array        $arguments,

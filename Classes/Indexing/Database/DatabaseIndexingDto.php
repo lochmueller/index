@@ -8,6 +8,9 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 
 class DatabaseIndexingDto
 {
+    /**
+     * @param array<string, mixed> $arguments
+     */
     public function __construct(
         public string       $title,
         public string       $content,

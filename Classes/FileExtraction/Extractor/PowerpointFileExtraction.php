@@ -25,6 +25,9 @@ class PowerpointFileExtraction implements FileExtractionInterface
         return 'mimetypes-powerpoint';
     }
 
+    /**
+     * @return string[]
+     */
     public function getFileExtensions(): array
     {
         return ['pps', 'ppsx', 'ppt', 'pptm', 'pptx', 'potm', 'potx'];

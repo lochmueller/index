@@ -15,6 +15,9 @@ interface ContentTypeInterface
 
     public function addContent(Record $record, DatabaseIndexingDto $dto): void;
 
+    /**
+     * @param \SplQueue<DatabaseIndexingDto> $queue
+     */
     public function addVariants(Record $record, \SplQueue &$queue): void;
 
 }

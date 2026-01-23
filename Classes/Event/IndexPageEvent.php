@@ -10,6 +10,9 @@ use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
 final class IndexPageEvent
 {
+    /**
+     * @param int[] $accessGroups
+     */
     public function __construct(
         /** Meta information */
         public readonly SiteInterface   $site,

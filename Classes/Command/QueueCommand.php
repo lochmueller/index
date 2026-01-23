@@ -43,6 +43,9 @@ class QueueCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * @return iterable<\Lochmueller\Index\Configuration\Configuration>
+     */
     protected function getConfigurations(InputInterface $input): iterable
     {
         $configurations = $this->getLimitedConfigurationUids($input);
@@ -60,6 +63,9 @@ class QueueCommand extends Command
     }
 
 
+    /**
+     * @return iterable<\TYPO3\CMS\Core\Site\Entity\Site>
+     */
     private function getRelevantSites(InputInterface $input): iterable
     {
         $siteIdentifiers = GeneralUtility::trimExplode(',', (string) $input->getOption('limitSiteIdentifiers'), true);
@@ -72,7 +78,7 @@ class QueueCommand extends Command
     }
 
     /**
-     * return int[]
+     * @return int[]
      */
     private function getLimitedConfigurationUids(InputInterface $input): array
     {

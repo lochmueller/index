@@ -29,7 +29,7 @@ class FrontendRequestBuilder implements LoggerAwareInterface
         protected FrontendContextBuilder $frontendContextBuilder,
     ) {}
 
-    public function buildRequestForPage(UriInterface $uri, $frontendUserGroups = []): ?string
+    public function buildRequestForPage(UriInterface $uri): ?string
     {
         $serverParams = [
             'SCRIPT_NAME' => '/index.php',

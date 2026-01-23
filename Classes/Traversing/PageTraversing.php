@@ -18,6 +18,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 // @todo Add access group restriction support
 class PageTraversing
 {
+    /**
+     * @param iterable<Extender\ExtenderInterface> $extender
+     */
     public function __construct(
         private SiteFinder            $siteFinder,
         #[AutowireIterator('index.extender')]
@@ -85,6 +88,9 @@ class PageTraversing
         }
     }
 
+    /**
+     * @return iterable<int>
+     */
     protected function getRelevantPageUids(Configuration $configuration, ?int $id = null, ?int $depth = null): iterable
     {
         if ($id === null) {

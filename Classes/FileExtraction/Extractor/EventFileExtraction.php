@@ -27,18 +27,21 @@ class EventFileExtraction implements FileExtractionInterface
         return 'avatar-default';
     }
 
+    /**
+     * @return string[]
+     */
     public function getFileExtensions(): array
     {
-        /** @var CustomFileExtraction $event */
-        $event = $this->eventDispatcher->dispatch(new CustomFileExtraction());
-        return $event->extensions;
+        $eventObject = new CustomFileExtraction();
+        $this->eventDispatcher->dispatch($eventObject);
+        return $eventObject->extensions;
     }
 
     public function getFileContent(FileInterface $file): string
     {
-        /** @var CustomFileExtraction $event */
-        $event = $this->eventDispatcher->dispatch(new CustomFileExtraction($file));
-        return (string) $event->content;
+        $eventObject = new CustomFileExtraction($file);
+        $this->eventDispatcher->dispatch($eventObject);
+        return (string) $eventObject->content;
     }
 
 }

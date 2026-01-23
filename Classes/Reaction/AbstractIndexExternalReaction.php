@@ -22,6 +22,9 @@ abstract class AbstractIndexExternalReaction
         protected readonly ExternalIndexingQueue  $externalIndexingQueue,
     ) {}
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function jsonResponse(array $data, int $statusCode = 201): ResponseInterface
     {
         return $this->responseFactory
@@ -37,6 +40,9 @@ abstract class AbstractIndexExternalReaction
 
     abstract protected function isPage(): bool;
 
+    /**
+     * @param array<string, mixed> $payload
+     */
     public function react(ServerRequestInterface $request, array $payload, ReactionInstruction $reaction): ResponseInterface
     {
         $siteIdentifier = $payload['meta']['siteIdentifier'] ?? '';

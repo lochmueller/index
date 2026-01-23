@@ -24,6 +24,9 @@ class ContentIndexing implements IndexingInterface, LoggerAwareInterface
         protected readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
+    /**
+     * @param \SplQueue<DatabaseIndexingDto> $queue
+     */
     public function getVariants(Record $record, \SplQueue &$queue): void
     {
         foreach ($this->contentTypes as $contentType) {
@@ -46,7 +49,7 @@ class ContentIndexing implements IndexingInterface, LoggerAwareInterface
         }
 
         $handleEvent = new HandleContentTypeEvent($record, $defaultHandled, $dto->content, $dto);
-        $handleEvent = $this->eventDispatcher->dispatch($handleEvent);
+        $this->eventDispatcher->dispatch($handleEvent);
 
         if ($handleEvent->content === null) {
             $this->logger->warning('Content could not be handled', ['record_type' => $record->getRecordType()]);

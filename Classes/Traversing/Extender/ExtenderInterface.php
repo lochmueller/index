@@ -12,6 +12,11 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 #[AutoconfigureTag(name: 'index.extender')]
 interface ExtenderInterface
 {
+    /**
+     * @param array<string, mixed> $extenderConfiguration
+     * @param array<string, mixed> $row
+     * @return iterable<\Lochmueller\Index\Traversing\FrontendInformationDto>
+     */
     public function getItems(
         Configuration $configuration,
         array         $extenderConfiguration,

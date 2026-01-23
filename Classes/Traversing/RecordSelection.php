@@ -27,7 +27,9 @@ class RecordSelection
     ) {}
 
     /**
-     * @return Record[]
+     * @param int[] $pageUids
+     * @param array<class-string|object> $restrictions
+     * @return iterable<Record>
      */
     public function findRecordsOnPage(
         string $table,
@@ -87,6 +89,9 @@ class RecordSelection
         }
     }
 
+    /**
+     * @param array<string, mixed> $row
+     */
     public function mapRecord(string $table, array $row): Record
     {
         /** @var Record $record */
@@ -94,6 +99,9 @@ class RecordSelection
         return $record;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function findRenderablePage(int $pageUid, int $language = 0): ?array
     {
         $schema = $this->tcaSchemaFactory->get('pages');
@@ -134,6 +142,9 @@ class RecordSelection
         return isset($rows[0]) ? $this->mapRecord($table, $rows[0]) : null;
     }
 
+    /**
+     * @param array<string, mixed> $row
+     */
     protected function isExcludedDoktype(array $row): bool
     {
         return isset($row['doktype']) && in_array((int) $row['doktype'], [

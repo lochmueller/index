@@ -16,6 +16,9 @@ interface FileExtractionInterface
 
     public function getFileGroupIconIdentifier(): string;
 
+    /**
+     * @return string[]
+     */
     public function getFileExtensions(): array;
 
     public function getFileContent(FileInterface $file): string;

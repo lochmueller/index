@@ -45,6 +45,9 @@ class NewsContentType implements ContentTypeInterface
         }
     }
 
+    /**
+     * @param \SplQueue<DatabaseIndexingDto> $queue
+     */
     public function addVariants(Record $record, \SplQueue &$queue): void
     {
         /** @var DatabaseIndexingDto $dto */
@@ -68,6 +71,9 @@ class NewsContentType implements ContentTypeInterface
 
     }
 
+    /**
+     * @return iterable<Record>
+     */
     protected function getNewsRecords(Record $record, int $languageUid): iterable
     {
 

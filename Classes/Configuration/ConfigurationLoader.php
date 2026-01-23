@@ -12,6 +12,7 @@ use TYPO3\CMS\Core\Utility\RootlineUtility;
 
 class ConfigurationLoader
 {
+    /** @var array<int, Configuration>|null */
     protected static ?array $runtimeConfigurationCache = null;
 
     public function loadByPage(int $pageUid): ?Configuration
@@ -59,6 +60,9 @@ class ConfigurationLoader
         return $this->loadByPage($site->getRootPageId());
     }
 
+    /**
+     * @return iterable<Configuration>
+     */
     public function loadAllBySite(SiteInterface $site): iterable
     {
         $this->preloadConfigurations();
@@ -74,6 +78,9 @@ class ConfigurationLoader
         }
     }
 
+    /**
+     * @return array<int, Configuration>
+     */
     public function getAll(): array
     {
         $this->preloadConfigurations();

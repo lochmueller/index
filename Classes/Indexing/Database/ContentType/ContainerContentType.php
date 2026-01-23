@@ -35,6 +35,9 @@ class ContainerContentType extends SimpleContentType
         $dto->content .= '</section>';
     }
 
+    /**
+     * @return iterable<Record>
+     */
     protected function getContainerRecords(Record $record, int $languageUid): iterable
     {
         $restriction = [

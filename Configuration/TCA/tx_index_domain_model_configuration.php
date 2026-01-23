@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lochmueller\Index\Backend\TcaSelection;
 use Lochmueller\Index\Enums\IndexPartialTrigger;
 use Lochmueller\Index\Enums\IndexTechnology;
 
@@ -82,7 +83,7 @@ return [
             'config' => [
                 'type' => 'select',
                 'renderType' => 'selectCheckBox',
-                'itemsProcFunc' => Lochmueller\Index\Backend\TcaSelection::class . '->countrySelection',
+                'itemsProcFunc' => TcaSelection::class . '->countrySelection',
             ],
         ],
         'skip_no_search_pages' => [

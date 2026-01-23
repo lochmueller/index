@@ -31,7 +31,7 @@ class HttpIndexingHandler implements IndexingInterface, LoggerAwareInterface
 
             $content = $this->httpRequestBuilder->buildRequestForPage($message->uri);
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
             return;
         }
 

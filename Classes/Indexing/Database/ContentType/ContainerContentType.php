@@ -27,7 +27,7 @@ class ContainerContentType extends SimpleContentType
     public function addContent(Record $record, DatabaseIndexingDto $dto): void
     {
         $dto->content .= '<section id="container_' . $record->get('uid') . '">';
-        foreach ($this->getContainerRecords($record, $record->getLanguageId()) as $ce) {
+        foreach ($this->getContainerRecords($record, $record->getLanguageId() ?? 0) as $ce) {
             $dto->content .= '<div id="section_' . $ce->get('uid') . '">';
             $this->contentIndexing->addContent($ce, $dto);
             $dto->content .= '</div>';

@@ -30,7 +30,7 @@ class CacheIndexingHandler implements IndexingInterface, LoggerAwareInterface
         try {
             $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
             return;
         }
 

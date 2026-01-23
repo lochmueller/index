@@ -12,8 +12,9 @@ use TYPO3\CMS\Core\Utility\RootlineUtility;
 
 class ConfigurationLoader
 {
-    /** @var array<int, Configuration>|null */
-    protected static ?array $runtimeConfigurationCache = null;
+    /** @var array<int, Configuration> */
+    protected static array $runtimeConfigurationCache = [];
+    protected static bool $preloadExecuted = false;
 
     public function loadByPage(int $pageUid): ?Configuration
     {
@@ -89,8 +90,7 @@ class ConfigurationLoader
 
     public function preloadConfigurations(): void
     {
-        if (self::$runtimeConfigurationCache === null) {
-            self::$runtimeConfigurationCache = [];
+        if (!self::$preloadExecuted) {
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_index_domain_model_configuration');
             $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
             $result = $queryBuilder->select('*')
@@ -100,6 +100,7 @@ class ConfigurationLoader
             foreach ($result->iterateAssociative() as $item) {
                 self::$runtimeConfigurationCache[(int) $item['uid']] = Configuration::createByDatabaseRow($item);
             }
+            self::$preloadExecuted = true;
         }
     }
 

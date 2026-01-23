@@ -7,7 +7,6 @@ namespace Lochmueller\Index\Traversing;
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
@@ -78,7 +77,7 @@ class PageTraversing
                 $arguments = ['_language' => $language];
 
                 yield new FrontendInformationDto(
-                    uri: $router->generateUri(BackendUtility::getRecord('pages', $relevantPageUid), $arguments),
+                    uri: $router->generateUri($relevantPageUid, $arguments),
                     arguments: $arguments,
                     pageUid: $relevantPageUid,
                     language: $language,

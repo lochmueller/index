@@ -52,7 +52,7 @@ class ContentIndexing implements IndexingInterface, LoggerAwareInterface
         $this->eventDispatcher->dispatch($handleEvent);
 
         if ($handleEvent->content === null) {
-            $this->logger->warning('Content could not be handled', ['record_type' => $record->getRecordType()]);
+            $this->logger?->warning('Content could not be handled', ['record_type' => $record->getRecordType()]);
         }
 
         return $handleEvent->content;

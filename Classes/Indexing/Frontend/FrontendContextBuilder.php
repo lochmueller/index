@@ -30,7 +30,7 @@ class FrontendContextBuilder implements LoggerAwareInterface
             return $result;
         } catch (\Exception $exception) {
             $this->restore();
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
             throw $exception;
         }
     }

@@ -22,7 +22,7 @@ class HttpRequestBuilder implements LoggerAwareInterface
         try {
             $response = $this->client->sendRequest($request);
         } catch (\Exception $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
+            $this->logger?->error($e->getMessage(), ['exception' => $e]);
             return '';
         }
         if ($response->getStatusCode() !== 200) {

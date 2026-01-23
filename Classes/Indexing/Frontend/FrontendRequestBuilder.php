@@ -59,7 +59,7 @@ class FrontendRequestBuilder implements LoggerAwareInterface
             $response->getBody()->rewind();
             return $response->getBody()->getContents();
         } catch (\Exception $exception) {
-            $this->logger->error('cannot fetch url ' . $uri, ['message' => $exception->getMessage(), 'file' => $exception->getFile()]);
+            $this->logger?->error('cannot fetch url ' . $uri, ['message' => $exception->getMessage(), 'file' => $exception->getFile()]);
             return null;
         }
     }

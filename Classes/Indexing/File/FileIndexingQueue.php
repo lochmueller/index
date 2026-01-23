@@ -39,7 +39,7 @@ class FileIndexingQueue implements IndexingInterface, LoggerAwareInterface
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
         }
     }
 }

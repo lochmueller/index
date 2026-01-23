@@ -51,7 +51,9 @@ class QueueCommand extends Command
         $configurations = $this->getLimitedConfigurationUids($input);
         if (!empty($configurations)) {
             foreach ($configurations as $uid) {
-                yield $this->configurationLoader->loadByUid($uid);
+                if ($loadedConfig = $this->configurationLoader->loadByUid($uid)) {
+                    yield $loadedConfig;
+                }
             }
             return;
         }

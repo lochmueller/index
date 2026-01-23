@@ -16,12 +16,17 @@ class ContentBlockContentType extends SimpleContentType
     public function canHandle(Record $record): bool
     {
         $contentBlocks = $this->getContentBlockList();
-        return array_key_exists($record->getRecordType(), $contentBlocks);
+        $recordType = $record->getRecordType();
+        return $recordType !== null && array_key_exists($recordType, $contentBlocks);
     }
 
     public function addContent(Record $record, DatabaseIndexingDto $dto): void
     {
-        $contentBlock = $this->getContentBlockList()[$record->getRecordType()];
+        $recordType = $record->getRecordType();
+        if ($recordType === null) {
+            return;
+        }
+        $contentBlock = $this->getContentBlockList()[$recordType];
 
 
         #var_dump($contentBlock);

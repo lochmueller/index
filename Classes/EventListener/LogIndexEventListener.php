@@ -24,7 +24,7 @@ final class LogIndexEventListener implements LoggerAwareInterface
     public function __invoke(StartIndexProcessEvent|IndexPageEvent|IndexFileEvent|FinishIndexProcessEvent $event): void
     {
         // System logger
-        $this->logger->debug('Execute ' . get_class($event), [
+        $this->logger?->debug('Execute ' . get_class($event), [
             'site' => isset($event->site) ? $event->site->getIdentifier() : null,
             'technology' => isset($event->technology) ? $event->technology->value : null,
         ]);

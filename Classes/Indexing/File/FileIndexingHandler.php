@@ -31,6 +31,9 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
     public function __invoke(FileMessage $message): void
     {
         $file = $this->fileTraversing->getFileByCompinedIdentifier($message->fileIdentifier);
+        if ($file === null) {
+            return;
+        }
 
         $base = [
             $file->getProperty('title'),
@@ -43,7 +46,7 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
         try {
             $content .= $this->fileExtractor->extract($file);
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
             return;
         }
 

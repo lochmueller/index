@@ -30,7 +30,11 @@ class FrontendIndexingHandler implements IndexingInterface, LoggerAwareInterface
 
             $content = $this->frontendRequestBuilder->buildRequestForPage($message->uri);
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
+            return;
+        }
+
+        if ($content === null) {
             return;
         }
 

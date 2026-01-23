@@ -108,6 +108,9 @@ class RecordSelection
         $languageCapability = $schema->getCapability(TcaSchemaCapability::Language);
 
         $row = BackendUtility::getRecord('pages', $pageUid);
+        if ($row === null) {
+            return null;
+        }
 
         if ($this->isExcludedDoktype($row)) {
             return null;
@@ -119,7 +122,7 @@ class RecordSelection
             if ($row[$languageCapability->getLanguageField()->getName()] !== $language) {
                 return null;
             }
-            if (empty($row) || $this->pageRepository->checkIfPageIsHidden($pageUid, $languageAspect)) {
+            if ($this->pageRepository->checkIfPageIsHidden($pageUid, $languageAspect)) {
                 return null;
             }
         }

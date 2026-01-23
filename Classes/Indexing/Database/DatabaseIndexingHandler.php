@@ -36,7 +36,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
 
             $configuration = $this->configurationLoader->loadByUid($message->indexConfigurationRecordId);
             $pageRow = $this->recordSelection->findRenderablePage($message->pageUid, $message->language);
-            if ($pageRow === null) {
+            if ($pageRow === null || $configuration === null) {
                 return;
             }
             if ($configuration->skipNoSearchPages && ($pageRow['no_search'] ?? false)) {
@@ -74,7 +74,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
                 $this->indexItems($items, $message, $site, $accessGroups);
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+            $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
         }
     }
 

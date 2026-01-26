@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database\ContentType;
 
+use HDNET\Calendarize\Domain\Repository\IndexRepository;
 use Lochmueller\Index\Indexing\Database\ContentIndexing;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use Lochmueller\Index\Traversing\RecordSelection;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Domain\FlexFormFieldValues;
 use TYPO3\CMS\Core\Domain\Record;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
 
 class CalendarizeContentType implements ContentTypeInterface
 {
     public function __construct(
-        protected HeaderContentType $headerContentType,
-        protected RecordSelection   $recordSelection,
-        protected ContentIndexing   $contentIndexing,
+        protected RecordSelection      $recordSelection,
+        protected ContentIndexing      $contentIndexing,
+        protected ViewFactoryInterface $viewFactory,
     ) {}
 
     public function canHandle(Record $record): bool
@@ -30,23 +34,35 @@ class CalendarizeContentType implements ContentTypeInterface
             return;
         }
 
-        // @todo Integrate Calendarize detail rendering
-        /*
-        $this->headerContentType->addContent($record, $dto);
-        $table = 'tx_news_domain_model_news';
-        $newsRecord = $this->recordSelection->mapRecord($table, BackendUtility::getRecord($table, $newsId));
+        $indexRepository = GeneralUtility::makeInstance(IndexRepository::class);
+        $indexObject = $indexRepository->findByUid($index);
+        $originalObject = $indexObject->getOriginalObject();
 
-        $dto->title = $newsRecord->get('title') . ' | ' . $dto->site->getAttribute('websiteTitle');
-
-        $dto->content .= $newsRecord->get('title') . ' ';
-        $dto->content .= $newsRecord->get('teaser') . ' ';
-        $dto->content .= $newsRecord->get('bodytext') . ' ';
-
-        foreach ($newsRecord->get('content_elements') as $ce) {
-            $this->contentIndexing->addContent($ce, $dto);
+        if (!$originalObject) {
+            return;
         }
-        */
+
+        $viewData = new ViewFactoryData(
+            templateRootPaths: [
+                'EXT:calendarize/Resources/Private/Templates',
+            ],
+            partialRootPaths: [
+                'EXT:calendarize/Resources/Private/Partials',
+            ],
+            layoutRootPaths: [
+                'EXT:calendarize/Resources/Private/Layouts/',
+            ],
+            format: 'html',
+        );
+
+        $view = $this->viewFactory->create($viewData);
+        $view->assignMultiple([
+            'index' => $index,
+        ]);
+
+        $dto->content .= $view->render('Calendar/Detail');
     }
+
 
     /**
      * @param \SplQueue<DatabaseIndexingDto> $queue
@@ -78,15 +94,16 @@ class CalendarizeContentType implements ContentTypeInterface
      */
     protected function getIndexRecords(Record $record, int $languageUid): iterable
     {
-        // @todo integrate calendarize index selection
-        /** @var \TYPO3\CMS\Core\Domain\FlexFormFieldValues $flexFormConfiguration */
+        /** @var FlexFormFieldValues $flexFormConfiguration */
         $flexFormConfiguration = $record->get('pi_flexform');
         $array = $flexFormConfiguration->toArray();
 
-        $storage = [-99];
-        # foreach ($array['sDEF']['settings']['startingpoint'] ?? [] as $page) {
-        #   $storage[] = $page->get('uid');
-        # }
+        $storagePids = $array['general']['persistence']['storagePid'] ?? '';
+
+        $storage = GeneralUtility::intExplode(',', (string) $storagePids, true);
+        if ($storage === []) {
+            $storage = [-99];
+        }
 
         yield from $this->recordSelection->findRecordsOnPage('tx_calendarize_domain_model_index', $storage, $languageUid);
     }

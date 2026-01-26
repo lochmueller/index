@@ -146,4 +146,3 @@ process to fetch content out of files is working. Check out the composer.json `s
 ## Ideas for EXT:index / @todo
 
 - Full support for EXT:bootstrap_package
-- Full support for EXT:content_blocks

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database\ContentType;
 
+use HDNET\Calendarize\Domain\Model\Index;
 use HDNET\Calendarize\Domain\Repository\IndexRepository;
 use Lochmueller\Index\Indexing\Database\ContentIndexing;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
@@ -34,8 +35,14 @@ class CalendarizeContentType implements ContentTypeInterface
             return;
         }
 
+        /** @var IndexRepository $indexRepository */
         $indexRepository = GeneralUtility::makeInstance(IndexRepository::class);
+        /** @var Index|null $indexObject */
         $indexObject = $indexRepository->findByUid($index);
+
+        if (!$indexObject) {
+            return;
+        }
         $originalObject = $indexObject->getOriginalObject();
 
         if (!$originalObject) {

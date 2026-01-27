@@ -129,21 +129,6 @@ class RecordSelection
         return $row;
     }
 
-
-    public function findRecordByUid(string $table, int $uid): ?Record
-    {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
-        $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
-        $queryBuilder->select('*')
-            ->from($table)
-            ->where(
-                $queryBuilder->expr()->eq('uid', $uid),
-            );
-        $rows = $queryBuilder->executeQuery()->fetchAllAssociative();
-
-        return isset($rows[0]) ? $this->mapRecord($table, $rows[0]) : null;
-    }
-
     /**
      * @param array<string, mixed> $row
      */

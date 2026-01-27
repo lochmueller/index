@@ -32,6 +32,12 @@
     "typo3/testing-framework": "^8.0||^9.3",
     "friendsoftypo3/content-blocks": "^1.0||^2.0",
     "lochmueller/calendarize": "^14.0",
+    "bk2k/bootstrap-package": "^16.0",
+    "friendsoftypo3/tt-address": "^10.0",
+    "phpoffice/phpword": "^1.4",
+    "phpoffice/phppresentation": "dev-master as 1.2.1",
+    "smalot/pdfparser": "^2.12",
+    "phpoffice/phpspreadsheet": "^5.4",
     "friendsofphp/php-cs-fixer": "^3.84",
     "phpstan/phpstan": "^2.1"
   },
@@ -67,6 +73,7 @@
       "@phpunit"
     ],
     "phpunit": "phpunit -c Tests/UnitTests.xml",
+    "code-test-coverage": "XDEBUG_MODE=coverage phpunit -c Tests/UnitTests.xml --coverage-html .Build/coverage/",
     "phpstan": "phpstan analyse Classes --memory-limit 1G --level 8",
     "php-cs-fixer": "php-cs-fixer fix --allow-unsupported-php-version yes"
   }

@@ -6,11 +6,11 @@ namespace Lochmueller\Index\Tests\Unit\Utility;
 
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use Lochmueller\Index\Utility\AccessGroupParser;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class AccessGroupParserTest extends AbstractTest
 {
     /**
-     * @test
      * Tests: Requirements 6.2
      */
     public function testParseEmptyStringReturnsEmptyArray(): void
@@ -21,7 +21,6 @@ class AccessGroupParserTest extends AbstractTest
     }
 
     /**
-     * @test
      * Tests: Requirements 6.3
      */
     public function testParseZeroStringReturnsEmptyArray(): void
@@ -32,7 +31,6 @@ class AccessGroupParserTest extends AbstractTest
     }
 
     /**
-     * @test
      * Tests: Requirements 6.4
      */
     public function testParseSingleValueReturnsArrayWithOneElement(): void
@@ -43,7 +41,6 @@ class AccessGroupParserTest extends AbstractTest
     }
 
     /**
-     * @test
      * Tests: Requirements 6.4
      */
     public function testParseCommaSeparatedValuesReturnsIntegerArray(): void
@@ -54,7 +51,6 @@ class AccessGroupParserTest extends AbstractTest
     }
 
     /**
-     * @test
      * Tests: Requirements 6.5
      */
     public function testParseValuesWithWhitespaceReturnsCleanArray(): void
@@ -65,7 +61,6 @@ class AccessGroupParserTest extends AbstractTest
     }
 
     /**
-     * @test
      * Tests: Requirements 1.4
      */
     public function testParseSpecialValueMinusOneReturnsArrayWithMinusOne(): void
@@ -76,7 +71,6 @@ class AccessGroupParserTest extends AbstractTest
     }
 
     /**
-     * @test
      * Tests: Requirements 1.5
      */
     public function testParseSpecialValueMinusTwoReturnsArrayWithMinusTwo(): void
@@ -87,7 +81,6 @@ class AccessGroupParserTest extends AbstractTest
     }
 
     /**
-     * @test
      * Tests: Requirements 6.4
      */
     public function testParseMixedValuesWithSpecialValuesReturnsCorrectArray(): void
@@ -98,7 +91,6 @@ class AccessGroupParserTest extends AbstractTest
     }
 
     /**
-     * @test
      * Tests: Requirements 6.5
      */
     public function testParseTrimsLeadingAndTrailingWhitespace(): void
@@ -109,7 +101,6 @@ class AccessGroupParserTest extends AbstractTest
     }
 
     /**
-     * @test
      * Tests: Requirements 6.4
      */
     public function testParseFiltersZeroValuesFromResult(): void
@@ -119,9 +110,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([1, 2], $result);
     }
 
-    /**
-     * @test
-     */
     public function testFormatEmptyArrayReturnsEmptyString(): void
     {
         $result = AccessGroupParser::format([]);
@@ -129,9 +117,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame('', $result);
     }
 
-    /**
-     * @test
-     */
     public function testFormatSingleValueReturnsString(): void
     {
         $result = AccessGroupParser::format([1]);
@@ -139,9 +124,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame('1', $result);
     }
 
-    /**
-     * @test
-     */
     public function testFormatMultipleValuesReturnsCommaSeparatedString(): void
     {
         $result = AccessGroupParser::format([1, 2, 3]);
@@ -149,9 +131,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame('1,2,3', $result);
     }
 
-    /**
-     * @test
-     */
     public function testFormatSpecialValuesReturnsCorrectString(): void
     {
         $result = AccessGroupParser::format([-1, -2]);
@@ -159,9 +138,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame('-1,-2', $result);
     }
 
-    /**
-     * @test
-     */
     public function testFormatMixedValuesReturnsCorrectString(): void
     {
         $result = AccessGroupParser::format([1, -1, 2]);
@@ -179,8 +155,8 @@ class AccessGroupParserTest extends AbstractTest
         // Seed for reproducibility in case of failures
         srand(42);
 
-        for ($i = 0; $i < 100; $i++) {
-            $length = random_int(0, 10);
+        for ($i = 0; $i < self::TEST_ITERATIONS; $i++) {
+            $length = random_int(1, self::TEST_ITERATIONS);
             $accessGroups = [];
 
             for ($j = 0; $j < $length; $j++) {
@@ -206,8 +182,7 @@ class AccessGroupParserTest extends AbstractTest
      *
      * @param int[] $accessGroups
      */
-    #[\PHPUnit\Framework\Attributes\Test]
-    #[\PHPUnit\Framework\Attributes\DataProvider('randomNonZeroIntegerArraysProvider')]
+    #[DataProvider('randomNonZeroIntegerArraysProvider')]
     public function testRoundTripConsistencyProperty(array $accessGroups): void
     {
         $formatted = AccessGroupParser::format($accessGroups);

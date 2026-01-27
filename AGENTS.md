@@ -198,10 +198,11 @@ class ExampleTest extends AbstractTest
 
 - Extend `AbstractTest` (which extends TYPO3's `UnitTestCase`)
 - Test class naming: `{ClassName}Test`
-- Test method naming: `test{Description}` (camelCase)
+- Test method naming: `test{Description}` (camelCase) and NO `#[Test]` attribute
 - Use `self::` prefix for assertions: `self::assertSame()`, `self::assertEquals()`
 - Use `#[Group('tmp')]` to mark tests for quick iteration
 - Test files location: `Tests/Unit/{SubDirectory}/{ClassName}Test.php`
+- Use Stubs instead of Mocks, if there are no expectations (avoid notices in the execution)
 
 ## Dependency Injection Tags
 

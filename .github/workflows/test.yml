@@ -1,0 +1,46 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php }} / TYPO3 ${{ matrix.typo3 }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.3'
+            typo3: '^13.4'
+          - php: '8.4'
+            typo3: '^13.4'
+          - php: '8.5'
+            typo3: '^13.4'
+#          - php: '8.3'
+#            typo3: '^14.0'
+#          - php: '8.4'
+#            typo3: '^14.0'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: intl, mbstring, json, zip, curl
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: |
+          composer require typo3/cms-core:${{ matrix.typo3 }} typo3/cms-frontend:${{ matrix.typo3 }} typo3/cms-backend:${{ matrix.typo3 }} typo3/cms-reactions:${{ matrix.typo3 }} typo3/cms-webhooks:${{ matrix.typo3 }} --no-update
+          composer install --prefer-dist --no-progress
+
+      - name: Run tests
+        run: composer code-test

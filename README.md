@@ -8,7 +8,7 @@ You can use the PSR-14 events to get the index information or the webhook functi
 information to external services. Please do not use the internal messages, because they are handled internally in the
 extension.
 
-This extension was funded by the [TYPO3 Association](https://typo3.org): [community ideas](https://typo3.org/article/members-have-selected-five-ideas-to-be-funded-in-quarter-3-2025) & [final blogpost](https://typo3.org/article/typo3-meets-seal-a-breath-of-fresh-air-for-search)
+This extension was funded by the [TYPO3 Association](https://typo3.org): [community ideas I](https://typo3.org/article/members-have-selected-five-ideas-to-be-funded-in-quarter-3-2025) / [community idea II](https://talk.typo3.org/t/ext-seal-ecosystem-expansion-advanced-search-ai-vector-integration-tim-lochmuller/6594) & [first blogpost](https://typo3.org/article/typo3-meets-seal-a-breath-of-fresh-air-for-search) / second blogpost (WIP)
 
 ## Installation & Configuration
 
@@ -71,6 +71,7 @@ different index mechanism on different sub pages.
     - Very fast build process of the page content with separate PHP integrations.
     - Custom content elements need separate class integrations.
     - Creates only a light version of the HTML markup.
+    - Support EXT:bootstrap_package, EXT:calendarize, EXT:tt_address, EXT:container, EXT:content_blocks
 - *External*
     - Not directly selectable in the backend.
     - Used for content that is sent via webhook to the EXT:reactions endpoint.
@@ -142,7 +143,3 @@ process to fetch content out of files is working. Check out the composer.json `s
 
 - EXT:seal - Search Engine Abstraction Layer
 - (more to come - please create a PR to extend this list)
-
-## Ideas for EXT:index / @todo
-
-- Full support for EXT:bootstrap_package

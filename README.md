@@ -22,7 +22,7 @@ This extension was funded by the [TYPO3 Association](https://typo3.org): [commun
 3. Create index configurations on pages (example: on the root page of your site or subpages)
 4. Use the extension that is based on EXT:index and have fun
 
-Feel free to create an [issue](https://github.com/lochmueller/indexing/issues) if you have some more ideas or found a
+Feel free to create an [issue](https://github.com/lochmueller/index/issues) if you have some more ideas or found a
 bug.
 
 ### Configuration

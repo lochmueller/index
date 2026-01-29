@@ -15,13 +15,17 @@ class AfterCacheableContentIsGeneratedEventListenerTest extends AbstractTest
 {
     public function testInvokeCallsFillQueueOnCacheIndexingQueue(): void
     {
-        // @todo handle TYPO3 v13 & v14 differences
         $requestStub = $this->createStub(ServerRequestInterface::class);
-        $controllerStub = $this->createStub(TypoScriptFrontendController::class);
+
+        if (class_exists(TypoScriptFrontendController::class)) {
+            $secondParameter = $this->createStub(TypoScriptFrontendController::class);
+        } else {
+            $secondParameter = '<html>Test content</html>';
+        }
 
         $event = new AfterCacheableContentIsGeneratedEvent(
             $requestStub,
-            $controllerStub,
+            $secondParameter,
             'cache-identifier',
             true,
         );

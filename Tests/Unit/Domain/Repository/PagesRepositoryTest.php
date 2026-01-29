@@ -10,7 +10,9 @@ use Lochmueller\Index\Tests\Unit\AbstractTest;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Expression\ExpressionBuilder;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionContainerInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class PagesRepositoryTest extends AbstractTest
 {
@@ -46,6 +48,9 @@ class PagesRepositoryTest extends AbstractTest
             ['uid' => 13],
         ];
 
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
+
         $result = $this->createStub(Result::class);
         $result->method('iterateAssociative')->willReturn(new \ArrayIterator($rows));
 
@@ -77,6 +82,9 @@ class PagesRepositoryTest extends AbstractTest
     {
         $parentId = 999;
 
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
+
         $result = $this->createStub(Result::class);
         $result->method('iterateAssociative')->willReturn(new \ArrayIterator([]));
 
@@ -106,6 +114,9 @@ class PagesRepositoryTest extends AbstractTest
 
     public function testFindChildPageUidsAddsFrontendRestrictions(): void
     {
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
+
         $result = $this->createStub(Result::class);
         $result->method('iterateAssociative')->willReturn(new \ArrayIterator([]));
 
@@ -137,6 +148,9 @@ class PagesRepositoryTest extends AbstractTest
             ['uid' => '100'],
             ['uid' => '200'],
         ];
+
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
 
         $result = $this->createStub(Result::class);
         $result->method('iterateAssociative')->willReturn(new \ArrayIterator($rows));

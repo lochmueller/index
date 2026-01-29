@@ -9,7 +9,9 @@ use Lochmueller\Index\Domain\Repository\ConfigurationRepository;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionContainerInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ConfigurationRepositoryTest extends AbstractTest
 {
@@ -36,6 +38,9 @@ class ConfigurationRepositoryTest extends AbstractTest
         $result = $this->createStub(Result::class);
         $result->method('iterateAssociative')->willReturn(new \ArrayIterator($expectedRecords));
 
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
+
         $restrictions = $this->createStub(QueryRestrictionContainerInterface::class);
         $restrictions->method('add')->willReturnSelf();
 
@@ -59,6 +64,9 @@ class ConfigurationRepositoryTest extends AbstractTest
         $result = $this->createStub(Result::class);
         $result->method('iterateAssociative')->willReturn(new \ArrayIterator([]));
 
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
+
         $restrictions = $this->createMock(QueryRestrictionContainerInterface::class);
         $restrictions->expects(self::once())->method('add')->willReturnSelf();
 
@@ -79,6 +87,9 @@ class ConfigurationRepositoryTest extends AbstractTest
     {
         $result = $this->createStub(Result::class);
         $result->method('iterateAssociative')->willReturn(new \ArrayIterator([]));
+
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
 
         $restrictions = $this->createStub(QueryRestrictionContainerInterface::class);
         $restrictions->method('add')->willReturnSelf();

@@ -10,8 +10,10 @@ use Lochmueller\Index\Tests\Unit\AbstractTest;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Expression\ExpressionBuilder;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionContainerInterface;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class GenericRepositoryTest extends AbstractTest
 {
@@ -71,6 +73,9 @@ class GenericRepositoryTest extends AbstractTest
 
     public function testCreateFrontendQueryBuilderAddsFrontendRestrictions(): void
     {
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
+
         $restrictions = $this->createMock(QueryRestrictionContainerInterface::class);
         $restrictions->expects(self::once())->method('add')->willReturnSelf();
 
@@ -88,6 +93,9 @@ class GenericRepositoryTest extends AbstractTest
 
     public function testCreateFrontendQueryBuilderReturnsQueryBuilder(): void
     {
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
+
         $restrictions = $this->createStub(QueryRestrictionContainerInterface::class);
         $restrictions->method('add')->willReturnSelf();
 
@@ -113,6 +121,9 @@ class GenericRepositoryTest extends AbstractTest
             ['uid' => 1, 'tt_content' => 42, 'sorting' => 10],
             ['uid' => 2, 'tt_content' => 42, 'sorting' => 20],
         ];
+
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
 
         $result = $this->createStub(Result::class);
         $result->method('iterateAssociative')->willReturn(new \ArrayIterator($expectedRecords));
@@ -148,6 +159,9 @@ class GenericRepositoryTest extends AbstractTest
     {
         $parentUid = 999;
         $languages = [0];
+
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
 
         $result = $this->createStub(Result::class);
         $result->method('iterateAssociative')->willReturn(new \ArrayIterator([]));

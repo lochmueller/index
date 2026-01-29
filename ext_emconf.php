@@ -5,7 +5,7 @@ declare(strict_types=1);
 /** @var string $_EXTKEY */
 $EM_CONF[$_EXTKEY] = [
     'title' => 'Index',
-    'description' => 'Smart and flexible async indexing of pages and documents for e.g. search engines or AI provider',
+    'description' => 'Smart and flexible async indexing of pages and documents for search engines, AI providers, and other external systems.',
     'version' => '1.1.1',
     'category' => 'be',
     'constraints' => [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Tests\Unit\Traversing;
 
+use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use Lochmueller\Index\Traversing\RecordSelection;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -30,6 +31,7 @@ class RecordSelectionTest extends AbstractTest
             $recordFactoryStub,
             $this->createStub(PageRepository::class),
             $this->createStub(TcaSchemaFactory::class),
+            $this->createStub(GenericRepository::class),
         );
 
         $result = $subject->mapRecord($table, $row);
@@ -44,6 +46,7 @@ class RecordSelectionTest extends AbstractTest
             $this->createStub(RecordFactory::class),
             $this->createStub(PageRepository::class),
             $this->createStub(TcaSchemaFactory::class),
+            $this->createStub(GenericRepository::class),
         );
 
         $reflection = new \ReflectionMethod($subject, 'isExcludedDoktype');
@@ -73,6 +76,7 @@ class RecordSelectionTest extends AbstractTest
             $this->createStub(RecordFactory::class),
             $this->createStub(PageRepository::class),
             $this->createStub(TcaSchemaFactory::class),
+            $this->createStub(GenericRepository::class),
         );
 
         $reflection = new \ReflectionMethod($subject, 'isExcludedDoktype');
@@ -97,6 +101,7 @@ class RecordSelectionTest extends AbstractTest
             $this->createStub(RecordFactory::class),
             $this->createStub(PageRepository::class),
             $this->createStub(TcaSchemaFactory::class),
+            $this->createStub(GenericRepository::class),
         );
 
         $reflection = new \ReflectionMethod($subject, 'isExcludedDoktype');

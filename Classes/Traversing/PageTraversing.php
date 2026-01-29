@@ -6,14 +6,10 @@ namespace Lochmueller\Index\Traversing;
 
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\Domain\Repository\PagesRepository;
 use Lochmueller\Index\Utility\AccessGroupParser;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
-use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\QueryBuilder;
-use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Site\SiteFinder;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class PageTraversing
 {
@@ -26,6 +22,7 @@ class PageTraversing
         protected iterable            $extender,
         protected ConfigurationLoader $configurationLoader,
         protected RecordSelection     $recordSelection,
+        protected PagesRepository     $pagesRepository,
     ) {}
 
     /**
@@ -107,20 +104,8 @@ class PageTraversing
         }
         yield $id;
         if ($id && $depth > 0) {
-            /** @var QueryBuilder $queryBuilder */
-            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
-            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
-
-            $queryBuilder->select('uid')
-                ->from('pages')
-                ->where(
-                    $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)),
-                    $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
-                );
-
-            $statement = $queryBuilder->executeQuery();
-            foreach ($statement->iterateAssociative() as $row) {
-                yield from $this->getRelevantPageUids($configuration, (int) $row['uid'], $depth - 1);
+            foreach ($this->pagesRepository->findChildPageUids($id) as $childUid) {
+                yield from $this->getRelevantPageUids($configuration, $childUid, $depth - 1);
             }
         }
     }

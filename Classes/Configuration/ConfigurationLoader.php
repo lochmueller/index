@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Configuration;
 
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
+use Lochmueller\Index\Domain\Repository\ConfigurationRepository;
+use Lochmueller\Index\Domain\Repository\PagesRepository;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\RootlineUtility;
 
 class ConfigurationLoader
 {
     /** @var array<int, Configuration> */
     protected static array $runtimeConfigurationCache = [];
     protected static bool $preloadExecuted = false;
+
+    public function __construct(
+        protected readonly ConfigurationRepository $configurationRepository,
+        protected readonly PagesRepository $pagesRepository,
+    ) {}
 
     public function loadByPage(int $pageUid): ?Configuration
     {
@@ -37,9 +40,7 @@ class ConfigurationLoader
             }
         }
 
-        /** @var RootlineUtility $rootLineUtility */
-        $rootLineUtility = GeneralUtility::makeInstance(RootlineUtility::class, $pageUid);
-        foreach ($rootLineUtility->get() as $page) {
+        foreach ($this->pagesRepository->getRootline($pageUid) as $page) {
             foreach (self::$runtimeConfigurationCache as $configuration) {
                 if ($configuration->pageId === (int) $page['uid']) {
                     return $configuration;
@@ -69,9 +70,8 @@ class ConfigurationLoader
         $this->preloadConfigurations();
         $rootPageId = $site->getRootPageId();
         foreach (self::$runtimeConfigurationCache as $configuration) {
-            $rootLineUtility = GeneralUtility::makeInstance(RootlineUtility::class, $configuration->pageId);
-            $rootLineIds = array_map(fn($entry) => $entry['uid'], $rootLineUtility->get());
-            if (in_array($rootPageId, $rootLineIds)) {
+            $rootLineIds = $this->pagesRepository->getRootlineIds($configuration->pageId);
+            if (in_array($rootPageId, $rootLineIds, true)) {
                 yield $configuration;
             }
         }
@@ -89,17 +89,10 @@ class ConfigurationLoader
     public function preloadConfigurations(): void
     {
         if (!self::$preloadExecuted) {
-            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_index_domain_model_configuration');
-            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
-            $result = $queryBuilder->select('*')
-                ->from('tx_index_domain_model_configuration')
-                ->executeQuery();
-
-            foreach ($result->iterateAssociative() as $item) {
+            foreach ($this->configurationRepository->findAll() as $item) {
                 self::$runtimeConfigurationCache[(int) $item['uid']] = Configuration::createByDatabaseRow($item);
             }
             self::$preloadExecuted = true;
         }
     }
-
 }

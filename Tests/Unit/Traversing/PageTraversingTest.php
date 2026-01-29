@@ -6,6 +6,7 @@ namespace Lochmueller\Index\Tests\Unit\Traversing;
 
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\Domain\Repository\PagesRepository;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use Lochmueller\Index\Traversing\PageTraversing;
 use Lochmueller\Index\Traversing\RecordSelection;
@@ -23,6 +24,7 @@ class PageTraversingTest extends AbstractTest
             [],
             $this->createStub(ConfigurationLoader::class),
             $this->createStub(RecordSelection::class),
+            $this->createStub(PagesRepository::class),
         );
 
         self::assertInstanceOf(PageTraversing::class, $subject);
@@ -45,6 +47,7 @@ class PageTraversingTest extends AbstractTest
             [],
             $configurationLoaderStub,
             $this->createStub(RecordSelection::class),
+            $this->createStub(PagesRepository::class),
         );
 
         $configuration = $this->createConfigurationStub(1, 1, 0);
@@ -84,6 +87,7 @@ class PageTraversingTest extends AbstractTest
             [],
             $configurationLoaderStub,
             $recordSelectionStub,
+            $this->createStub(PagesRepository::class),
         );
 
         $configuration = $this->createConfigurationStub(1, 1, 0, $configuredLanguages);

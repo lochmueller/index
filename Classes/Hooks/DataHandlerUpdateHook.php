@@ -6,11 +6,11 @@ namespace Lochmueller\Index\Hooks;
 
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Enums\IndexPartialTrigger;
 use Lochmueller\Index\Indexing\ActiveIndexing;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\MathUtility;
@@ -19,10 +19,11 @@ use TYPO3\CMS\Core\Utility\MathUtility;
 class DataHandlerUpdateHook
 {
     public function __construct(
-        protected ConfigurationLoader      $configurationLoader,
-        protected ActiveIndexing           $activeIndexing,
+        protected ConfigurationLoader $configurationLoader,
+        protected ActiveIndexing $activeIndexing,
         #[Autowire(service: 'cache.runtime')]
         private readonly FrontendInterface $cache,
+        private readonly GenericRepository $genericRepository,
     ) {}
 
     /**
@@ -36,7 +37,7 @@ class DataHandlerUpdateHook
         DataHandler $dataHandler,
     ): void {
         if (MathUtility::canBeInterpretedAsInteger($id)) {
-            $record = BackendUtility::getRecord($table, $id);
+            $record = $this->genericRepository->setTableName($table)->findByUid((int) $id);
             if ($record) {
                 $field = $table === 'pages' ? 'uid' : 'pid';
                 $this->triggerPartialIndexProcessForPage((int) $record[$field], IndexPartialTrigger::Datamap);
@@ -54,12 +55,11 @@ class DataHandlerUpdateHook
         mixed $pasteDatamap,
     ): void {
         if (MathUtility::canBeInterpretedAsInteger($id)) {
-            $record = BackendUtility::getRecord($table, $id);
+            $record = $this->genericRepository->setTableName($table)->findByUid((int) $id);
             if ($record) {
                 $field = $table === 'pages' ? 'uid' : 'pid';
                 $this->triggerPartialIndexProcessForPage((int) $record[$field], IndexPartialTrigger::Cmdmap);
             }
-
         }
     }
 

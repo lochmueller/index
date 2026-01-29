@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Lochmueller\Index\Traversing;
 
 use Lochmueller\Index\Database\Query\Restriction\NonContainerElementsRestrictionContainer;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
+use Lochmueller\Index\Domain\Repository\GenericRepository;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
-use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionInterface;
 use TYPO3\CMS\Core\Domain\Record;
@@ -22,14 +21,15 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class RecordSelection
 {
     public function __construct(
-        private RecordFactory    $recordFactory,
-        protected PageRepository $pageRepository,
-        private TcaSchemaFactory $tcaSchemaFactory,
+        private RecordFactory      $recordFactory,
+        protected PageRepository   $pageRepository,
+        private TcaSchemaFactory   $tcaSchemaFactory,
+        private GenericRepository  $genericRepository,
     ) {}
 
     /**
      * @param int[] $pageUids
-     * @param array<class-string|object> $restrictions
+     * @param array<class-string<QueryRestrictionInterface>|QueryRestrictionInterface> $restrictions
      * @return iterable<Record>
      */
     public function findRecordsOnPage(
@@ -45,33 +45,25 @@ class RecordSelection
         /** @var LanguageAwareSchemaCapability $languageCapability */
         $languageCapability = $schema->getCapability(TcaSchemaCapability::Language);
 
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
-        foreach ($restrictions as $restriction) {
-            /** @var QueryRestrictionInterface $restrictionInstance */
-            $restrictionInstance = is_object($restriction) ? $restriction : GeneralUtility::makeInstance($restriction);
-            $queryBuilder->getRestrictions()->add($restrictionInstance);
-        }
-
-        // No empty storages
-        $pageUids[] = -99;
-
         $languages = [
             0,
             -1,
             $languageUid,
         ];
 
-        $queryBuilder->select('*')
-            ->from($table)
-            ->where(
-                $queryBuilder->expr()->in('pid', $pageUids),
-                $queryBuilder->expr()->in($languageCapability->getLanguageField()->getName(), $languages),
+        $rows = $this->genericRepository
+            ->setTableName($table)
+            ->findRecordsOnPages(
+                $pageUids,
+                $languageCapability->getLanguageField()->getName(),
+                $languages,
+                $restrictions,
             );
 
         /** @var PageRepository $pageRepository */
         $pageRepository = GeneralUtility::makeInstance(PageRepository::class, GeneralUtility::makeInstance(Context::class));
 
-        foreach ($queryBuilder->executeQuery()->iterateAssociative() as $row) {
+        foreach ($rows as $row) {
             if ($languageUid) {
                 $overlay = $pageRepository->getLanguageOverlay($table, $row, new LanguageAspect($languageUid, $languageUid));
                 if ($overlay !== null) {
@@ -107,7 +99,7 @@ class RecordSelection
         /** @var LanguageAwareSchemaCapability $languageCapability */
         $languageCapability = $schema->getCapability(TcaSchemaCapability::Language);
 
-        $row = BackendUtility::getRecord('pages', $pageUid);
+        $row = $this->genericRepository->setTableName('pages')->findByUid($pageUid);
         if ($row === null) {
             return null;
         }

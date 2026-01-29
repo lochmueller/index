@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\EventListener;
 
+use Lochmueller\Index\Domain\Repository\LogRepository;
 use Lochmueller\Index\Event\FinishIndexProcessEvent;
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
@@ -12,13 +13,14 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class LogIndexEventListener implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
+
+    public function __construct(
+        private readonly LogRepository $logRepository,
+    ) {}
 
     #[AsEventListener('index-log-helper')]
     public function __invoke(StartIndexProcessEvent|IndexPageEvent|IndexFileEvent|FinishIndexProcessEvent $event): void
@@ -27,20 +29,13 @@ final class LogIndexEventListener implements LoggerAwareInterface
         $this->logger?->debug('Execute ' . $event::class, [
             'site' => isset($event->site) ? $event->site->getIdentifier() : null,
             'technology' => isset($event->technology) ? $event->technology->value : null,
+            'uri' => $event->uri ?? null,
         ]);
 
-        /** @var Connection $connection */
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_index_domain_model_log');
+        $record = $this->logRepository->findByIndexProcessId($event->indexProcessId);
+        $newRecord = $record === null;
 
-        $qb = $connection->createQueryBuilder();
-        $record = $qb->select('*')
-            ->from('tx_index_domain_model_log')
-            ->where($qb->expr()->eq('index_process_id', $qb->expr()->literal($event->indexProcessId)))
-            ->executeQuery()
-            ->fetchAssociative();
-        $newRecord = $record === false;
-
-        if ($record === false) {
+        if ($newRecord) {
             $record = [
                 'index_process_id' => $event->indexProcessId,
             ];
@@ -57,9 +52,9 @@ final class LogIndexEventListener implements LoggerAwareInterface
         }
 
         if ($newRecord) {
-            $connection->insert('tx_index_domain_model_log', $record);
+            $this->logRepository->insert($record);
         } else {
-            $connection->update('tx_index_domain_model_log', $record, ['index_process_id' => $event->indexProcessId]);
+            $this->logRepository->update($record, ['index_process_id' => $event->indexProcessId]);
         }
     }
 
@@ -68,8 +63,7 @@ final class LogIndexEventListener implements LoggerAwareInterface
         $extensionConfiguration = (new ExtensionConfiguration())->get('index');
         $keepIndexLogEntriesDays = isset($extensionConfiguration['keepIndexLogEntriesDays']) ? (int) $extensionConfiguration['keepIndexLogEntriesDays'] : 14;
         if ($keepIndexLogEntriesDays) {
-            $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_index_domain_model_log');
-            $connection->executeQuery('DELETE FROM tx_index_domain_model_log WHERE start_time < ' . (time() - $keepIndexLogEntriesDays * 86400));
+            $this->logRepository->deleteOlderThan(time() - $keepIndexLogEntriesDays * 86400);
         }
     }
 }

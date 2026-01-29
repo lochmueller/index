@@ -38,6 +38,9 @@ abstract class AbstractRepository
         return $this->connectionPool->getConnectionForTable($this->getTableName());
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function findByUid(int $uid): ?array
     {
         return BackendUtility::getRecord($this->getTableName(), $uid);

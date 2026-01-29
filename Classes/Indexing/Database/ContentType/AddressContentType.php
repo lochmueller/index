@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database\ContentType;
 
+use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use Lochmueller\Index\Traversing\RecordSelection;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Domain\FlexFormFieldValues;
 use TYPO3\CMS\Core\Domain\Record;
 
@@ -15,6 +15,7 @@ final class AddressContentType implements ContentTypeInterface
     public function __construct(
         protected HeaderContentType $headerContentType,
         protected RecordSelection $recordSelection,
+        protected GenericRepository $genericRepository,
     ) {}
 
     public function canHandle(Record $record): bool
@@ -31,7 +32,7 @@ final class AddressContentType implements ContentTypeInterface
 
         $this->headerContentType->addContent($record, $dto);
         $table = 'tt_address';
-        $row = BackendUtility::getRecord($table, $addressId);
+        $row = $this->genericRepository->setTableName($table)->findByUid($addressId);
         if ($row === null) {
             return;
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Tests\Unit\Indexing\Database\ContentType;
 
+use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Indexing\Database\ContentType\AddressContentType;
 use Lochmueller\Index\Indexing\Database\ContentType\HeaderContentType;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
@@ -27,8 +28,9 @@ class AddressContentTypeTest extends AbstractTest
         $record = $this->createRecordWithType('ttaddress_listview');
         $headerContentType = $this->createStub(HeaderContentType::class);
         $recordSelection = $this->createStub(RecordSelection::class);
+        $genericRepository = $this->createStub(GenericRepository::class);
 
-        $subject = new AddressContentType($headerContentType, $recordSelection);
+        $subject = new AddressContentType($headerContentType, $recordSelection, $genericRepository);
 
         self::assertTrue($subject->canHandle($record));
     }
@@ -53,8 +55,9 @@ class AddressContentTypeTest extends AbstractTest
         $record = $this->createRecordWithType($type);
         $headerContentType = $this->createStub(HeaderContentType::class);
         $recordSelection = $this->createStub(RecordSelection::class);
+        $genericRepository = $this->createStub(GenericRepository::class);
 
-        $subject = new AddressContentType($headerContentType, $recordSelection);
+        $subject = new AddressContentType($headerContentType, $recordSelection, $genericRepository);
 
         self::assertFalse($subject->canHandle($record));
     }
@@ -73,8 +76,9 @@ class AddressContentTypeTest extends AbstractTest
 
         $headerContentType = $this->createStub(HeaderContentType::class);
         $recordSelection = $this->createStub(RecordSelection::class);
+        $genericRepository = $this->createStub(GenericRepository::class);
 
-        $subject = new AddressContentType($headerContentType, $recordSelection);
+        $subject = new AddressContentType($headerContentType, $recordSelection, $genericRepository);
         $subject->addContent($record, $dto);
 
         self::assertSame('', $dto->content);
@@ -87,8 +91,9 @@ class AddressContentTypeTest extends AbstractTest
 
         $headerContentType = $this->createStub(HeaderContentType::class);
         $recordSelection = $this->createStub(RecordSelection::class);
+        $genericRepository = $this->createStub(GenericRepository::class);
 
-        $subject = new AddressContentType($headerContentType, $recordSelection);
+        $subject = new AddressContentType($headerContentType, $recordSelection, $genericRepository);
         $subject->addContent($record, $dto);
 
         self::assertSame('', $dto->content);
@@ -191,8 +196,9 @@ class AddressContentTypeTest extends AbstractTest
 
         $headerContentType = $this->createStub(HeaderContentType::class);
         $recordSelection = $this->createStub(RecordSelection::class);
+        $genericRepository = $this->createStub(GenericRepository::class);
 
-        $subject = new AddressContentType($headerContentType, $recordSelection);
+        $subject = new AddressContentType($headerContentType, $recordSelection, $genericRepository);
 
         $reflection = new \ReflectionClass($subject);
         $method = $reflection->getMethod('buildFullName');
@@ -226,8 +232,9 @@ class AddressContentTypeTest extends AbstractTest
 
         $headerContentType = $this->createStub(HeaderContentType::class);
         $recordSelection = $this->createStub(RecordSelection::class);
+        $genericRepository = $this->createStub(GenericRepository::class);
 
-        $subject = new AddressContentType($headerContentType, $recordSelection);
+        $subject = new AddressContentType($headerContentType, $recordSelection, $genericRepository);
 
         $reflection = new \ReflectionClass($subject);
         $method = $reflection->getMethod('buildIndexContent');
@@ -270,8 +277,9 @@ class AddressContentTypeTest extends AbstractTest
 
         $headerContentType = $this->createStub(HeaderContentType::class);
         $recordSelection = $this->createStub(RecordSelection::class);
+        $genericRepository = $this->createStub(GenericRepository::class);
 
-        $subject = new AddressContentType($headerContentType, $recordSelection);
+        $subject = new AddressContentType($headerContentType, $recordSelection, $genericRepository);
 
         $reflection = new \ReflectionClass($subject);
         $method = $reflection->getMethod('buildIndexContent');

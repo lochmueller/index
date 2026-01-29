@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database\ContentType;
 
+use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Indexing\Database\ContentIndexing;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use Lochmueller\Index\Traversing\RecordSelection;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Domain\Record;
 
 class NewsContentType implements ContentTypeInterface
@@ -16,6 +16,7 @@ class NewsContentType implements ContentTypeInterface
         protected HeaderContentType $headerContentType,
         protected RecordSelection   $recordSelection,
         protected ContentIndexing   $contentIndexing,
+        protected GenericRepository $genericRepository,
     ) {}
 
     public function canHandle(Record $record): bool
@@ -32,7 +33,7 @@ class NewsContentType implements ContentTypeInterface
 
         $this->headerContentType->addContent($record, $dto);
         $table = 'tx_news_domain_model_news';
-        $row = BackendUtility::getRecord($table, $newsId);
+        $row = $this->genericRepository->setTableName($table)->findByUid($newsId);
         if ($row === null) {
             return;
         }

@@ -20,10 +20,12 @@ jobs:
             typo3: '^13.4'
           - php: '8.5'
             typo3: '^13.4'
-#          - php: '8.3'
-#            typo3: '^14.0'
-#          - php: '8.4'
-#            typo3: '^14.0'
+          - php: '8.3'
+            typo3: '^14.1'
+          - php: '8.4'
+            typo3: '^14.1'
+          - php: '8.5'
+            typo3: '^14.1'
 
     steps:
       - name: Checkout repository
@@ -37,10 +39,15 @@ jobs:
           tools: composer:v2
           coverage: none
 
+      - name: Remove calendarize for TYPO3 14
+        if: startsWith(matrix.typo3, '^14')
+        run: composer remove lochmueller/calendarize --dev --no-update
+
+      - name: Require the right versions
+        run: composer require typo3/cms-core:${{ matrix.typo3 }} typo3/cms-frontend:${{ matrix.typo3 }} typo3/cms-backend:${{ matrix.typo3 }} typo3/cms-reactions:${{ matrix.typo3 }} typo3/cms-webhooks:${{ matrix.typo3 }} --no-update
+
       - name: Install dependencies
-        run: |
-          composer require typo3/cms-core:${{ matrix.typo3 }} typo3/cms-frontend:${{ matrix.typo3 }} typo3/cms-backend:${{ matrix.typo3 }} typo3/cms-reactions:${{ matrix.typo3 }} typo3/cms-webhooks:${{ matrix.typo3 }} --no-update
-          composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress
 
       - name: Run tests
         run: composer code-test

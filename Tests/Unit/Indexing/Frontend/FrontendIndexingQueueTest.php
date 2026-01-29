@@ -188,7 +188,7 @@ class FrontendIndexingQueueTest extends AbstractTest
             ->with(
                 self::isInstanceOf(Configuration::class),
                 self::identicalTo($site),
-                self::isType('string'),
+                self::isString(),
             );
 
         $bus = $this->createStub(Bus::class);

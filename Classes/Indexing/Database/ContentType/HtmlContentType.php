@@ -9,7 +9,7 @@ use TYPO3\CMS\Core\Domain\Record;
 
 class HtmlContentType extends SimpleContentType
 {
-    public function __construct(protected HeaderContentType $headerContentType) {}
+    public function __construct() {}
 
     public function canHandle(Record $record): bool
     {

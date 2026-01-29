@@ -73,6 +73,7 @@ class QueueCommand extends Command
         $siteIdentifiers = GeneralUtility::trimExplode(',', (string) $input->getOption('limitSiteIdentifiers'), true);
         if (empty($siteIdentifiers)) {
             yield from $this->siteFinder->getAllSites();
+            return;
         }
         foreach ($siteIdentifiers as $siteId) {
             yield $this->siteFinder->getSiteByIdentifier($siteId);

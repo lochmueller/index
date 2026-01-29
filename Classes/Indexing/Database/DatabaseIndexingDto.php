@@ -6,7 +6,7 @@ namespace Lochmueller\Index\Indexing\Database;
 
 use TYPO3\CMS\Core\Site\Entity\Site;
 
-class DatabaseIndexingDto
+final class DatabaseIndexingDto
 {
     /**
      * @param array<string, mixed> $arguments

@@ -37,7 +37,7 @@ class FrontendContextBuilder implements LoggerAwareInterface
 
     private function prepare(): void
     {
-        $this->originalUser = $GLOBALS['BE_USER'];
+        $this->originalUser = $GLOBALS['BE_USER'] ?? null;
         $this->initializeEnvironmentForNonCliCall(false);
 
         $GLOBALS['BE_USER'] = null;

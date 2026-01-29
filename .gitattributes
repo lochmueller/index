@@ -4,3 +4,5 @@
 /composer.lock export-ignore
 /AGENTS.md export-ignore
 /.github/ export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/Tests/ export-ignore

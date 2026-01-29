@@ -22,4 +22,5 @@ return (new Config())
         (new Finder())
             ->in(__DIR__)
             ->exclude(['.Build'])
+            ->notPath('ext_emconf.php')
     );

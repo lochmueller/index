@@ -9,16 +9,10 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class FileTraversing
 {
-    protected ResourceFactory $resourceFactory;
-
-    public function __construct()
-    {
-        $this->resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
-    }
+    public function __construct(protected ResourceFactory $resourceFactory) {}
 
     public function getFileByCompinedIdentifier(string $combinedIdentifier): ?FileInterface
     {

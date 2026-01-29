@@ -31,6 +31,9 @@ class LogRepository extends AbstractRepository
 
     public function deleteOlderThan(int $timestamp): void
     {
-        $this->getConnection()->delete($this->getTableName(), ['start_time < ?' => $timestamp], [Connection::PARAM_INT]);
+        $qb = $this->getConnection()->createQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where($qb->expr()->lt('start_time', $qb->createNamedParameter($timestamp, Connection::PARAM_INT)))
+            ->executeStatement();
     }
 }

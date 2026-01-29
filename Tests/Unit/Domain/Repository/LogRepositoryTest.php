@@ -92,18 +92,22 @@ class LogRepositoryTest extends AbstractTest
         self::assertNull($actualRecord);
     }
 
-    public function testDeleteOlderThanCallsConnectionDelete(): void
+    public function testDeleteOlderThanExecutesDeleteQuery(): void
     {
         $timestamp = 1234567890;
 
-        $connection = $this->createMock(Connection::class);
-        $connection->expects(self::once())
-            ->method('delete')
-            ->with(
-                'tx_index_domain_model_log',
-                ['start_time < ?' => $timestamp],
-                [Connection::PARAM_INT],
-            );
+        $expressionBuilder = $this->createStub(ExpressionBuilder::class);
+        $expressionBuilder->method('lt')->willReturn('start_time < 1234567890');
+
+        $queryBuilder = $this->createMock(QueryBuilder::class);
+        $queryBuilder->method('delete')->willReturnSelf();
+        $queryBuilder->method('where')->willReturnSelf();
+        $queryBuilder->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->method('createNamedParameter')->willReturn('1234567890');
+        $queryBuilder->expects(self::once())->method('executeStatement');
+
+        $connection = $this->createStub(Connection::class);
+        $connection->method('createQueryBuilder')->willReturn($queryBuilder);
 
         $connectionPool = $this->createStub(ConnectionPool::class);
         $connectionPool->method('getConnectionForTable')->willReturn($connection);

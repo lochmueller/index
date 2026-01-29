@@ -29,22 +29,21 @@ class CacheIndexingHandler implements IndexingInterface, LoggerAwareInterface
     {
         try {
             $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
+
+            $this->eventDispatcher->dispatch(new IndexPageEvent(
+                site: $site,
+                technology: IndexTechnology::Cache,
+                type: IndexType::Partial,
+                indexConfigurationRecordId: $message->indexConfigurationRecordId,
+                indexProcessId: $message->indexProcessId,
+                language: $message->language,
+                title: $message->title,
+                content: $message->content,
+                pageUid: $message->pageUid,
+                accessGroups: $message->accessGroups,
+            ));
         } catch (\Exception $exception) {
             $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
-            return;
         }
-
-        $this->eventDispatcher->dispatch(new IndexPageEvent(
-            site: $site,
-            technology: IndexTechnology::Cache,
-            type: IndexType::Partial,
-            indexConfigurationRecordId: $message->indexConfigurationRecordId,
-            indexProcessId: $message->indexProcessId,
-            language: $message->language,
-            title: $message->title,
-            content: $message->content,
-            pageUid: $message->pageUid,
-            accessGroups: $message->accessGroups,
-        ));
     }
 }

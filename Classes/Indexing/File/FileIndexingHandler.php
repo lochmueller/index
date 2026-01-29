@@ -30,33 +30,32 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
     #[AsMessageHandler]
     public function __invoke(FileMessage $message): void
     {
-        $file = $this->fileTraversing->getFileByCompinedIdentifier($message->fileIdentifier);
-        if ($file === null) {
-            return;
-        }
-
-        $base = [
-            $file->getProperty('title'),
-            $file->getProperty('alternative'),
-            $file->getProperty('description'),
-            $file->getProperty('name'),
-        ];
-
-        $content = implode(' ', $base);
         try {
+            $file = $this->fileTraversing->getFileByCompinedIdentifier($message->fileIdentifier);
+            if ($file === null) {
+                return;
+            }
+
+            $base = [
+                $file->getProperty('title'),
+                $file->getProperty('alternative'),
+                $file->getProperty('description'),
+                $file->getProperty('name'),
+            ];
+
+            $content = implode(' ', $base);
             $content .= $this->fileExtractor->extract($file);
+
+            $this->eventDispatcher->dispatch(new IndexFileEvent(
+                site: $this->siteFinder->getSiteByIdentifier($message->siteIdentifier),
+                indexConfigurationRecordId: $message->indexConfigurationRecordId,
+                indexProcessId: $message->indexProcessId,
+                title: $file->getNameWithoutExtension(),
+                content: $content,
+                fileIdentifier: $message->fileIdentifier,
+            ));
         } catch (\Exception $exception) {
             $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
-            return;
         }
-
-        $this->eventDispatcher->dispatch(new IndexFileEvent(
-            site: $this->siteFinder->getSiteByIdentifier($message->siteIdentifier),
-            indexConfigurationRecordId: $message->indexConfigurationRecordId,
-            indexProcessId: $message->indexProcessId,
-            title: $file->getNameWithoutExtension(),
-            content: $content,
-            fileIdentifier: $message->fileIdentifier,
-        ));
     }
 }

@@ -30,28 +30,27 @@ class HttpIndexingHandler implements IndexingInterface, LoggerAwareInterface
             $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
 
             $content = $this->httpRequestBuilder->buildRequestForPage($message->uri);
+
+            $title = '';
+            if (preg_match('/<title>([^>]*)<\/title>/', $content, $matches)) {
+                $title = $matches[1];
+            }
+
+            $this->eventDispatcher->dispatch(new IndexPageEvent(
+                site: $site,
+                technology: $message->technology,
+                type: $message->type,
+                indexConfigurationRecordId: $message->indexConfigurationRecordId,
+                indexProcessId: $message->indexProcessId,
+                language: 0,
+                title: $title,
+                content: $content,
+                pageUid: $message->pageUid,
+                accessGroups: $message->accessGroups,
+            ));
         } catch (\Exception $exception) {
             $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
-            return;
         }
-
-        $title = '';
-        if (preg_match('/<title>([^>]*)<\/title>/', $content, $matches)) {
-            $title = $matches[1];
-        }
-
-        $this->eventDispatcher->dispatch(new IndexPageEvent(
-            site: $site,
-            technology: $message->technology,
-            type: $message->type,
-            indexConfigurationRecordId: $message->indexConfigurationRecordId,
-            indexProcessId: $message->indexProcessId,
-            language: 0,
-            title: $title,
-            content: $content,
-            pageUid: $message->pageUid,
-            accessGroups: $message->accessGroups,
-        ));
     }
 
 }

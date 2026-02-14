@@ -20,6 +20,7 @@ final class LogIndexEventListener implements LoggerAwareInterface
 
     public function __construct(
         private readonly LogRepository $logRepository,
+        private readonly ExtensionConfiguration $extensionConfiguration,
     ) {}
 
     #[AsEventListener('index-log-helper')]
@@ -60,7 +61,7 @@ final class LogIndexEventListener implements LoggerAwareInterface
 
     protected function deleteOldEntries(): void
     {
-        $extensionConfiguration = (new ExtensionConfiguration())->get('index');
+        $extensionConfiguration = $this->extensionConfiguration->get('index');
         $keepIndexLogEntriesDays = isset($extensionConfiguration['keepIndexLogEntriesDays']) ? (int) $extensionConfiguration['keepIndexLogEntriesDays'] : 14;
         if ($keepIndexLogEntriesDays) {
             $this->logRepository->deleteOlderThan(time() - $keepIndexLogEntriesDays * 86400);

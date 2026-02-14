@@ -48,7 +48,7 @@ class ShortcutContentTypeTest extends AbstractTest
 
         $record = $this->createStub(Record::class);
         $record->method('getRecordType')->willReturn('shortcut');
-        $record->method('get')->with('records')->willReturn([$referencedRecord1, $referencedRecord2]);
+        $record->method('get')->willReturn([$referencedRecord1, $referencedRecord2]);
 
         $dto = $this->createDto();
 
@@ -68,7 +68,7 @@ class ShortcutContentTypeTest extends AbstractTest
     {
         $record = $this->createStub(Record::class);
         $record->method('getRecordType')->willReturn('shortcut');
-        $record->method('get')->with('records')->willReturn([]);
+        $record->method('get')->willReturn([]);
 
         $dto = $this->createDto();
 

@@ -23,9 +23,6 @@ class FrontendInformationDtoTest extends AbstractTest
         $this->languageMock = $this->createStub(SiteLanguage::class);
     }
 
-    /**
-     * Tests: Requirements 1.1
-     */
     public function testConstructorWithAccessGroupsParameter(): void
     {
         $accessGroups = [1, 2, 3];
@@ -42,9 +39,6 @@ class FrontendInformationDtoTest extends AbstractTest
         self::assertSame($accessGroups, $dto->accessGroups);
     }
 
-    /**
-     * Tests: Requirements 1.1
-     */
     public function testConstructorWithoutAccessGroupsParameterUsesEmptyArrayDefault(): void
     {
         $dto = new FrontendInformationDto(
@@ -58,9 +52,6 @@ class FrontendInformationDtoTest extends AbstractTest
         self::assertSame([], $dto->accessGroups);
     }
 
-    /**
-     * Tests: Requirements 1.1
-     */
     public function testConstructorWithSpecialAccessGroupValues(): void
     {
         $accessGroups = [-1, -2, 5];

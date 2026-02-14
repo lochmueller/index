@@ -33,7 +33,7 @@ class BootstrapPackageSimpleContentTypeTest extends AbstractTest
     private function setBootstrapPackageActive(bool $active): void
     {
         $packageManager = $this->createStub(PackageManager::class);
-        $packageManager->method('isPackageActive')->with('bootstrap_package')->willReturn($active);
+        $packageManager->method('isPackageActive')->willReturn($active);
         GeneralUtility::setSingletonInstance(PackageManager::class, $packageManager);
     }
 
@@ -61,7 +61,6 @@ class BootstrapPackageSimpleContentTypeTest extends AbstractTest
 
     /**
      * Property 10: canHandle returns true for supported types when installed
-     * Validates: Requirements 8.2
      */
     #[DataProvider('supportedTypesProvider')]
     public function testCanHandleReturnsTrueForSupportedTypesWhenPackageActive(string $type): void
@@ -153,8 +152,6 @@ class BootstrapPackageSimpleContentTypeTest extends AbstractTest
      * Property 1: Simple types extract header and bodytext
      * For any simple Bootstrap Package content element (textcolumn, texticon, listgroup, panel)
      * with non-empty bodytext field, the indexed content SHALL contain the bodytext.
-     *
-     * Validates: Requirements 1.1, 1.4, 1.5, 1.6
      */
     #[DataProvider('simpleTypesWithContentProvider')]
     public function testSimpleTypesExtractBodytext(string $type, string $bodytext): void
@@ -195,8 +192,6 @@ class BootstrapPackageSimpleContentTypeTest extends AbstractTest
      * Property 2: Textteaser extracts all text fields
      * For any textteaser content element with non-empty teaser and bodytext fields,
      * the indexed content SHALL contain both field values.
-     *
-     * Validates: Requirements 1.2
      */
     #[DataProvider('textteaserContentProvider')]
     public function testTextteaserExtractsAllTextFields(string $teaser, string $bodytext): void
@@ -237,8 +232,6 @@ class BootstrapPackageSimpleContentTypeTest extends AbstractTest
      * Property 3: Quote extracts all text fields including source
      * For any quote content element with non-empty bodytext and quote_source fields,
      * the indexed content SHALL contain both field values.
-     *
-     * Validates: Requirements 1.3
      */
     #[DataProvider('quoteContentProvider')]
     public function testQuoteExtractsAllTextFieldsIncludingSource(string $quoteSource, string $bodytext): void
@@ -276,7 +269,6 @@ class BootstrapPackageSimpleContentTypeTest extends AbstractTest
 
     /**
      * Test empty fields are handled gracefully
-     * Validates: Requirements 10.1
      */
     #[DataProvider('allSimpleTypesProvider')]
     public function testEmptyFieldsAreHandledGracefully(string $type): void

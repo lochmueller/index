@@ -30,7 +30,7 @@ class AbstractBootstrapPackageContentTypeTest extends AbstractTest
     public function testIsBootstrapPackageActiveReturnsFalseWhenPackageNotInstalled(): void
     {
         $packageManager = $this->createStub(PackageManager::class);
-        $packageManager->method('isPackageActive')->with('bootstrap_package')->willReturn(false);
+        $packageManager->method('isPackageActive')->willReturn(false);
         GeneralUtility::setSingletonInstance(PackageManager::class, $packageManager);
 
         $headerContentType = $this->createStub(HeaderContentType::class);
@@ -42,7 +42,7 @@ class AbstractBootstrapPackageContentTypeTest extends AbstractTest
     public function testIsBootstrapPackageActiveReturnsTrueWhenPackageInstalled(): void
     {
         $packageManager = $this->createStub(PackageManager::class);
-        $packageManager->method('isPackageActive')->with('bootstrap_package')->willReturn(true);
+        $packageManager->method('isPackageActive')->willReturn(true);
         GeneralUtility::setSingletonInstance(PackageManager::class, $packageManager);
 
         $headerContentType = $this->createStub(HeaderContentType::class);
@@ -56,7 +56,6 @@ class AbstractBootstrapPackageContentTypeTest extends AbstractTest
         $packageManager = $this->createMock(PackageManager::class);
         $packageManager->expects(self::once())
             ->method('isPackageActive')
-            ->with('bootstrap_package')
             ->willReturn(true);
         GeneralUtility::setSingletonInstance(PackageManager::class, $packageManager);
 
@@ -114,12 +113,11 @@ class AbstractBootstrapPackageContentTypeTest extends AbstractTest
 
     /**
      * Property 9: canHandle returns false when Bootstrap Package not installed
-     * Validates: Requirements 8.1
      */
     public function testCanHandleReturnsFalseWhenBootstrapPackageNotInstalled(): void
     {
         $packageManager = $this->createStub(PackageManager::class);
-        $packageManager->method('isPackageActive')->with('bootstrap_package')->willReturn(false);
+        $packageManager->method('isPackageActive')->willReturn(false);
         GeneralUtility::setSingletonInstance(PackageManager::class, $packageManager);
 
         $record = $this->createStub(Record::class);

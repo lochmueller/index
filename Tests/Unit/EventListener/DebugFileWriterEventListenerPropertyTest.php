@@ -13,21 +13,12 @@ use Lochmueller\Index\Event\StartIndexProcessEvent;
 use Lochmueller\Index\EventListener\DebugFileWriterEventListener;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Group;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
-/**
- * Feature: debug-file-writer, Property 1: Deaktiviertes Feature erzeugt keine Ausgabe
- *
- * **Validates: Requirements 1.2**
- */
-#[Group('tmp')]
 class DebugFileWriterEventListenerPropertyTest extends AbstractTest
 {
-    private const PROPERTY_TEST_ITERATIONS = 100;
-
     protected function tearDown(): void
     {
         $debugDir = Environment::getVarPath() . '/index-debug';
@@ -160,7 +151,7 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
             'FinishIndexProcessEvent' => [self::class, 'createRandomFinishIndexProcessEvent'],
         ];
 
-        for ($i = 0; $i < self::PROPERTY_TEST_ITERATIONS; $i++) {
+        for ($i = 0; $i < self::TEST_ITERATIONS; $i++) {
             $eventTypeName = array_rand($eventFactories);
             $site = self::createRandomSiteStub();
             $event = $eventFactories[$eventTypeName]($site);
@@ -174,7 +165,7 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
      */
     public static function directoryPathComponentsDataProvider(): \Generator
     {
-        for ($i = 0; $i < self::PROPERTY_TEST_ITERATIONS; $i++) {
+        for ($i = 0; $i < self::TEST_ITERATIONS; $i++) {
             $siteIdentifier = self::randomString(3, 20);
             $indexProcessId = self::randomString(5, 40);
 
@@ -197,7 +188,7 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
             'FinishIndexProcessEvent' => [self::class, 'createRandomFinishIndexProcessEvent'],
         ];
 
-        for ($i = 0; $i < self::PROPERTY_TEST_ITERATIONS; $i++) {
+        for ($i = 0; $i < self::TEST_ITERATIONS; $i++) {
             $eventTypeName = array_rand($eventFactories);
             $site = self::createRandomSiteStub();
             $event = $eventFactories[$eventTypeName]($site);
@@ -213,8 +204,6 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
      *
      * Für zufällig generierte Events aller vier Typen: bei deaktiviertem Feature
      * keine Dateisystem-Operationen (kein Verzeichnis unter var/index-debug/).
-     *
-     * **Validates: Requirements 1.2**
      */
     #[DataProvider('disabledFeatureRandomEventsDataProvider')]
     public function testDisabledFeatureProducesNoOutput(
@@ -236,8 +225,6 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
      * Für zufällig generierte Site-Identifier und indexProcessIds: der erzeugte
      * Verzeichnispfad enthält alle Bestandteile in korrekter Reihenfolge:
      * {varPath}/index-debug/{siteIdentifier}/{indexProcessId}
-     *
-     * **Validates: Requirements 2.1, 2.2, 2.4**
      */
     #[DataProvider('directoryPathComponentsDataProvider')]
     public function testDirectoryPathContainsAllComponents(
@@ -285,8 +272,6 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
      *
      * Für zufällig generierte Events: extrahierte Daten enthalten alle erwarteten
      * Schlüssel je Event-Typ, JSON round-trip ist äquivalent.
-     *
-     * **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.7**
      */
     #[DataProvider('eventDataExtractionDataProvider')]
     public function testEventDataExtractionProducesCompleteJson(
@@ -368,7 +353,7 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
             'FinishIndexProcessEvent' => [self::class, 'createRandomFinishIndexProcessEvent'],
         ];
 
-        for ($i = 0; $i < self::PROPERTY_TEST_ITERATIONS; $i++) {
+        for ($i = 0; $i < self::TEST_ITERATIONS; $i++) {
             $eventTypeName = array_rand($eventFactories);
             $site = self::createRandomSiteStub();
             $event = $eventFactories[$eventTypeName]($site);
@@ -382,8 +367,6 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
      *
      * Für zufällig generierte Event-Daten: JSON-Ausgabe enthält Zeilenumbrüche
      * und Einrückungen, keine escaped Unicode-Sequenzen und keine escaped Slashes.
-     *
-     * **Validates: Requirements 3.5**
      */
     #[DataProvider('jsonFormattingDataProvider')]
     public function testJsonOutputIsHumanReadableFormatted(
@@ -431,7 +414,7 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
             'FinishIndexProcessEvent' => [self::class, 'createRandomFinishIndexProcessEvent'],
         ];
 
-        for ($i = 0; $i < self::PROPERTY_TEST_ITERATIONS; $i++) {
+        for ($i = 0; $i < self::TEST_ITERATIONS; $i++) {
             $eventTypeName = array_rand($eventFactories);
             $site = self::createRandomSiteStub();
             $event = $eventFactories[$eventTypeName]($site);
@@ -445,8 +428,6 @@ class DebugFileWriterEventListenerPropertyTest extends AbstractTest
      *
      * Für zufällig generierte Events: Dateiname matcht Pattern
      * {EventKlassenname}_{numerisch}.txt
-     *
-     * **Validates: Requirements 3.6**
      */
     #[DataProvider('filenamePatternDataProvider')]
     public function testFilenameContainsEventTypeAndTimestamp(

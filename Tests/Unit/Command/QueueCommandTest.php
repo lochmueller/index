@@ -170,12 +170,10 @@ class QueueCommandTest extends AbstractTest
 
         $siteFinder = $this->createStub(SiteFinder::class);
         $siteFinder->method('getSiteByIdentifier')
-            ->with('my-site')
             ->willReturn($site);
 
         $configurationLoader = $this->createStub(ConfigurationLoader::class);
         $configurationLoader->method('loadAllBySite')
-            ->with($site)
             ->willReturn([$configuration]);
 
         $activeIndexing = $this->createMock(ActiveIndexing::class);

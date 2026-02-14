@@ -13,6 +13,7 @@ use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class DebugFileWriterEventListener implements LoggerAwareInterface
 {
@@ -38,7 +39,7 @@ final class DebugFileWriterEventListener implements LoggerAwareInterface
             );
 
             if (!is_dir($directoryPath)) {
-                mkdir($directoryPath, 0o777, true);
+                GeneralUtility::mkdir_deep($directoryPath);
             }
 
             $json = json_encode(
@@ -47,7 +48,7 @@ final class DebugFileWriterEventListener implements LoggerAwareInterface
             );
 
             $filePath = $directoryPath . '/' . $this->buildFileName($event);
-            file_put_contents($filePath, $json);
+            GeneralUtility::writeFile($filePath, $json);
         } catch (\Throwable $throwable) {
             $this->logger?->warning('Debug file writer failed: ' . $throwable->getMessage(), [
                 'exception' => $throwable,
@@ -58,7 +59,6 @@ final class DebugFileWriterEventListener implements LoggerAwareInterface
     private function isEnabled(): bool
     {
         try {
-            return true;
             return (bool) $this->extensionConfiguration->get('index', 'enableDebugFileWriter');
         } catch (\Throwable) {
             return false;

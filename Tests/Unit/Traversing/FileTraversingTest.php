@@ -30,7 +30,6 @@ class FileTraversingTest extends AbstractTest
 
         $resourceFactory = $this->createStub(ResourceFactory::class);
         $resourceFactory->method('getFileObjectFromCombinedIdentifier')
-            ->with($combinedIdentifier)
             ->willReturn($expectedFile);
 
         $genericRepository = $this->createStub(GenericRepository::class);
@@ -47,7 +46,6 @@ class FileTraversingTest extends AbstractTest
 
         $resourceFactory = $this->createStub(ResourceFactory::class);
         $resourceFactory->method('getFileObjectFromCombinedIdentifier')
-            ->with($combinedIdentifier)
             ->willReturn(null);
 
         $genericRepository = $this->createStub(GenericRepository::class);
@@ -64,7 +62,7 @@ class FileTraversingTest extends AbstractTest
 
         $genericRepository = $this->createStub(GenericRepository::class);
         $genericRepository->method('setTableName')->willReturnSelf();
-        $genericRepository->method('findByUid')->with($fileMountUid)->willReturn(null);
+        $genericRepository->method('findByUid')->willReturn(null);
 
         $resourceFactory = $this->createStub(ResourceFactory::class);
         $subject = new FileTraversing($resourceFactory, $genericRepository);
@@ -93,12 +91,11 @@ class FileTraversingTest extends AbstractTest
         $folder->method('getFiles')->willReturn([$pdfFile, $docxFile, $txtFile]);
 
         $genericRepository = $this->createStub(GenericRepository::class);
-        $genericRepository->method('setTableName')->with('sys_filemounts')->willReturnSelf();
-        $genericRepository->method('findByUid')->with($fileMountUid)->willReturn($fileMountRow);
+        $genericRepository->method('setTableName')->willReturnSelf();
+        $genericRepository->method('findByUid')->willReturn($fileMountRow);
 
         $resourceFactory = $this->createStub(ResourceFactory::class);
         $resourceFactory->method('getFolderObjectFromCombinedIdentifier')
-            ->with($fileMountRow['identifier'])
             ->willReturn($folder);
 
         $subject = new FileTraversing($resourceFactory, $genericRepository);

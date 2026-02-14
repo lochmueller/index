@@ -11,6 +11,10 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
+use TYPO3\CMS\Core\Schema\Capability\LanguageAwareSchemaCapability;
+use TYPO3\CMS\Core\Schema\Field\FieldTypeInterface;
+use TYPO3\CMS\Core\Schema\Field\LanguageFieldType;
+use TYPO3\CMS\Core\Schema\TcaSchema;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 
 class RecordSelectionTest extends AbstractTest
@@ -24,7 +28,6 @@ class RecordSelectionTest extends AbstractTest
 
         $recordFactoryStub = $this->createStub(RecordFactory::class);
         $recordFactoryStub->method('createResolvedRecordFromDatabaseRow')
-            ->with($table, $row)
             ->willReturn($recordStub);
 
         $subject = new RecordSelection(
@@ -109,5 +112,216 @@ class RecordSelectionTest extends AbstractTest
         $result = $reflection->invoke($subject, []);
 
         self::assertFalse($result);
+    }
+
+    public function testFindRenderablePageReturnsNullWhenPageNotFound(): void
+    {
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturn($genericRepositoryStub);
+        $genericRepositoryStub->method('findByUid')->willReturn(null);
+
+        $tcaSchemaFactoryStub = $this->createStub(TcaSchemaFactory::class);
+        $languageFieldStub = new LanguageFieldType('sys_language_uid', []);
+        $languageCapability = new LanguageAwareSchemaCapability(
+            $languageFieldStub,
+            $this->createStub(FieldTypeInterface::class),
+            null,
+            null,
+        );
+        $tcaSchemaStub = $this->createStub(TcaSchema::class);
+        $tcaSchemaStub->method('getCapability')->willReturn($languageCapability);
+        $tcaSchemaFactoryStub->method('get')->willReturn($tcaSchemaStub);
+
+        $subject = new RecordSelection(
+            $this->createStub(RecordFactory::class),
+            $this->createStub(PageRepository::class),
+            $tcaSchemaFactoryStub,
+            $genericRepositoryStub,
+        );
+
+        self::assertNull($subject->findRenderablePage(999));
+    }
+
+    public function testFindRenderablePageReturnsNullForExcludedDoktype(): void
+    {
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturn($genericRepositoryStub);
+        $genericRepositoryStub->method('findByUid')->willReturn([
+            'uid' => 1,
+            'pid' => 0,
+            'doktype' => PageRepository::DOKTYPE_SYSFOLDER,
+        ]);
+
+        $tcaSchemaFactoryStub = $this->createStub(TcaSchemaFactory::class);
+        $languageFieldStub = new LanguageFieldType('sys_language_uid', []);
+        $languageCapability = new LanguageAwareSchemaCapability(
+            $languageFieldStub,
+            $this->createStub(FieldTypeInterface::class),
+            null,
+            null,
+        );
+        $tcaSchemaStub = $this->createStub(TcaSchema::class);
+        $tcaSchemaStub->method('getCapability')->willReturn($languageCapability);
+        $tcaSchemaFactoryStub->method('get')->willReturn($tcaSchemaStub);
+
+        $subject = new RecordSelection(
+            $this->createStub(RecordFactory::class),
+            $this->createStub(PageRepository::class),
+            $tcaSchemaFactoryStub,
+            $genericRepositoryStub,
+        );
+
+        self::assertNull($subject->findRenderablePage(1));
+    }
+
+    public function testFindRenderablePageReturnsRowForDefaultLanguage(): void
+    {
+        $row = [
+            'uid' => 1,
+            'pid' => 0,
+            'doktype' => PageRepository::DOKTYPE_DEFAULT,
+        ];
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturn($genericRepositoryStub);
+        $genericRepositoryStub->method('findByUid')->willReturn($row);
+
+        $tcaSchemaFactoryStub = $this->createStub(TcaSchemaFactory::class);
+        $languageFieldStub = new LanguageFieldType('sys_language_uid', []);
+        $languageCapability = new LanguageAwareSchemaCapability(
+            $languageFieldStub,
+            $this->createStub(FieldTypeInterface::class),
+            null,
+            null,
+        );
+        $tcaSchemaStub = $this->createStub(TcaSchema::class);
+        $tcaSchemaStub->method('getCapability')->willReturn($languageCapability);
+        $tcaSchemaFactoryStub->method('get')->willReturn($tcaSchemaStub);
+
+        $subject = new RecordSelection(
+            $this->createStub(RecordFactory::class),
+            $this->createStub(PageRepository::class),
+            $tcaSchemaFactoryStub,
+            $genericRepositoryStub,
+        );
+
+        self::assertSame($row, $subject->findRenderablePage(1));
+    }
+
+    public function testFindRenderablePageReturnsNullWhenOverlayLanguageMismatch(): void
+    {
+        $row = [
+            'uid' => 1,
+            'pid' => 0,
+            'doktype' => PageRepository::DOKTYPE_DEFAULT,
+            'sys_language_uid' => 0,
+        ];
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturn($genericRepositoryStub);
+        $genericRepositoryStub->method('findByUid')->willReturn($row);
+
+        $pageRepositoryStub = $this->createStub(PageRepository::class);
+        $pageRepositoryStub->method('getPageOverlay')->willReturn(array_merge($row, ['sys_language_uid' => 0]));
+
+        $tcaSchemaFactoryStub = $this->createStub(TcaSchemaFactory::class);
+        $languageFieldStub = new LanguageFieldType('sys_language_uid', []);
+        $languageCapability = new LanguageAwareSchemaCapability(
+            $languageFieldStub,
+            $this->createStub(FieldTypeInterface::class),
+            null,
+            null,
+        );
+        $tcaSchemaStub = $this->createStub(TcaSchema::class);
+        $tcaSchemaStub->method('getCapability')->willReturn($languageCapability);
+        $tcaSchemaFactoryStub->method('get')->willReturn($tcaSchemaStub);
+
+        $subject = new RecordSelection(
+            $this->createStub(RecordFactory::class),
+            $pageRepositoryStub,
+            $tcaSchemaFactoryStub,
+            $genericRepositoryStub,
+        );
+
+        self::assertNull($subject->findRenderablePage(1, 2));
+    }
+
+    public function testFindRenderablePageReturnsNullWhenPageIsHidden(): void
+    {
+        $row = [
+            'uid' => 1,
+            'pid' => 0,
+            'doktype' => PageRepository::DOKTYPE_DEFAULT,
+            'sys_language_uid' => 0,
+        ];
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturn($genericRepositoryStub);
+        $genericRepositoryStub->method('findByUid')->willReturn($row);
+
+        $pageRepositoryStub = $this->createStub(PageRepository::class);
+        $pageRepositoryStub->method('getPageOverlay')->willReturn(array_merge($row, ['sys_language_uid' => 2]));
+        $pageRepositoryStub->method('checkIfPageIsHidden')->willReturn(true);
+
+        $tcaSchemaFactoryStub = $this->createStub(TcaSchemaFactory::class);
+        $languageFieldStub = new LanguageFieldType('sys_language_uid', []);
+        $languageCapability = new LanguageAwareSchemaCapability(
+            $languageFieldStub,
+            $this->createStub(FieldTypeInterface::class),
+            null,
+            null,
+        );
+        $tcaSchemaStub = $this->createStub(TcaSchema::class);
+        $tcaSchemaStub->method('getCapability')->willReturn($languageCapability);
+        $tcaSchemaFactoryStub->method('get')->willReturn($tcaSchemaStub);
+
+        $subject = new RecordSelection(
+            $this->createStub(RecordFactory::class),
+            $pageRepositoryStub,
+            $tcaSchemaFactoryStub,
+            $genericRepositoryStub,
+        );
+
+        self::assertNull($subject->findRenderablePage(1, 2));
+    }
+
+    public function testFindRenderablePageReturnsOverlayForTranslatedPage(): void
+    {
+        $row = [
+            'uid' => 1,
+            'pid' => 0,
+            'doktype' => PageRepository::DOKTYPE_DEFAULT,
+            'sys_language_uid' => 0,
+        ];
+        $overlayRow = array_merge($row, ['sys_language_uid' => 2, 'title' => 'Translated']);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturn($genericRepositoryStub);
+        $genericRepositoryStub->method('findByUid')->willReturn($row);
+
+        $pageRepositoryStub = $this->createStub(PageRepository::class);
+        $pageRepositoryStub->method('getPageOverlay')->willReturn($overlayRow);
+        $pageRepositoryStub->method('checkIfPageIsHidden')->willReturn(false);
+
+        $tcaSchemaFactoryStub = $this->createStub(TcaSchemaFactory::class);
+        $languageFieldStub = new LanguageFieldType('sys_language_uid', []);
+        $languageCapability = new LanguageAwareSchemaCapability(
+            $languageFieldStub,
+            $this->createStub(FieldTypeInterface::class),
+            null,
+            null,
+        );
+        $tcaSchemaStub = $this->createStub(TcaSchema::class);
+        $tcaSchemaStub->method('getCapability')->willReturn($languageCapability);
+        $tcaSchemaFactoryStub->method('get')->willReturn($tcaSchemaStub);
+
+        $subject = new RecordSelection(
+            $this->createStub(RecordFactory::class),
+            $pageRepositoryStub,
+            $tcaSchemaFactoryStub,
+            $genericRepositoryStub,
+        );
+
+        self::assertSame($overlayRow, $subject->findRenderablePage(1, 2));
     }
 }

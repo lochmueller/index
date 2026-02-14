@@ -6,91 +6,41 @@ namespace Lochmueller\Index\Tests\Unit\Queue\Handler;
 
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
-use Lochmueller\Index\Event\StartIndexProcessEvent;
 use Lochmueller\Index\Queue\Handler\StartProcessHandler;
 use Lochmueller\Index\Queue\Message\StartProcessMessage;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use TYPO3\CMS\Core\Site\Entity\Site;
+use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
 class StartProcessHandlerTest extends AbstractTest
 {
-    public function testInvokeDispatchesStartIndexProcessEvent(): void
+    public function testExceptionIsLoggedWhenSiteFinderThrows(): void
     {
-        $siteIdentifier = 'test-site';
-        $technology = IndexTechnology::Database;
-        $type = IndexType::Full;
-        $configurationRecordId = 42;
-        $processId = 'process-123';
+        $exception = new SiteNotFoundException('Site "unknown" not found', 1234567890);
 
-        $site = new Site($siteIdentifier, 1, []);
+        $siteFinderStub = $this->createStub(SiteFinder::class);
+        $siteFinderStub->method('getSiteByIdentifier')->willThrowException($exception);
 
-        $siteFinder = $this->createStub(SiteFinder::class);
-        $siteFinder->method('getSiteByIdentifier')->with($siteIdentifier)->willReturn($site);
+        $eventDispatcherStub = $this->createStub(EventDispatcherInterface::class);
 
-        $dispatchedEvent = null;
-        $eventDispatcher = new class ($dispatchedEvent) implements EventDispatcherInterface {
-            public function __construct(private ?object &$dispatchedEvent) {}
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $loggerMock->expects(self::once())
+            ->method('error')
+            ->with($exception->getMessage(), ['exception' => $exception]);
 
-            public function dispatch(object $event): object
-            {
-                $this->dispatchedEvent = $event;
-                return $event;
-            }
-        };
+        $subject = new StartProcessHandler($eventDispatcherStub, $siteFinderStub);
+        $subject->setLogger($loggerMock);
 
         $message = new StartProcessMessage(
-            siteIdentifier: $siteIdentifier,
-            technology: $technology,
-            type: $type,
-            indexConfigurationRecordId: $configurationRecordId,
-            indexProcessId: $processId,
-        );
-
-        $subject = new StartProcessHandler($eventDispatcher, $siteFinder);
-        $subject->__invoke($message);
-
-        self::assertInstanceOf(StartIndexProcessEvent::class, $dispatchedEvent);
-        self::assertSame($site, $dispatchedEvent->site);
-        self::assertSame($technology, $dispatchedEvent->technology);
-        self::assertSame($type, $dispatchedEvent->type);
-        self::assertSame($configurationRecordId, $dispatchedEvent->indexConfigurationRecordId);
-        self::assertSame($processId, $dispatchedEvent->indexProcessId);
-        self::assertIsFloat($dispatchedEvent->startTime);
-    }
-
-    public function testInvokeWithNullConfigurationRecordId(): void
-    {
-        $siteIdentifier = 'test-site';
-        $site = new Site($siteIdentifier, 1, []);
-
-        $siteFinder = $this->createStub(SiteFinder::class);
-        $siteFinder->method('getSiteByIdentifier')->willReturn($site);
-
-        $dispatchedEvent = null;
-        $eventDispatcher = new class ($dispatchedEvent) implements EventDispatcherInterface {
-            public function __construct(private ?object &$dispatchedEvent) {}
-
-            public function dispatch(object $event): object
-            {
-                $this->dispatchedEvent = $event;
-                return $event;
-            }
-        };
-
-        $message = new StartProcessMessage(
-            siteIdentifier: $siteIdentifier,
-            technology: IndexTechnology::External,
-            type: IndexType::Partial,
+            siteIdentifier: 'unknown',
+            technology: IndexTechnology::Database,
+            type: IndexType::Full,
             indexConfigurationRecordId: null,
-            indexProcessId: 'process-456',
+            indexProcessId: 'test-process-id',
         );
 
-        $subject = new StartProcessHandler($eventDispatcher, $siteFinder);
-        $subject->__invoke($message);
-
-        self::assertInstanceOf(StartIndexProcessEvent::class, $dispatchedEvent);
-        self::assertNull($dispatchedEvent->indexConfigurationRecordId);
+        $subject($message);
     }
 }

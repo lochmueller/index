@@ -34,7 +34,7 @@ class BootstrapPackageInlineContentTypeTest extends AbstractTest
     private function setBootstrapPackageActive(bool $active): void
     {
         $packageManager = $this->createStub(PackageManager::class);
-        $packageManager->method('isPackageActive')->with('bootstrap_package')->willReturn($active);
+        $packageManager->method('isPackageActive')->willReturn($active);
         GeneralUtility::setSingletonInstance(PackageManager::class, $packageManager);
     }
 
@@ -82,7 +82,6 @@ class BootstrapPackageInlineContentTypeTest extends AbstractTest
 
     /**
      * Property 10: canHandle returns true for supported types when installed
-     * Validates: Requirements 8.2
      */
     #[DataProvider('supportedTypesProvider')]
     public function testCanHandleReturnsTrueForSupportedTypesWhenPackageActive(string $type, string $table): void
@@ -159,8 +158,6 @@ class BootstrapPackageInlineContentTypeTest extends AbstractTest
      * Property 4: Inline types extract parent header
      * For any Bootstrap Package inline content element with a non-empty header field,
      * the indexed content SHALL contain the parent header text.
-     *
-     * Validates: Requirements 2.1, 3.1, 4.1, 5.1, 6.1, 7.1
      */
     #[DataProvider('allInlineTypesProvider')]
     public function testParentHeaderIsExtracted(string $type): void
@@ -207,7 +204,6 @@ class BootstrapPackageInlineContentTypeTest extends AbstractTest
 
     /**
      * Test that empty inline items are handled gracefully
-     * Validates: Requirements 10.2
      */
     #[DataProvider('allInlineTypesProvider')]
     public function testEmptyInlineItemsAreHandledGracefully(string $type): void
@@ -263,8 +259,6 @@ class BootstrapPackageInlineContentTypeTest extends AbstractTest
      * For any inline content element (accordion, tab, icon_group) with child items
      * containing non-empty header and bodytext fields, the indexed content SHALL
      * contain all item headers and all item bodytexts.
-     *
-     * Validates: Requirements 2.3, 3.3, 5.3
      */
     #[DataProvider('headerBodytextItemsProvider')]
     public function testInlineItemsWithHeaderAndBodytextAreFullyExtracted(
@@ -317,8 +311,6 @@ class BootstrapPackageInlineContentTypeTest extends AbstractTest
      * For any card_group or carousel content element with child items containing
      * non-empty header, subheader, and bodytext fields, the indexed content SHALL
      * contain all item headers, subheaders, and bodytexts.
-     *
-     * Validates: Requirements 4.3, 7.3
      */
     #[DataProvider('cardCarouselItemsProvider')]
     public function testCardAndCarouselItemsWithSubheaderAreFullyExtracted(
@@ -372,8 +364,6 @@ class BootstrapPackageInlineContentTypeTest extends AbstractTest
      * For any timeline content element with child items containing non-empty header,
      * bodytext, and date fields, the indexed content SHALL contain all item headers,
      * bodytexts, and dates.
-     *
-     * Validates: Requirements 6.3
      */
     #[DataProvider('timelineItemsProvider')]
     public function testTimelineItemsWithDateAreFullyExtracted(
@@ -406,7 +396,6 @@ class BootstrapPackageInlineContentTypeTest extends AbstractTest
 
     /**
      * Test that inline items with empty fields are handled gracefully
-     * Validates: Requirements 10.3
      */
     #[DataProvider('allInlineTypesProvider')]
     public function testInlineItemsWithEmptyFieldsAreHandledGracefully(string $type): void

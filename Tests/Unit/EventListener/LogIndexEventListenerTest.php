@@ -7,6 +7,7 @@ namespace Lochmueller\Index\Tests\Unit\EventListener;
 use Lochmueller\Index\Domain\Repository\LogRepository;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
+use Lochmueller\Index\Event\FinishIndexProcessEvent;
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
 use Lochmueller\Index\Event\StartIndexProcessEvent;
@@ -15,6 +16,7 @@ use Lochmueller\Index\Tests\Unit\AbstractTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
 class LogIndexEventListenerTest extends AbstractTest
@@ -22,7 +24,8 @@ class LogIndexEventListenerTest extends AbstractTest
     public function testListenerImplementsLoggerAwareInterface(): void
     {
         $logRepositoryStub = $this->createStub(LogRepository::class);
-        $subject = new LogIndexEventListener($logRepositoryStub);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryStub, $extensionConfigurationStub);
 
         self::assertInstanceOf(LoggerAwareInterface::class, $subject);
     }
@@ -31,8 +34,9 @@ class LogIndexEventListenerTest extends AbstractTest
     {
         $loggerStub = $this->createStub(LoggerInterface::class);
         $logRepositoryStub = $this->createStub(LogRepository::class);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
 
-        $subject = new LogIndexEventListener($logRepositoryStub);
+        $subject = new LogIndexEventListener($logRepositoryStub, $extensionConfigurationStub);
         $subject->setLogger($loggerStub);
 
         self::assertTrue(true);
@@ -66,7 +70,8 @@ class LogIndexEventListenerTest extends AbstractTest
             ]);
         $logRepositoryMock->expects(self::never())->method('update');
 
-        $subject = new LogIndexEventListener($logRepositoryMock);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);
         $subject($event);
     }
 
@@ -98,7 +103,8 @@ class LogIndexEventListenerTest extends AbstractTest
                 ['index_process_id' => 'start-process-456'],
             );
 
-        $subject = new LogIndexEventListener($logRepositoryMock);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);
         $subject($event);
     }
 
@@ -135,7 +141,8 @@ class LogIndexEventListenerTest extends AbstractTest
                 ['index_process_id' => 'page-process-789'],
             );
 
-        $subject = new LogIndexEventListener($logRepositoryMock);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);
         $subject($event);
     }
 
@@ -172,7 +179,8 @@ class LogIndexEventListenerTest extends AbstractTest
                 ['index_process_id' => 'page-zero-process'],
             );
 
-        $subject = new LogIndexEventListener($logRepositoryMock);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);
         $subject($event);
     }
 
@@ -205,7 +213,8 @@ class LogIndexEventListenerTest extends AbstractTest
                 ['index_process_id' => 'file-process-abc'],
             );
 
-        $subject = new LogIndexEventListener($logRepositoryMock);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);
         $subject($event);
     }
 
@@ -238,7 +247,45 @@ class LogIndexEventListenerTest extends AbstractTest
                 ['index_process_id' => 'file-zero-process'],
             );
 
-        $subject = new LogIndexEventListener($logRepositoryMock);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);
+        $subject($event);
+    }
+
+    public function testInvokeWithFinishIndexProcessEventSetsEndTimeAndDeletesOldEntries(): void
+    {
+        $siteStub = $this->createStub(SiteInterface::class);
+        $siteStub->method('getIdentifier')->willReturn('finish-site');
+
+        $event = new FinishIndexProcessEvent(
+            site: $siteStub,
+            technology: IndexTechnology::Database,
+            type: IndexType::Full,
+            indexConfigurationRecordId: 1,
+            indexProcessId: 'finish-process-123',
+            endTime: 1234567890.0,
+        );
+
+        /** @var LogRepository&MockObject $logRepositoryMock */
+        $logRepositoryMock = $this->createMock(LogRepository::class);
+        $logRepositoryMock->expects(self::once())
+            ->method('findByIndexProcessId')
+            ->with('finish-process-123')
+            ->willReturn(['index_process_id' => 'finish-process-123', 'pages_counter' => 5]);
+        $logRepositoryMock->expects(self::never())->method('insert');
+        $logRepositoryMock->expects(self::once())
+            ->method('update')
+            ->with(
+                ['index_process_id' => 'finish-process-123', 'pages_counter' => 5, 'end_time' => 1234567890],
+                ['index_process_id' => 'finish-process-123'],
+            );
+        $logRepositoryMock->expects(self::once())
+            ->method('deleteOlderThan');
+
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $extensionConfigurationStub->method('get')->willReturn(['keepIndexLogEntriesDays' => 14]);
+
+        $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);
         $subject($event);
     }
 
@@ -272,7 +319,8 @@ class LogIndexEventListenerTest extends AbstractTest
                 ],
             );
 
-        $subject = new LogIndexEventListener($logRepositoryStub);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryStub, $extensionConfigurationStub);
         $subject->setLogger($loggerMock);
         $subject($event);
     }
@@ -313,7 +361,8 @@ class LogIndexEventListenerTest extends AbstractTest
                 ],
             );
 
-        $subject = new LogIndexEventListener($logRepositoryStub);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryStub, $extensionConfigurationStub);
         $subject->setLogger($loggerMock);
         $subject($event);
     }
@@ -350,7 +399,8 @@ class LogIndexEventListenerTest extends AbstractTest
                 ],
             );
 
-        $subject = new LogIndexEventListener($logRepositoryStub);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryStub, $extensionConfigurationStub);
         $subject->setLogger($loggerMock);
         $subject($event);
     }
@@ -372,7 +422,8 @@ class LogIndexEventListenerTest extends AbstractTest
         $logRepositoryStub = $this->createStub(LogRepository::class);
         $logRepositoryStub->method('findByIndexProcessId')->willReturn(null);
 
-        $subject = new LogIndexEventListener($logRepositoryStub);
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryStub, $extensionConfigurationStub);
         $subject($event);
 
         self::assertTrue(true);

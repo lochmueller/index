@@ -10,9 +10,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 class AccessGroupParserTest extends AbstractTest
 {
-    /**
-     * Tests: Requirements 6.2
-     */
     public function testParseEmptyStringReturnsEmptyArray(): void
     {
         $result = AccessGroupParser::parse('');
@@ -20,9 +17,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([], $result);
     }
 
-    /**
-     * Tests: Requirements 6.3
-     */
     public function testParseZeroStringReturnsEmptyArray(): void
     {
         $result = AccessGroupParser::parse('0');
@@ -30,9 +24,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([], $result);
     }
 
-    /**
-     * Tests: Requirements 6.4
-     */
     public function testParseSingleValueReturnsArrayWithOneElement(): void
     {
         $result = AccessGroupParser::parse('1');
@@ -40,9 +31,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([1], $result);
     }
 
-    /**
-     * Tests: Requirements 6.4
-     */
     public function testParseCommaSeparatedValuesReturnsIntegerArray(): void
     {
         $result = AccessGroupParser::parse('1,2,3');
@@ -50,9 +38,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([1, 2, 3], $result);
     }
 
-    /**
-     * Tests: Requirements 6.5
-     */
     public function testParseValuesWithWhitespaceReturnsCleanArray(): void
     {
         $result = AccessGroupParser::parse('1, 2, 3');
@@ -60,9 +45,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([1, 2, 3], $result);
     }
 
-    /**
-     * Tests: Requirements 1.4
-     */
     public function testParseSpecialValueMinusOneReturnsArrayWithMinusOne(): void
     {
         $result = AccessGroupParser::parse('-1');
@@ -70,9 +52,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([-1], $result);
     }
 
-    /**
-     * Tests: Requirements 1.5
-     */
     public function testParseSpecialValueMinusTwoReturnsArrayWithMinusTwo(): void
     {
         $result = AccessGroupParser::parse('-2');
@@ -80,9 +59,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([-2], $result);
     }
 
-    /**
-     * Tests: Requirements 6.4
-     */
     public function testParseMixedValuesWithSpecialValuesReturnsCorrectArray(): void
     {
         $result = AccessGroupParser::parse('1,-1,2');
@@ -90,9 +66,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([1, -1, 2], $result);
     }
 
-    /**
-     * Tests: Requirements 6.5
-     */
     public function testParseTrimsLeadingAndTrailingWhitespace(): void
     {
         $result = AccessGroupParser::parse('  1,2,3  ');
@@ -100,9 +73,6 @@ class AccessGroupParserTest extends AbstractTest
         self::assertSame([1, 2, 3], $result);
     }
 
-    /**
-     * Tests: Requirements 6.4
-     */
     public function testParseFiltersZeroValuesFromResult(): void
     {
         $result = AccessGroupParser::parse('1,0,2');
@@ -177,8 +147,6 @@ class AccessGroupParserTest extends AbstractTest
      * Für alle gültigen Integer-Arrays (Access Groups), wenn wir das Array
      * formatieren und dann wieder parsen, soll das Ergebnis dem ursprünglichen
      * Array entsprechen.
-     *
-     * **Validates: Requirements 6.6**
      *
      * @param int[] $accessGroups
      */

@@ -22,7 +22,6 @@ class AbstractRepositoryTest extends AbstractTest
 
         $connectionPool = $this->createStub(ConnectionPool::class);
         $connectionPool->method('getConnectionForTable')
-            ->with($tableName)
             ->willReturn($connection);
 
         $subject = new class ($connectionPool, $tableName) extends \Lochmueller\Index\Domain\Repository\AbstractRepository {
@@ -55,7 +54,6 @@ class AbstractRepositoryTest extends AbstractTest
 
         $connectionPool = $this->createStub(ConnectionPool::class);
         $connectionPool->method('getConnectionForTable')
-            ->with($tableName)
             ->willReturn($connection);
 
         $subject = new class ($connectionPool, $tableName) extends \Lochmueller\Index\Domain\Repository\AbstractRepository {

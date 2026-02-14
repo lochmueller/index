@@ -3,3 +3,6 @@ keepIndexLogEntriesDays=14
 
 # cat=General; type=boolean; label=Default transport in Development context: Send all messages via sync/default transport in the development environment
 defaultTransportInDevelopmentContext=0
+
+# cat=General; type=boolean; label=Enable debug file writer: Write all index events as JSON files to var/index-debug/ for debugging purposes. Default: off.
+enableDebugFileWriter=0

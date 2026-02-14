@@ -35,7 +35,6 @@ readonly class CacheIndexingQueue implements IndexingInterface
         }
 
         $request = $event->getRequest();
-        $tsfe = $request->getAttribute('frontend.controller');
         /** @var Site $site */
         $site = $request->getAttribute('site');
         $pageInformation = $request->getAttribute('frontend.page.information');
@@ -66,7 +65,7 @@ readonly class CacheIndexingQueue implements IndexingInterface
             indexConfigurationRecordId: $configuration->configurationId,
             language: $this->context->getAspect('language')->getId(),
             title: $this->pageTitleProviderManager->getTitle($request),
-            content: $tsfe->content,
+            content: $this->resolveContent($event),
             pageUid: (int) $pageInformation->getId(),
             accessGroups: $this->context->getPropertyFromAspect('frontend.user', 'groupIds', [0, -1]),
             indexProcessId: $id,
@@ -81,5 +80,24 @@ readonly class CacheIndexingQueue implements IndexingInterface
             indexConfigurationRecordId: $configuration->configurationId,
             indexProcessId: $id,
         ));
+    }
+
+    /**
+     * Resolves page content from the event, compatible with TYPO3 v13 and v14.
+     *
+     * v14 provides getContent() directly on the event.
+     * v13 requires fetching content from TypoScriptFrontendController via getController().
+     */
+    private function resolveContent(AfterCacheableContentIsGeneratedEvent $event): string
+    {
+        // TYPO3 v14+ provides getContent() directly on the event
+        // TYPO3 v13 requires fetching content from TypoScriptFrontendController via getController()
+        // @phpstan-ignore function.alreadyNarrowedType
+        if (method_exists($event, 'getContent')) {
+            return $event->getContent();
+        }
+
+        // @phpstan-ignore method.notFound
+        return $event->getController()->content;
     }
 }

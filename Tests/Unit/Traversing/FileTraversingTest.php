@@ -8,7 +8,6 @@ use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use Lochmueller\Index\Traversing\FileTraversing;
 use TYPO3\CMS\Core\Resource\File;
-use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 
@@ -26,7 +25,7 @@ class FileTraversingTest extends AbstractTest
     public function testGetFileByCompinedIdentifierReturnsFileInterface(): void
     {
         $combinedIdentifier = '1:/user_upload/test.pdf';
-        $expectedFile = $this->createStub(FileInterface::class);
+        $expectedFile = $this->createStub(File::class);
 
         $resourceFactory = $this->createStub(ResourceFactory::class);
         $resourceFactory->method('getFileObjectFromCombinedIdentifier')

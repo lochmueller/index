@@ -20,20 +20,36 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
 use TYPO3\CMS\Core\Site\Entity\Site;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 
 class CacheIndexingQueueTest extends AbstractTest
 {
+    /**
+     * Creates an AfterCacheableContentIsGeneratedEvent compatible with TYPO3 v13 and v14.
+     *
+     * v13: __construct(ServerRequestInterface, TypoScriptFrontendController, string, bool)
+     * v14: __construct(ServerRequestInterface, string, string, bool)
+     */
+    private function createCacheEvent(ServerRequestInterface $request, string $content, bool $usePageCache): AfterCacheableContentIsGeneratedEvent
+    {
+        // @phpstan-ignore-next-line
+        if (class_exists(\TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController::class)) {
+            $tsfe = $this->createStub(\TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController::class);
+            $tsfe->content = $content;
+            return new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', $usePageCache);
+        }
+
+        return new AfterCacheableContentIsGeneratedEvent($request, $content, 'cache-id', $usePageCache);
+    }
+
     public function testFillQueueReturnsEarlyWhenCachingDisabled(): void
     {
         $bus = $this->createMock(Bus::class);
         $bus->expects(self::never())->method('dispatch');
 
         $request = $this->createStub(ServerRequestInterface::class);
-        $tsfe = $this->createStub(TypoScriptFrontendController::class);
-        $event = new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', false);
+        $event = $this->createCacheEvent($request, '', false);
 
         $subject = new CacheIndexingQueue(
             $bus,
@@ -62,8 +78,7 @@ class CacheIndexingQueueTest extends AbstractTest
             ['frontend.page.information', null, $pageInformation],
         ]);
 
-        $tsfe = $this->createStub(TypoScriptFrontendController::class);
-        $event = new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', true);
+        $event = $this->createCacheEvent($request, '', true);
 
         $subject = new CacheIndexingQueue(
             $bus,
@@ -106,8 +121,7 @@ class CacheIndexingQueueTest extends AbstractTest
             ['frontend.page.information', null, $pageInformation],
         ]);
 
-        $tsfe = $this->createStub(TypoScriptFrontendController::class);
-        $event = new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', true);
+        $event = $this->createCacheEvent($request, '', true);
 
         $subject = new CacheIndexingQueue(
             $bus,
@@ -151,8 +165,7 @@ class CacheIndexingQueueTest extends AbstractTest
             ['frontend.page.information', null, $pageInformation],
         ]);
 
-        $tsfe = $this->createStub(TypoScriptFrontendController::class);
-        $event = new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', true);
+        $event = $this->createCacheEvent($request, '', true);
 
         $subject = new CacheIndexingQueue(
             $bus,
@@ -191,14 +204,10 @@ class CacheIndexingQueueTest extends AbstractTest
         $site = $this->createStub(Site::class);
         $site->method('getIdentifier')->willReturn('test-site');
 
-        $tsfe = $this->createStub(TypoScriptFrontendController::class);
-        $tsfe->content = '<p>Test content</p>';
-
         $request = $this->createStub(ServerRequestInterface::class);
         $request->method('getAttribute')->willReturnMap([
             ['frontend.page.information', null, $pageInformation],
             ['site', null, $site],
-            ['frontend.controller', null, $tsfe],
         ]);
 
         $context = $this->createStub(Context::class);
@@ -233,7 +242,7 @@ class CacheIndexingQueueTest extends AbstractTest
             $fileIndexingQueue,
         );
 
-        $event = new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', true);
+        $event = $this->createCacheEvent($request, '<p>Test content</p>', true);
         $subject->fillQueue($event);
 
         self::assertCount(3, $dispatched);
@@ -268,14 +277,10 @@ class CacheIndexingQueueTest extends AbstractTest
         $site = $this->createStub(Site::class);
         $site->method('getIdentifier')->willReturn('my-site');
 
-        $tsfe = $this->createStub(TypoScriptFrontendController::class);
-        $tsfe->content = 'page body';
-
         $request = $this->createStub(ServerRequestInterface::class);
         $request->method('getAttribute')->willReturnMap([
             ['frontend.page.information', null, $pageInformation],
             ['site', null, $site],
-            ['frontend.controller', null, $tsfe],
         ]);
 
         $context = $this->createStub(Context::class);
@@ -307,7 +312,7 @@ class CacheIndexingQueueTest extends AbstractTest
             $fileIndexingQueue,
         );
 
-        $event = new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', true);
+        $event = $this->createCacheEvent($request, 'page body', true);
         $subject->fillQueue($event);
 
         /** @var StartProcessMessage $startMessage */
@@ -366,14 +371,10 @@ class CacheIndexingQueueTest extends AbstractTest
         $site = $this->createStub(Site::class);
         $site->method('getIdentifier')->willReturn('site');
 
-        $tsfe = $this->createStub(TypoScriptFrontendController::class);
-        $tsfe->content = '';
-
         $request = $this->createStub(ServerRequestInterface::class);
         $request->method('getAttribute')->willReturnMap([
             ['frontend.page.information', null, $pageInformation],
             ['site', null, $site],
-            ['frontend.controller', null, $tsfe],
         ]);
 
         $context = $this->createStub(Context::class);
@@ -411,7 +412,7 @@ class CacheIndexingQueueTest extends AbstractTest
             $fileIndexingQueue,
         );
 
-        $event = new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', true);
+        $event = $this->createCacheEvent($request, '', true);
         $subject->fillQueue($event);
 
         $processId = $dispatched[0]->indexProcessId;
@@ -447,14 +448,10 @@ class CacheIndexingQueueTest extends AbstractTest
         $site = $this->createStub(Site::class);
         $site->method('getIdentifier')->willReturn('file-site');
 
-        $tsfe = $this->createStub(TypoScriptFrontendController::class);
-        $tsfe->content = 'content';
-
         $request = $this->createStub(ServerRequestInterface::class);
         $request->method('getAttribute')->willReturnMap([
             ['frontend.page.information', null, $pageInformation],
             ['site', null, $site],
-            ['frontend.controller', null, $tsfe],
         ]);
 
         $context = $this->createStub(Context::class);
@@ -488,7 +485,7 @@ class CacheIndexingQueueTest extends AbstractTest
             $fileIndexingQueue,
         );
 
-        $event = new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', true);
+        $event = $this->createCacheEvent($request, 'content', true);
         $subject->fillQueue($event);
 
         self::assertSame($configuration, $capturedConfiguration);
@@ -521,14 +518,10 @@ class CacheIndexingQueueTest extends AbstractTest
         $site = $this->createStub(Site::class);
         $site->method('getIdentifier')->willReturn('site');
 
-        $tsfe = $this->createStub(TypoScriptFrontendController::class);
-        $tsfe->content = '';
-
         $request = $this->createStub(ServerRequestInterface::class);
         $request->method('getAttribute')->willReturnMap([
             ['frontend.page.information', null, $pageInformation],
             ['site', null, $site],
-            ['frontend.controller', null, $tsfe],
         ]);
 
         $context = $this->createStub(Context::class);
@@ -555,7 +548,7 @@ class CacheIndexingQueueTest extends AbstractTest
             $fileIndexingQueue,
         );
 
-        $event = new AfterCacheableContentIsGeneratedEvent($request, $tsfe, 'cache-id', true);
+        $event = $this->createCacheEvent($request, '', true);
         $subject->fillQueue($event);
     }
 }

@@ -31,7 +31,7 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
     public function __invoke(FileMessage $message): void
     {
         try {
-            $file = $this->fileTraversing->getFileByCompinedIdentifier($message->fileIdentifier);
+            $file = $this->fileTraversing->getFileByCombinedIdentifier($message->fileIdentifier);
             if ($file === null) {
                 return;
             }

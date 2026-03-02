@@ -34,7 +34,7 @@ class FileTraversingTest extends AbstractTest
         $genericRepository = $this->createStub(GenericRepository::class);
         $subject = new FileTraversing($resourceFactory, $genericRepository);
 
-        $result = $subject->getFileByCompinedIdentifier($combinedIdentifier);
+        $result = $subject->getFileByCombinedIdentifier($combinedIdentifier);
 
         self::assertSame($expectedFile, $result);
     }
@@ -50,7 +50,7 @@ class FileTraversingTest extends AbstractTest
         $genericRepository = $this->createStub(GenericRepository::class);
         $subject = new FileTraversing($resourceFactory, $genericRepository);
 
-        $result = $subject->getFileByCompinedIdentifier($combinedIdentifier);
+        $result = $subject->getFileByCombinedIdentifier($combinedIdentifier);
 
         self::assertNull($result);
     }

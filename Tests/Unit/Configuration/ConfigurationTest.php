@@ -174,13 +174,12 @@ class ConfigurationTest extends AbstractTest
 
         $result = $configuration->modifyForPartialIndexing(99);
 
-        self::assertSame($configuration, $result);
-        self::assertSame(IndexType::Partial, $configuration->overrideIndexType);
-        self::assertSame(99, $configuration->pageId);
-        self::assertSame(0, $configuration->levels);
+        self::assertSame(IndexType::Partial, $result->overrideIndexType);
+        self::assertSame(99, $result->pageId);
+        self::assertSame(0, $result->levels);
     }
 
-    public function testModifyForPartialIndexingReturnsSameInstance(): void
+    public function testModifyForPartialIndexingReturnsNotSameInstance(): void
     {
         $configuration = new Configuration(
             configurationId: 1,
@@ -198,6 +197,6 @@ class ConfigurationTest extends AbstractTest
 
         $result = $configuration->modifyForPartialIndexing(50);
 
-        self::assertSame($configuration, $result);
+        self::assertNotSame($configuration, $result);
     }
 }

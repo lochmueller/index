@@ -54,11 +54,20 @@ class Configuration
 
     public function modifyForPartialIndexing(int $pageId): Configuration
     {
-        $this->overrideIndexType = IndexType::Partial;
-        $this->pageId = $pageId;
-        $this->levels = 0;
-
-        return $this;
+        return new self(
+            configurationId: $this->configurationId,
+            pageId: $pageId,
+            technology: $this->technology,
+            contentIndexing: $this->contentIndexing,
+            skipNoSearchPages: $this->skipNoSearchPages,
+            levels: 0,
+            fileMounts: $this->fileMounts,
+            fileTypes: $this->fileTypes,
+            configuration: $this->configuration,
+            partialIndexing: $this->partialIndexing,
+            languages: $this->languages,
+            overrideIndexType: IndexType::Partial
+        );
     }
 
 }

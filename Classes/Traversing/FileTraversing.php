@@ -17,7 +17,7 @@ class FileTraversing
         protected GenericRepository $genericRepository
     ) {}
 
-    public function getFileByCompinedIdentifier(string $combinedIdentifier): ?FileInterface
+    public function getFileByCombinedIdentifier(string $combinedIdentifier): ?FileInterface
     {
         return $this->resourceFactory->getFileObjectFromCombinedIdentifier($combinedIdentifier);
     }

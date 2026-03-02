@@ -20,7 +20,7 @@ class FileIndexingHandlerTest extends AbstractTest
     public function testInvokeReturnsEarlyWhenFileNotFound(): void
     {
         $fileTraversing = $this->createStub(FileTraversing::class);
-        $fileTraversing->method('getFileByCompinedIdentifier')->willReturn(null);
+        $fileTraversing->method('getFileByCombinedIdentifier')->willReturn(null);
 
         $fileExtractor = $this->createStub(FileExtractor::class);
         $siteFinder = $this->createStub(SiteFinder::class);
@@ -52,7 +52,7 @@ class FileIndexingHandlerTest extends AbstractTest
         $file->method('getNameWithoutExtension')->willReturn('test');
 
         $fileTraversing = $this->createStub(FileTraversing::class);
-        $fileTraversing->method('getFileByCompinedIdentifier')->willReturn($file);
+        $fileTraversing->method('getFileByCombinedIdentifier')->willReturn($file);
 
         $fileExtractor = $this->createStub(FileExtractor::class);
         $fileExtractor->method('extract')->willReturn(' Extracted content');
@@ -90,7 +90,7 @@ class FileIndexingHandlerTest extends AbstractTest
         $file->method('getProperty')->willReturn('');
 
         $fileTraversing = $this->createStub(FileTraversing::class);
-        $fileTraversing->method('getFileByCompinedIdentifier')->willReturn($file);
+        $fileTraversing->method('getFileByCombinedIdentifier')->willReturn($file);
 
         $fileExtractor = $this->createStub(FileExtractor::class);
         $fileExtractor->method('extract')->willThrowException(new \Exception('Extraction failed'));

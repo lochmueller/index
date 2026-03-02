@@ -6,6 +6,7 @@ namespace Lochmueller\Index\Indexing\External;
 
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
+use Lochmueller\Index\Indexing\IndexingInterface;
 use Lochmueller\Index\Queue\Message\ExternalFileIndexMessage;
 use Lochmueller\Index\Queue\Message\ExternalPageIndexMessage;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -14,13 +15,13 @@ use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
-class ExternalIndexingHandler implements LoggerAwareInterface
+class ExternalIndexingHandler implements IndexingInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     public function __construct(
-        private SiteFinder               $siteFinder,
-        private EventDispatcherInterface $eventDispatcher,
+        private readonly SiteFinder               $siteFinder,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
     #[AsMessageHandler]

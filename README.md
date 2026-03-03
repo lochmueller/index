@@ -141,5 +141,5 @@ process to fetch content out of files is working. Check out the composer.json `s
 
 ## Extension based on EXT:index
 
-- EXT:seal - Search Engine Abstraction Layer
+- [EXT:seal](https://github.com/lochmueller/seal) - Search Engine Abstraction Layer
 - (more to come - please create a PR to extend this list)

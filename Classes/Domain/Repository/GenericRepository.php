@@ -61,6 +61,28 @@ class GenericRepository extends AbstractRepository
     }
 
     /**
+     * Find records by a generic parent field and UID.
+     *
+     * @param array<int> $languages
+     * @return iterable<array<string, mixed>>
+     */
+    public function findByParentField(int $parentUid, string $foreignField, array $languages): iterable
+    {
+        $queryBuilder = $this->createFrontendQueryBuilder();
+
+        $queryBuilder->select('*')
+            ->from($this->getTableName())
+            ->where(
+                $queryBuilder->expr()->eq($foreignField, $parentUid),
+                $queryBuilder->expr()->in('sys_language_uid', $languages),
+            )
+            ->orderBy('sorting', 'ASC');
+
+        return $queryBuilder->executeQuery()->iterateAssociative();
+    }
+
+
+    /**
      * Find records on pages with language filtering.
      *
      * @param array<int> $pageUids

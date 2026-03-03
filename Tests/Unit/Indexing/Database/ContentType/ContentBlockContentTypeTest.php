@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Tests\Unit\Indexing\Database\ContentType;
 
+use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Indexing\Database\ContentType\ContentBlockContentType;
 use Lochmueller\Index\Indexing\Database\ContentType\HeaderContentType;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
@@ -11,6 +12,8 @@ use Lochmueller\Index\Tests\Unit\AbstractTest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TYPO3\CMS\ContentBlocks\Definition\TableDefinitionCollection;
 use TYPO3\CMS\Core\Domain\Record;
+use TYPO3\CMS\Core\Domain\RecordFactory;
+use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Site\Entity\Site;
 
@@ -42,6 +45,9 @@ class ContentBlockContentTypeTest extends AbstractTest
     ): TestableContentBlockContentType {
         return new TestableContentBlockContentType(
             $headerContentType ?? $this->createStub(HeaderContentType::class),
+            $this->createStub(GenericRepository::class),
+            $this->createStub(RecordFactory::class),
+            $this->createStub(PageRepository::class),
             $contentBlockList,
             $tableDefinitionCollection,
         );
@@ -303,10 +309,13 @@ class TestableContentBlockContentType extends ContentBlockContentType
      */
     public function __construct(
         HeaderContentType $headerContentType,
+        GenericRepository $genericRepository,
+        RecordFactory $recordFactory,
+        PageRepository $pageRepository,
         private readonly array $testContentBlockList = [],
         private readonly ?TableDefinitionCollection $testTableDefinitionCollection = null,
     ) {
-        parent::__construct($headerContentType);
+        parent::__construct($headerContentType, $genericRepository, $recordFactory, $pageRepository);
     }
 
     protected function getContentBlockList(): array

@@ -16,18 +16,27 @@ class HeaderContentType extends SimpleContentType
 
     public function addContent(Record $record, DatabaseIndexingDto $dto): void
     {
-        $layout = (int) $record->get('header_layout');
-        if ($layout > 10) {
+        if (!$record->has('header')) {
             return;
-        } elseif ($layout === 0) {
-            $layout = 1;
+        }
+
+        $layout = 1;
+        if ($record->has('header_layout')) {
+            $layout = (int) $record->get('header_layout');
+            if ($layout > 10) {
+                return;
+            } elseif ($layout === 0) {
+                $layout = 1;
+            }
         }
 
         $return = '<h' . $layout . '>' . $record->get('header') . '</h' . $layout . '>';
 
-        $subheader = trim((string) $record->get('subheader'));
-        if ($subheader !== '') {
-            $return .= '<p>' . $subheader . '</p>';
+        if ($record->has('subheader')) {
+            $subheader = trim((string) $record->get('subheader'));
+            if ($subheader !== '') {
+                $return .= '<p>' . $subheader . '</p>';
+            }
         }
 
         $dto->content .= $return;

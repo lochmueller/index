@@ -4,20 +4,31 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database\ContentType;
 
+use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use TYPO3\CMS\ContentBlocks\Definition\ContentType\ContentType;
 use TYPO3\CMS\ContentBlocks\Definition\TableDefinitionCollection;
+use TYPO3\CMS\ContentBlocks\Definition\TcaFieldDefinition;
+use TYPO3\CMS\ContentBlocks\Definition\TcaFieldDefinitionCollection;
 use TYPO3\CMS\ContentBlocks\Loader\LoadedContentBlock;
 use TYPO3\CMS\ContentBlocks\Registry\ContentBlockRegistry;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Domain\Record;
+use TYPO3\CMS\Core\Domain\RecordFactory;
+use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ContentBlockContentType extends SimpleContentType
 {
+    private const MAX_INLINE_DEPTH = 10;
+
     public function __construct(
         protected HeaderContentType $headerContentType,
+        private readonly GenericRepository $genericRepository,
+        private readonly RecordFactory $recordFactory,
+        private readonly PageRepository $pageRepository,
     ) {}
 
     public function canHandle(Record $record): bool
@@ -67,40 +78,160 @@ class ContentBlockContentType extends SimpleContentType
         $contentTypeDefinition = $tableDefinition->contentTypeDefinitionCollection->getType($typeName);
         $columns = $contentTypeDefinition->getColumns();
 
+        $this->extractFieldsFromColumns($record, $columns, $tableDefinition->tcaFieldDefinitionCollection, $table, $dto, 0);
+    }
+
+    /**
+     * @param array<string> $columns
+     */
+    protected function extractFieldsFromColumns(
+        Record $record,
+        array $columns,
+        TcaFieldDefinitionCollection $fieldDefinitionCollection,
+        string $table,
+        DatabaseIndexingDto $dto,
+        int $depth,
+    ): void {
+        if ($depth > self::MAX_INLINE_DEPTH) {
+            return;
+        }
+
         $contentParts = [];
         foreach ($columns as $column) {
-            // Skip standard fields that are handled elsewhere
             if (in_array($column, ['header', 'subheader', 'header_layout', 'header_position', 'header_link'], true)) {
                 continue;
             }
 
-            if (!$tableDefinition->tcaFieldDefinitionCollection->hasField($column)) {
+            if (!$fieldDefinitionCollection->hasField($column)) {
                 continue;
             }
 
-            $fieldDefinition = $tableDefinition->tcaFieldDefinitionCollection->getField($column);
+            $fieldDefinition = $fieldDefinitionCollection->getField($column);
             $fieldType = $fieldDefinition->fieldType;
             $tcaType = $fieldType->getTcaType();
 
-            // Extract text-based content
-            if (in_array($tcaType, ['input', 'text'], true)) {
-                $value = $this->getFieldValue($record, $column);
-                if ($value !== null && $value !== '') {
-                    $contentParts[] = $value;
-                }
-            }
-
-            // Extract file references (title, description)
-            if ($tcaType === 'file') {
-                $fileContent = $this->extractFileContent($record, $column);
-                if ($fileContent !== '') {
-                    $contentParts[] = $fileContent;
-                }
+            switch ($tcaType) {
+                case 'input':
+                case 'text':
+                    $value = $this->getFieldValue($record, $column);
+                    if ($value !== null && $value !== '') {
+                        $contentParts[] = $value;
+                    }
+                    break;
+                case 'file':
+                    $fileContent = $this->extractFileContent($record, $column);
+                    if ($fileContent !== '') {
+                        $contentParts[] = $fileContent;
+                    }
+                    break;
+                case 'inline':
+                    $inlineContent = $this->extractInlineContent($record, $fieldDefinition, $dto, $depth);
+                    if ($inlineContent !== '') {
+                        $contentParts[] = $inlineContent;
+                    }
+                    break;
             }
         }
 
         if ($contentParts !== []) {
             $dto->content .= implode(' ', $contentParts);
+        }
+    }
+
+    protected function extractInlineContent(
+        Record $record,
+        TcaFieldDefinition $fieldDefinition,
+        DatabaseIndexingDto $dto,
+        int $depth,
+    ): string {
+        $tca = $fieldDefinition->getTca();
+        $foreignTable = $tca['config']['foreign_table'] ?? '';
+        $foreignField = $tca['config']['foreign_field'] ?? '';
+        if ($foreignTable === '' || $foreignField === '') {
+            return '';
+        }
+
+        $tableDefinitionCollection = $this->getTableDefinitionCollection();
+        if ($tableDefinitionCollection === null || !$tableDefinitionCollection->hasTable($foreignTable)) {
+            return '';
+        }
+
+        $childTableDefinition = $tableDefinitionCollection->getTable($foreignTable);
+        $languageUid = $record->getLanguageId() ?? 0;
+
+        try {
+            $parentUid = (int) $record->get('uid');
+        } catch (\Exception) {
+            return '';
+        }
+
+        $contentParts = [];
+        foreach ($this->findChildRecords($parentUid, $foreignTable, $foreignField, $languageUid) as $childRecord) {
+            $childColumns = [];
+            foreach ($childTableDefinition->tcaFieldDefinitionCollection as $childField) {
+                $childColumns[] = $childField->identifier;
+            }
+
+            $childDto = clone $dto;
+            $childDto->content = '';
+            $this->extractFieldsFromColumns(
+                $childRecord,
+                $childColumns,
+                $childTableDefinition->tcaFieldDefinitionCollection,
+                $foreignTable,
+                $childDto,
+                $depth + 1,
+            );
+
+            if ($childDto->content !== '') {
+                $contentParts[] = $childDto->content;
+            }
+        }
+
+        return implode(' ', $contentParts);
+    }
+
+    /**
+     * @return iterable<Record>
+     */
+    protected function findChildRecords(int $parentUid, string $table, string $foreignField, int $languageUid): iterable
+    {
+        $languages = [0, -1, $languageUid];
+
+        $rows = $this->genericRepository
+            ->setTableName($table)
+            ->findByParentField($parentUid, $foreignField, $languages);
+
+        foreach ($rows as $row) {
+            try {
+                if ($languageUid > 0) {
+                    $overlay = $this->pageRepository->getLanguageOverlay(
+                        $table,
+                        $row,
+                        new LanguageAspect($languageUid, $languageUid),
+                    );
+                    if ($overlay === null) {
+                        continue;
+                    }
+                    $record = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $overlay);
+                    if (!$record instanceof Record) {
+                        continue;
+                    }
+                    $langInfo = $record->getLanguageInfo();
+                    if ($langInfo === null || !in_array($langInfo->getLanguageId(), [-1, $languageUid], true)) {
+                        continue;
+                    }
+                    yield $record;
+                } else {
+                    $record = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $row);
+                    if (!$record instanceof Record) {
+                        continue;
+                    }
+                    yield $record;
+                }
+            } catch (\Exception) {
+                continue;
+            }
         }
     }
 

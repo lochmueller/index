@@ -18,6 +18,7 @@ class HeaderContentTypeTest extends AbstractTest
         $record = $this->createStub(Record::class);
         $record->method('getRecordType')->willReturn($type);
         $record->method('get')->willReturnCallback(fn(string $field) => $data[$field] ?? '');
+        $record->method('has')->willReturnCallback(fn(string $field) => array_key_exists($field, $data));
         return $record;
     }
 

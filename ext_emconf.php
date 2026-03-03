@@ -4,7 +4,7 @@
 $EM_CONF[$_EXTKEY] = [
     'title' => 'Index',
     'description' => 'Smart and flexible async indexing of pages and documents for search engines, AI providers, and other external systems.',
-    'version' => '2.1.0',
+    'version' => '2.1.1',
     'category' => 'be',
     'constraints' => [
         'depends' => [

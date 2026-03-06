@@ -1,8 +1,8 @@
 {
   "name": "lochmueller/index",
-  "type": "typo3-cms-extension",
   "description": "Smart and flexible async indexing of pages and documents for search engines, AI providers, and other external systems.",
   "license": "GPL-2.0-or-later",
+  "type": "typo3-cms-extension",
   "keywords": [
     "typo3",
     "index",
@@ -10,6 +10,33 @@
     "traversing",
     "search"
   ],
+  "require": {
+    "php": "^8.3",
+    "typo3/cms-backend": "^13.4 || ^14.0",
+    "typo3/cms-core": "^13.4 || ^14.0",
+    "typo3/cms-frontend": "^13.4 || ^14.0",
+    "typo3/cms-reactions": "^13.4 || ^14.0",
+    "typo3/cms-webhooks": "^13.4 || ^14.0"
+  },
+  "require-dev": {
+    "bk2k/bootstrap-package": "^16.0",
+    "friendsofphp/php-cs-fixer": "^3.84",
+    "friendsoftypo3/content-blocks": "^1.0 || ^2.0",
+    "friendsoftypo3/tt-address": "^10.0",
+    "lochmueller/calendarize": "^14.0",
+    "phpoffice/phppresentation": "dev-master as 1.2.1",
+    "phpoffice/phpspreadsheet": "^5.4",
+    "phpoffice/phpword": "^1.4",
+    "phpstan/phpstan": "^2.1",
+    "smalot/pdfparser": "^2.12",
+    "typo3/testing-framework": "^8.0 || ^9.3"
+  },
+  "suggest": {
+    "phpoffice/phppresentation": "For file extraction process of Powerpoint files.",
+    "phpoffice/phpspreadsheet": "For file extraction process of Excel files.",
+    "phpoffice/phpword": "For file extraction process of Word files.",
+    "smalot/pdfparser": "For file extraction process of PDF files."
+  },
   "autoload": {
     "psr-4": {
       "Lochmueller\\Index\\": "Classes/"
@@ -20,61 +47,34 @@
       "Lochmueller\\Index\\Tests\\": "Tests/"
     }
   },
-  "require": {
-    "php": "^8.3",
-    "typo3/cms-core": "^13.4||^14.0",
-    "typo3/cms-frontend": "^13.4||^14.0",
-    "typo3/cms-backend": "^13.4||^14.0",
-    "typo3/cms-reactions": "^13.4||^14.0",
-    "typo3/cms-webhooks": "^13.4||^14.0"
-  },
-  "require-dev": {
-    "typo3/testing-framework": "^8.0||^9.3",
-    "friendsoftypo3/content-blocks": "^1.0||^2.0",
-    "lochmueller/calendarize": "^14.0",
-    "bk2k/bootstrap-package": "^16.0",
-    "friendsoftypo3/tt-address": "^10.0",
-    "phpoffice/phpword": "^1.4",
-    "phpoffice/phppresentation": "dev-master as 1.2.1",
-    "smalot/pdfparser": "^2.12",
-    "phpoffice/phpspreadsheet": "^5.4",
-    "friendsofphp/php-cs-fixer": "^3.84",
-    "phpstan/phpstan": "^2.1"
-  },
-  "suggest": {
-    "phpoffice/phpspreadsheet": "For file extraction process of Excel files.",
-    "phpoffice/phppresentation": "For file extraction process of Powerpoint files.",
-    "phpoffice/phpword": "For file extraction process of Word files.",
-    "smalot/pdfparser": "For file extraction process of PDF files."
+  "config": {
+    "allow-plugins": {
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
+    },
+    "bin-dir": ".Build/bin",
+    "vendor-dir": ".Build/vendor"
   },
   "extra": {
     "typo3/cms": {
-      "extension-key": "index",
       "cms-package-dir": "{$vendor-dir}/typo3/cms",
+      "extension-key": "index",
       "web-dir": ".Build/Web"
     }
   },
-  "config": {
-    "vendor-dir": ".Build/vendor",
-    "bin-dir": ".Build/bin",
-    "allow-plugins": {
-      "typo3/cms-composer-installers": true,
-      "typo3/class-alias-loader": true
-    }
-  },
   "scripts": {
-    "code-fix": [
-      "@php-cs-fixer"
-    ],
     "code-check": [
       "@phpstan"
+    ],
+    "code-fix": [
+      "@php-cs-fixer"
     ],
     "code-test": [
       "@phpunit"
     ],
-    "phpunit": "phpunit -c Tests/UnitTests.xml",
     "code-test-coverage": "XDEBUG_MODE=coverage phpunit -c Tests/UnitTests.xml --coverage-html .Build/coverage/",
+    "php-cs-fixer": "php-cs-fixer fix --allow-unsupported-php-version yes",
     "phpstan": "phpstan analyse Classes --memory-limit 1G --level 8",
-    "php-cs-fixer": "php-cs-fixer fix --allow-unsupported-php-version yes"
+    "phpunit": "phpunit -c Tests/UnitTests.xml"
   }
 }

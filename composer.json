@@ -29,7 +29,7 @@
     "phpoffice/phpword": "^1.4",
     "phpstan/phpstan": "^2.1",
     "smalot/pdfparser": "^2.12",
-    "typo3/testing-framework": "^8.0 || ^9.3"
+    "typo3/testing-framework": "^9.3"
   },
   "suggest": {
     "phpoffice/phppresentation": "For file extraction process of Powerpoint files.",

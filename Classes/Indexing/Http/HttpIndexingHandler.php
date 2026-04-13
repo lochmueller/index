@@ -32,8 +32,8 @@ class HttpIndexingHandler implements IndexingInterface, LoggerAwareInterface
             $content = $this->httpRequestBuilder->buildRequestForPage($message->uri);
 
             $title = '';
-            if (preg_match('/<title>([^>]*)<\/title>/', $content, $matches)) {
-                $title = $matches[1];
+            if (preg_match('/<title\b[^>]*>([\s\S]*?)<\/title>/i', $content, $matches)) {
+                $title = trim(html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
             }
 
             $this->eventDispatcher->dispatch(new IndexPageEvent(

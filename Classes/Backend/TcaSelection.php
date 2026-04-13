@@ -13,7 +13,6 @@ class TcaSelection
      */
     public function languageSelection(array &$params): void
     {
-
         if (!($params['site'] ?? null) instanceof SiteInterface) {
             return;
         }
@@ -27,7 +26,6 @@ class TcaSelection
                 'icon' => $siteLanguage->getFlagIdentifier(),
             ];
         }
-
     }
 
 }

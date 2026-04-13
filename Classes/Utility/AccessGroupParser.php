@@ -10,7 +10,7 @@ namespace Lochmueller\Index\Utility;
 final class AccessGroupParser
 {
     /**
-     * Parst einen fe_group-String in ein Integer-Array.
+     * Parses a fe_group string into an integer array.
      *
      * @return int[]
      */
@@ -33,7 +33,7 @@ final class AccessGroupParser
     }
 
     /**
-     * Formatiert ein Access Groups Array zurück zu einem fe_group-String.
+     * Formats an access groups array back into a fe_group string.
      *
      * @param int[] $accessGroups
      */

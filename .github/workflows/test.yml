@@ -21,11 +21,11 @@ jobs:
           - php: '8.5'
             typo3: '^13.4'
           - php: '8.3'
-            typo3: '^14.1'
+            typo3: '^14.2'
           - php: '8.4'
-            typo3: '^14.1'
+            typo3: '^14.2'
           - php: '8.5'
-            typo3: '^14.1'
+            typo3: '^14.2'
 
     steps:
       - name: Checkout repository

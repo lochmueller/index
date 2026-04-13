@@ -77,7 +77,7 @@ return [
             'config' => [
                 'type' => 'select',
                 'renderType' => 'selectCheckBox',
-                'itemsProcFunc' => TcaSelection::class . '->countrySelection',
+                'itemsProcFunc' => TcaSelection::class . '->languageSelection',
             ],
         ],
         'skip_no_search_pages' => [

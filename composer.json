@@ -12,11 +12,11 @@
   ],
   "require": {
     "php": "^8.3",
-    "typo3/cms-backend": "^13.4 || ^14.0",
-    "typo3/cms-core": "^13.4 || ^14.0",
-    "typo3/cms-frontend": "^13.4 || ^14.0",
-    "typo3/cms-reactions": "^13.4 || ^14.0",
-    "typo3/cms-webhooks": "^13.4 || ^14.0"
+    "typo3/cms-backend": "^13.4 || ^14.2",
+    "typo3/cms-core": "^13.4 || ^14.2",
+    "typo3/cms-frontend": "^13.4 || ^14.2",
+    "typo3/cms-reactions": "^13.4 || ^14.2",
+    "typo3/cms-webhooks": "^13.4 || ^14.2"
   },
   "require-dev": {
     "bk2k/bootstrap-package": "^16.0",

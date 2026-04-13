@@ -11,7 +11,7 @@ class TcaSelection
     /**
      * @param array<string, mixed> $params
      */
-    public function countrySelection(array &$params): void
+    public function languageSelection(array &$params): void
     {
 
         if (!($params['site'] ?? null) instanceof SiteInterface) {

@@ -23,7 +23,7 @@ class TcaSelectionTest extends AbstractTest
     {
         $params = [];
 
-        $this->subject->countrySelection($params);
+        $this->subject->languageSelection($params);
 
         self::assertArrayNotHasKey('items', $params);
     }
@@ -32,7 +32,7 @@ class TcaSelectionTest extends AbstractTest
     {
         $params = ['site' => 'not-a-site-interface'];
 
-        $this->subject->countrySelection($params);
+        $this->subject->languageSelection($params);
 
         self::assertArrayNotHasKey('items', $params);
     }
@@ -54,7 +54,7 @@ class TcaSelectionTest extends AbstractTest
 
         $params = ['site' => $site];
 
-        $this->subject->countrySelection($params);
+        $this->subject->languageSelection($params);
 
         self::assertCount(2, $params['items']);
         self::assertSame([
@@ -86,7 +86,7 @@ class TcaSelectionTest extends AbstractTest
             ],
         ];
 
-        $this->subject->countrySelection($params);
+        $this->subject->languageSelection($params);
 
         self::assertCount(2, $params['items']);
         self::assertSame('Existing', $params['items'][0]['label']);
@@ -100,7 +100,7 @@ class TcaSelectionTest extends AbstractTest
 
         $params = ['site' => $site];
 
-        $this->subject->countrySelection($params);
+        $this->subject->languageSelection($params);
 
         self::assertArrayNotHasKey('items', $params);
     }

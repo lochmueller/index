@@ -21,6 +21,7 @@ class FrontendIndexMessageTest extends AbstractTest
         $uri = $this->createStub(UriInterface::class);
         $pageUid = 123;
         $processId = 'process-123';
+        $language = 2;
         $accessGroups = [1, 2, 3];
 
         $subject = new FrontendIndexMessage(
@@ -31,6 +32,7 @@ class FrontendIndexMessageTest extends AbstractTest
             uri: $uri,
             pageUid: $pageUid,
             indexProcessId: $processId,
+            language: $language,
             accessGroups: $accessGroups,
         );
 
@@ -41,6 +43,7 @@ class FrontendIndexMessageTest extends AbstractTest
         self::assertSame($uri, $subject->uri);
         self::assertSame($pageUid, $subject->pageUid);
         self::assertSame($processId, $subject->indexProcessId);
+        self::assertSame($language, $subject->language);
         self::assertSame($accessGroups, $subject->accessGroups);
     }
 
@@ -54,6 +57,7 @@ class FrontendIndexMessageTest extends AbstractTest
             uri: $this->createStub(UriInterface::class),
             pageUid: 1,
             indexProcessId: 'process',
+            language: 0,
         );
 
         self::assertSame([], $subject->accessGroups);

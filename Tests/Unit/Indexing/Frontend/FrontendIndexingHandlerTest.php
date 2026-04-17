@@ -49,6 +49,7 @@ class FrontendIndexingHandlerTest extends AbstractTest
             uri: $uri,
             pageUid: 42,
             indexProcessId: 'process-123',
+            language: 0,
             accessGroups: [0, -1],
         );
 
@@ -79,6 +80,7 @@ class FrontendIndexingHandlerTest extends AbstractTest
             uri: $uri,
             pageUid: 42,
             indexProcessId: 'process-123',
+            language: 0,
         );
 
         $subject->__invoke($message);
@@ -106,6 +108,7 @@ class FrontendIndexingHandlerTest extends AbstractTest
             uri: $uri,
             pageUid: 42,
             indexProcessId: 'process-123',
+            language: 0,
         );
 
         $subject->__invoke($message);
@@ -144,6 +147,7 @@ class FrontendIndexingHandlerTest extends AbstractTest
             uri: $uri,
             pageUid: 1,
             indexProcessId: 'process-123',
+            language: 0,
         );
 
         $subject->__invoke($message);

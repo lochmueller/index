@@ -42,7 +42,7 @@ class HttpIndexingHandler implements IndexingInterface, LoggerAwareInterface
                 type: $message->type,
                 indexConfigurationRecordId: $message->indexConfigurationRecordId,
                 indexProcessId: $message->indexProcessId,
-                language: 0,
+                language: $message->language,
                 title: $title,
                 content: $content,
                 pageUid: $message->pageUid,

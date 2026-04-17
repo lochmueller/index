@@ -56,7 +56,7 @@ class ExternalIndexingHandler implements IndexingInterface, LoggerAwareInterface
                 type: $message->type,
                 indexConfigurationRecordId: -1,
                 indexProcessId: $message->indexProcessId,
-                language: 0,
+                language: $message->language,
                 title: $message->title,
                 content: $message->content,
                 pageUid: -1,

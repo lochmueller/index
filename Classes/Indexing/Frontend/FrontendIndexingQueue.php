@@ -52,6 +52,7 @@ readonly class FrontendIndexingQueue implements IndexingInterface
                 uri: $info->uri,
                 pageUid: $info->pageUid,
                 indexProcessId: $id,
+                language: $info->language->getLanguageId(),
                 accessGroups: $info->accessGroups,
             ));
         }

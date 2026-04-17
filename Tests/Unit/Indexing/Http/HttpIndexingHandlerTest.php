@@ -49,6 +49,7 @@ class HttpIndexingHandlerTest extends AbstractTest
             uri: $uri,
             pageUid: 42,
             indexProcessId: 'process-123',
+            language: 0,
             accessGroups: [0, -1],
         );
 
@@ -81,6 +82,7 @@ class HttpIndexingHandlerTest extends AbstractTest
             uri: $uri,
             pageUid: 42,
             indexProcessId: 'process-123',
+            language: 0,
         );
 
         $subject->__invoke($message);
@@ -108,6 +110,7 @@ class HttpIndexingHandlerTest extends AbstractTest
             uri: $uri,
             pageUid: 42,
             indexProcessId: 'process-123',
+            language: 0,
         );
 
         $subject->__invoke($message);
@@ -146,6 +149,7 @@ class HttpIndexingHandlerTest extends AbstractTest
             uri: $uri,
             pageUid: 1,
             indexProcessId: 'process-123',
+            language: 0,
         );
 
         $subject->__invoke($message);
@@ -185,6 +189,7 @@ class HttpIndexingHandlerTest extends AbstractTest
             uri: $uri,
             pageUid: 1,
             indexProcessId: 'process-123',
+            language: 0,
         );
 
         $subject->__invoke($message);

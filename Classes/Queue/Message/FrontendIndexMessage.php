@@ -22,6 +22,7 @@ final readonly class FrontendIndexMessage
         public UriInterface    $uri,
         public int             $pageUid,
         public string          $indexProcessId,
+        public int             $language,
         public array           $accessGroups = [],
     ) {}
 }

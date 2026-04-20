@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Tests\Unit\Indexing\Cache;
 
+use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\ContentProcessing\ContentProcessor;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Event\IndexPageEvent;
@@ -37,7 +39,10 @@ class CacheIndexingHandlerTest extends AbstractTest
                     && $event->pageUid === 42
                     && $event->accessGroups === [0, -1]));
 
-        $subject = new CacheIndexingHandler($eventDispatcher, $siteFinder);
+        $contentProcessor = new ContentProcessor([]);
+        $configurationLoader = $this->createStub(ConfigurationLoader::class);
+
+        $subject = new CacheIndexingHandler($eventDispatcher, $siteFinder, $contentProcessor, $configurationLoader);
 
         $message = new CachePageMessage(
             siteIdentifier: 'test-site',
@@ -63,7 +68,10 @@ class CacheIndexingHandlerTest extends AbstractTest
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
 
-        $subject = new CacheIndexingHandler($eventDispatcher, $siteFinder);
+        $contentProcessor = new ContentProcessor([]);
+        $configurationLoader = $this->createStub(ConfigurationLoader::class);
+
+        $subject = new CacheIndexingHandler($eventDispatcher, $siteFinder, $contentProcessor, $configurationLoader);
 
         $message = new CachePageMessage(
             siteIdentifier: 'invalid-site',

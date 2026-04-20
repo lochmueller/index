@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\File;
 
+use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\ContentProcessing\ContentProcessor;
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\FileExtraction\FileExtractor;
 use Lochmueller\Index\Indexing\IndexingInterface;
@@ -23,7 +25,9 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
         private readonly FileTraversing           $fileTraversing,
         private readonly FileExtractor            $fileExtractor,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly SiteFinder $siteFinder,
+        private readonly SiteFinder               $siteFinder,
+        private readonly ContentProcessor         $contentProcessor,
+        private readonly ConfigurationLoader      $configurationLoader,
     ) {}
 
 
@@ -45,6 +49,9 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
 
             $content = implode(' ', $base);
             $content .= $this->fileExtractor->extract($file);
+
+            $configuration = $this->configurationLoader->loadByUid($message->indexConfigurationRecordId);
+            $content = $this->contentProcessor->process($content, $configuration?->contentProcessors ?? []);
 
             $this->eventDispatcher->dispatch(new IndexFileEvent(
                 site: $this->siteFinder->getSiteByIdentifier($message->siteIdentifier),

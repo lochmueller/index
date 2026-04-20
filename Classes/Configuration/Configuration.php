@@ -16,6 +16,7 @@ class Configuration
      * @param array<string, mixed> $configuration
      * @param string[] $partialIndexing
      * @param int[] $languages
+     * @param class-string[] $contentProcessors
      */
     public function __construct(
         public readonly int             $configurationId,
@@ -29,6 +30,7 @@ class Configuration
         public readonly array           $configuration,
         public readonly array            $partialIndexing,
         public readonly array            $languages,
+        public readonly array           $contentProcessors = [],
         public ?IndexType               $overrideIndexType = null,
     ) {}
 
@@ -49,6 +51,7 @@ class Configuration
             configuration: in_array(IndexTechnology::from($row['technology']), [IndexTechnology::Frontend, IndexTechnology::Http]) ? (array) json_decode($row['configuration'], true) : [],
             partialIndexing: GeneralUtility::trimExplode(',', $row['partial_indexing'] ?? '', true),
             languages: GeneralUtility::intExplode(',', $row['languages'] ?? '', true),
+            contentProcessors: GeneralUtility::trimExplode(',', $row['content_processors'] ?? '', true),
         );
     }
 
@@ -66,6 +69,7 @@ class Configuration
             configuration: $this->configuration,
             partialIndexing: $this->partialIndexing,
             languages: $this->languages,
+            contentProcessors: $this->contentProcessors,
             overrideIndexType: IndexType::Partial
         );
     }

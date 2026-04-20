@@ -25,6 +25,7 @@ class ConfigurationTest extends AbstractTest
             configuration: ['key' => 'value'],
             partialIndexing: ['pages'],
             languages: [0, 1],
+            contentProcessors: ['Lochmueller\\Index\\ContentProcessing\\Typo3SearchMakerContentProcessor'],
         );
 
         self::assertSame(1, $configuration->configurationId);
@@ -38,6 +39,7 @@ class ConfigurationTest extends AbstractTest
         self::assertSame(['key' => 'value'], $configuration->configuration);
         self::assertSame(['pages'], $configuration->partialIndexing);
         self::assertSame([0, 1], $configuration->languages);
+        self::assertSame(['Lochmueller\\Index\\ContentProcessing\\Typo3SearchMakerContentProcessor'], $configuration->contentProcessors);
         self::assertNull($configuration->overrideIndexType);
     }
 
@@ -75,6 +77,7 @@ class ConfigurationTest extends AbstractTest
             'configuration' => '{"test": "value"}',
             'partial_indexing' => 'pages,files',
             'languages' => '0,1,2',
+            'content_processors' => 'Lochmueller\\Index\\ContentProcessing\\Typo3SearchMakerContentProcessor,Lochmueller\\Index\\ContentProcessing\\EventContentProcessor',
         ];
 
         $configuration = Configuration::createByDatabaseRow($row);
@@ -90,6 +93,10 @@ class ConfigurationTest extends AbstractTest
         self::assertSame([], $configuration->configuration);
         self::assertSame(['pages', 'files'], $configuration->partialIndexing);
         self::assertSame([0, 1, 2], $configuration->languages);
+        self::assertSame([
+            'Lochmueller\\Index\\ContentProcessing\\Typo3SearchMakerContentProcessor',
+            'Lochmueller\\Index\\ContentProcessing\\EventContentProcessor',
+        ], $configuration->contentProcessors);
     }
 
     public function testCreateByDatabaseRowWithFrontendTechnologyParsesConfiguration(): void
@@ -154,6 +161,7 @@ class ConfigurationTest extends AbstractTest
         self::assertSame([], $configuration->configuration);
         self::assertSame([], $configuration->partialIndexing);
         self::assertSame([], $configuration->languages);
+        self::assertSame([], $configuration->contentProcessors);
     }
 
     public function testModifyForPartialIndexingSetsCorrectValues(): void
@@ -170,6 +178,7 @@ class ConfigurationTest extends AbstractTest
             configuration: [],
             partialIndexing: [],
             languages: [],
+            contentProcessors: ['Lochmueller\\Index\\ContentProcessing\\EventContentProcessor'],
         );
 
         $result = $configuration->modifyForPartialIndexing(99);
@@ -177,6 +186,7 @@ class ConfigurationTest extends AbstractTest
         self::assertSame(IndexType::Partial, $result->overrideIndexType);
         self::assertSame(99, $result->pageId);
         self::assertSame(0, $result->levels);
+        self::assertSame(['Lochmueller\\Index\\ContentProcessing\\EventContentProcessor'], $result->contentProcessors);
     }
 
     public function testModifyForPartialIndexingReturnsNotSameInstance(): void

@@ -6,6 +6,7 @@ namespace Lochmueller\Index\Tests\Unit\Indexing\Database;
 
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\ContentProcessing\ContentProcessor;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Event\IndexPageEvent;
@@ -86,6 +87,7 @@ class DatabaseIndexingHandlerTest extends AbstractTest
         EventDispatcherInterface $eventDispatcher,
         RecordSelection $recordSelection,
         ConfigurationLoader $configurationLoader,
+        ?ContentProcessor $contentProcessor = null,
     ): DatabaseIndexingHandler {
         return new DatabaseIndexingHandler(
             $siteFinder,
@@ -93,6 +95,7 @@ class DatabaseIndexingHandlerTest extends AbstractTest
             $eventDispatcher,
             $recordSelection,
             $configurationLoader,
+            $contentProcessor ?? new ContentProcessor([]),
         );
     }
 

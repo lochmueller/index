@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Http;
 
+use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\ContentProcessing\ContentProcessor;
 use Lochmueller\Index\Event\IndexPageEvent;
 use Lochmueller\Index\Indexing\IndexingInterface;
 use Lochmueller\Index\Queue\Message\HttpIndexMessage;
@@ -21,6 +23,8 @@ class HttpIndexingHandler implements IndexingInterface, LoggerAwareInterface
         private readonly SiteFinder               $siteFinder,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly HttpRequestBuilder       $httpRequestBuilder,
+        private readonly ContentProcessor         $contentProcessor,
+        private readonly ConfigurationLoader      $configurationLoader,
     ) {}
 
     #[AsMessageHandler]
@@ -35,6 +39,9 @@ class HttpIndexingHandler implements IndexingInterface, LoggerAwareInterface
             if (preg_match('/<title\b[^>]*>([\s\S]*?)<\/title>/i', $content, $matches)) {
                 $title = trim(html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
             }
+
+            $configuration = $this->configurationLoader->loadByUid($message->indexConfigurationRecordId);
+            $content = $this->contentProcessor->process($content, $configuration?->contentProcessors ?? []);
 
             $this->eventDispatcher->dispatch(new IndexPageEvent(
                 site: $site,

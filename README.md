@@ -56,6 +56,23 @@ Possible types are:
 }
 ```
 
+### Content processing
+
+Before the generated HTML is handed over to the indexing process, it can be piped through a chain of content
+processors. In each index configuration record you can activate the desired processors via checkboxes; the list is
+built dynamically from all services that implement `Lochmueller\Index\ContentProcessing\ContentProcessorInterface`
+(tag `index.content_processor`).
+
+Shipped processors:
+
+- *TYPO3SEARCH markers* (`Typo3SearchMakerContentProcessor`) - Respects the classic `<!--TYPO3SEARCH_begin-->` /
+  `<!--TYPO3SEARCH_end-->` markers to include/exclude parts of the HTML.
+- *Event-based* (`EventContentProcessor`) - Dispatches the `Lochmueller\Index\Event\ModifyContentEvent` so that
+  listeners can freely modify the content (e.g. strip navigation, inject metadata).
+
+To provide your own processor, implement the interface and register a `getLabel()` method - autoconfiguration and
+the TCA `itemsProcFunc` pick it up automatically.
+
 ### Index mechanisms
 
 Here are some information about the different index mechanisms and the advantages or disadvantages. You can use
@@ -118,6 +135,7 @@ There are additional events to customize the index process:
 
 - **ContentType\HandleContentTypeEvent** - Customize or add the rendering of content for database indexing.
 - **Extractor\CustomFileExtraction** - Event based file extraction (if not flexible enough, use the DI tag)
+- **ModifyContentEvent** - Dispatched by the `EventContentProcessor` to modify the HTML content before indexing.
 
 ### Symfony DI Tags
 
@@ -127,6 +145,7 @@ integrations. These are very "internal" options to extend the index process:
 - **index.content_type** - Rendering definitions for database indexing.
 - **index.file_extractor** - Extract content from files in the index process.
 - **index.extender** - Extend the URI queue in the Page traversing.
+- **index.content_processor** - Modify the HTML content before indexing (selectable per index configuration).
 
 ### Webhooks / Reactions
 

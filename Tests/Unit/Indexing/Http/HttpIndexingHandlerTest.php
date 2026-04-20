@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Tests\Unit\Indexing\Http;
 
+use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\ContentProcessing\ContentProcessor;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Event\IndexPageEvent;
@@ -39,7 +41,7 @@ class HttpIndexingHandlerTest extends AbstractTest
                     && $event->title === 'Test Title'
                     && $event->pageUid === 42));
 
-        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder);
+        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new HttpIndexMessage(
             siteIdentifier: 'test-site',
@@ -72,7 +74,7 @@ class HttpIndexingHandlerTest extends AbstractTest
             ->method('dispatch')
             ->with(self::callback(fn(IndexPageEvent $event): bool => $event->content === '' && $event->title === ''));
 
-        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder);
+        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new HttpIndexMessage(
             siteIdentifier: 'test-site',
@@ -100,7 +102,7 @@ class HttpIndexingHandlerTest extends AbstractTest
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
 
-        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder);
+        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new HttpIndexMessage(
             siteIdentifier: 'invalid-site',
@@ -139,7 +141,7 @@ class HttpIndexingHandlerTest extends AbstractTest
             }
         };
 
-        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder);
+        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new HttpIndexMessage(
             siteIdentifier: 'test-site',
@@ -179,7 +181,7 @@ class HttpIndexingHandlerTest extends AbstractTest
             }
         };
 
-        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder);
+        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new HttpIndexMessage(
             siteIdentifier: 'test-site',

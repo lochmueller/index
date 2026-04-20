@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Tests\Unit\Indexing\Frontend;
 
+use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\ContentProcessing\ContentProcessor;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Event\IndexPageEvent;
@@ -39,7 +41,7 @@ class FrontendIndexingHandlerTest extends AbstractTest
                     && $event->title === 'Test Title'
                     && $event->pageUid === 42));
 
-        $subject = new FrontendIndexingHandler($siteFinder, $frontendRequestBuilder, $eventDispatcher);
+        $subject = new FrontendIndexingHandler($siteFinder, $frontendRequestBuilder, $eventDispatcher, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new FrontendIndexMessage(
             siteIdentifier: 'test-site',
@@ -70,7 +72,7 @@ class FrontendIndexingHandlerTest extends AbstractTest
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
 
-        $subject = new FrontendIndexingHandler($siteFinder, $frontendRequestBuilder, $eventDispatcher);
+        $subject = new FrontendIndexingHandler($siteFinder, $frontendRequestBuilder, $eventDispatcher, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new FrontendIndexMessage(
             siteIdentifier: 'test-site',
@@ -98,7 +100,7 @@ class FrontendIndexingHandlerTest extends AbstractTest
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
 
-        $subject = new FrontendIndexingHandler($siteFinder, $frontendRequestBuilder, $eventDispatcher);
+        $subject = new FrontendIndexingHandler($siteFinder, $frontendRequestBuilder, $eventDispatcher, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new FrontendIndexMessage(
             siteIdentifier: 'invalid-site',
@@ -137,7 +139,7 @@ class FrontendIndexingHandlerTest extends AbstractTest
             }
         };
 
-        $subject = new FrontendIndexingHandler($siteFinder, $frontendRequestBuilder, $eventDispatcher);
+        $subject = new FrontendIndexingHandler($siteFinder, $frontendRequestBuilder, $eventDispatcher, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new FrontendIndexMessage(
             siteIdentifier: 'test-site',

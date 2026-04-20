@@ -91,6 +91,18 @@
             <trans-unit id="tx_index_domain_model_configuration.file_types.description">
                 <source>File types that should be indexed. Please take care of special requirements for different files types.</source>
             </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.content_processors">
+                <source>Content processors</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.content_processors.description">
+                <source>Select the content processors that should modify the HTML content before it is indexed.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.content_processors.type.typo3_search_marker">
+                <source>TYPO3SEARCH markers (respect &lt;!--TYPO3SEARCH_begin/end--&gt;)</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.content_processors.type.event">
+                <source>Event-based (dispatch ModifyContentEvent for custom modifications)</source>
+            </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.technology.type.none">
                 <source>None</source>
             </trans-unit>

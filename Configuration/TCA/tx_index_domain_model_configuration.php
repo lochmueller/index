@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lochmueller\Index\Backend\TcaSelection;
+use Lochmueller\Index\ContentProcessing\ContentProcessor;
 use Lochmueller\Index\Enums\IndexPartialTrigger;
 use Lochmueller\Index\Enums\IndexTechnology;
 
@@ -127,6 +128,16 @@ return [
                 'itemsProcFunc' => Lochmueller\Index\FileExtraction\FileExtractor::class . '->getBackendItems',
             ],
         ],
+        'content_processors' => [
+            'exclude' => 0,
+            'label' => $lll . 'tx_index_domain_model_configuration.content_processors',
+            'description' => $lll . 'tx_index_domain_model_configuration.content_processors.description',
+            'config' => [
+                'type' => 'select',
+                'renderType' => 'selectCheckBox',
+                'itemsProcFunc' => ContentProcessor::class . '->getBackendItems',
+            ],
+        ],
     ],
     'palettes' => [
         'paletteHidden' => [
@@ -154,7 +165,7 @@ return [
         IndexTechnology::Cache->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,languages,skip_no_search_pages,levels,
+                    technology,languages,skip_no_search_pages,levels,content_processors,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types,
                     --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -164,7 +175,7 @@ return [
         IndexTechnology::Database->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,languages,skip_no_search_pages,content_indexing,levels,partial_indexing,
+                    technology,languages,skip_no_search_pages,content_indexing,levels,partial_indexing,content_processors,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types,
                     --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -174,7 +185,7 @@ return [
         IndexTechnology::Frontend->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,languages,skip_no_search_pages,levels,configuration,partial_indexing,
+                    technology,languages,skip_no_search_pages,levels,configuration,partial_indexing,content_processors,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types,
                     --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -184,7 +195,7 @@ return [
         IndexTechnology::Http->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,languages,skip_no_search_pages,levels,configuration,partial_indexing,
+                    technology,languages,skip_no_search_pages,levels,configuration,partial_indexing,content_processors,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types,
                     --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,

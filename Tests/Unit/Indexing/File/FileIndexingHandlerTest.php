@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Tests\Unit\Indexing\File;
 
+use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\ContentProcessing\ContentProcessor;
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\FileExtraction\FileExtractor;
 use Lochmueller\Index\Indexing\File\FileIndexingHandler;
@@ -28,7 +30,7 @@ class FileIndexingHandlerTest extends AbstractTest
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
 
-        $subject = new FileIndexingHandler($fileTraversing, $fileExtractor, $eventDispatcher, $siteFinder);
+        $subject = new FileIndexingHandler($fileTraversing, $fileExtractor, $eventDispatcher, $siteFinder, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new FileMessage(
             siteIdentifier: 'test-site',
@@ -72,7 +74,7 @@ class FileIndexingHandlerTest extends AbstractTest
                     && str_contains($event->content, 'Extracted content')
                     && $event->fileIdentifier === '1:/test.pdf'));
 
-        $subject = new FileIndexingHandler($fileTraversing, $fileExtractor, $eventDispatcher, $siteFinder);
+        $subject = new FileIndexingHandler($fileTraversing, $fileExtractor, $eventDispatcher, $siteFinder, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new FileMessage(
             siteIdentifier: 'test-site',
@@ -100,7 +102,7 @@ class FileIndexingHandlerTest extends AbstractTest
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
 
-        $subject = new FileIndexingHandler($fileTraversing, $fileExtractor, $eventDispatcher, $siteFinder);
+        $subject = new FileIndexingHandler($fileTraversing, $fileExtractor, $eventDispatcher, $siteFinder, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
 
         $message = new FileMessage(
             siteIdentifier: 'test-site',

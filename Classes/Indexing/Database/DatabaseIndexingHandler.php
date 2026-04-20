@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Indexing\Database;
 
+use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\ContentProcessing\ContentProcessor;
 use Lochmueller\Index\Event\IndexPageEvent;
 use Lochmueller\Index\Indexing\IndexingInterface;
 use Lochmueller\Index\Queue\Message\DatabaseIndexMessage;
@@ -26,6 +28,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly RecordSelection          $recordSelection,
         private readonly ConfigurationLoader      $configurationLoader,
+        private readonly ContentProcessor         $contentProcessor,
     ) {}
 
     #[AsMessageHandler]
@@ -58,7 +61,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
                         $this->contentIndexing->addContent($record, $item);
                     }
 
-                    $this->indexItems($items, $message, $site, $accessGroups, 'c' . $record->getUid());
+                    $this->indexItems($items, $message, $site, $accessGroups, $configuration, 'c' . $record->getUid());
                 }
             } else {
                 $items = new \SplQueue();
@@ -71,7 +74,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
                     }
                 }
 
-                $this->indexItems($items, $message, $site, $accessGroups);
+                $this->indexItems($items, $message, $site, $accessGroups, $configuration);
             }
         } catch (\Exception $exception) {
             $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
@@ -82,7 +85,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
      * @param \SplQueue<DatabaseIndexingDto> $items
      * @param int[] $accessGroups
      */
-    protected function indexItems(\SplQueue $items, DatabaseIndexMessage $message, Site $site, array $accessGroups, string $fragment = ''): void
+    protected function indexItems(\SplQueue $items, DatabaseIndexMessage $message, Site $site, array $accessGroups, Configuration $configuration, string $fragment = ''): void
     {
         foreach ($items as $item) {
             $item->arguments['_language'] = $message->language;
@@ -94,7 +97,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
                 indexProcessId: $message->indexProcessId,
                 language: $message->language,
                 title: $item->title,
-                content: $item->content,
+                content: $this->contentProcessor->process($item->content, $configuration->contentProcessors),
                 pageUid: $item->pageUid,
                 accessGroups: $accessGroups,
                 uri: (string) $site->getRouter()->generateUri($item->pageUid, $item->arguments, $fragment),

@@ -24,6 +24,11 @@ class Typo3SearchMakerContentProcessor implements ContentProcessorInterface
 {
     private const MARKER_PATTERN = '/<!--TYPO3SEARCH_(begin|end)-->/';
 
+    public function getLabel(): string
+    {
+        return 'LLL:EXT:index/Resources/Private/Language/locallang.xlf:tx_index_domain_model_configuration.content_processors.type.typo3_search_marker';
+    }
+
     public function process(string $htmlContent): string
     {
         if (!preg_match_all(self::MARKER_PATTERN, $htmlContent, $matches, PREG_OFFSET_CAPTURE)) {

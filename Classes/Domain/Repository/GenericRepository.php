@@ -86,14 +86,15 @@ class GenericRepository extends AbstractRepository
      * Find records on pages with language filtering.
      *
      * @param array<int> $pageUids
+     * @param string|null $languageField
      * @param array<int> $languages
      * @param array<class-string<QueryRestrictionInterface>|QueryRestrictionInterface> $restrictions
      * @return iterable<array<string, mixed>>
      */
     public function findRecordsOnPages(
         array $pageUids,
-        string $languageField,
-        array $languages,
+        ?string $languageField = null,
+        array $languages = [0, -1],
         array $restrictions = [],
     ): iterable {
         $queryBuilder = $this->createQueryBuilder();
@@ -106,12 +107,17 @@ class GenericRepository extends AbstractRepository
 
         // No empty storages
         $pageUids[] = -99;
+        $where = [
+            $queryBuilder->expr()->in('pid', $pageUids),
+        ];
+        if (!empty($languageField) && !empty($languages)) {
+            $where[] = $queryBuilder->expr()->in($languageField, $languages);
+        }
 
         $queryBuilder->select('*')
             ->from($this->getTableName())
             ->where(
-                $queryBuilder->expr()->in('pid', $pageUids),
-                $queryBuilder->expr()->in($languageField, $languages),
+                ...$where
             );
 
         return $queryBuilder->executeQuery()->iterateAssociative();

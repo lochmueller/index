@@ -6,7 +6,6 @@ namespace Lochmueller\Index\Traversing;
 
 use Lochmueller\Index\Database\Query\Restriction\NonContainerElementsRestrictionContainer;
 use Lochmueller\Index\Domain\Repository\GenericRepository;
-use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionInterface;
@@ -16,7 +15,6 @@ use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Schema\Capability\LanguageAwareSchemaCapability;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class RecordSelection
 {
@@ -42,30 +40,31 @@ class RecordSelection
         ],
     ): iterable {
         $schema = $this->tcaSchemaFactory->get($table);
-        /** @var LanguageAwareSchemaCapability $languageCapability */
-        $languageCapability = $schema->getCapability(TcaSchemaCapability::Language);
-
-        $languages = [
+        if (!$schema->isLanguageAware()) {
+            $languageField = null;
+        } else {
+            /** @var LanguageAwareSchemaCapability $languageCapability */
+            $languageCapability = $schema->getCapability(TcaSchemaCapability::Language);
+            $languageField = $languageCapability->getLanguageField()->getName();
+        }
+        $languages = array_unique([
             0,
             -1,
             $languageUid,
-        ];
+        ]);
 
         $rows = $this->genericRepository
             ->setTableName($table)
             ->findRecordsOnPages(
                 $pageUids,
-                $languageCapability->getLanguageField()->getName(),
+                $languageField,
                 $languages,
                 $restrictions,
             );
 
-        /** @var PageRepository $pageRepository */
-        $pageRepository = GeneralUtility::makeInstance(PageRepository::class, GeneralUtility::makeInstance(Context::class));
-
         foreach ($rows as $row) {
             if ($languageUid) {
-                $overlay = $pageRepository->getLanguageOverlay($table, $row, new LanguageAspect($languageUid, $languageUid));
+                $overlay = $this->pageRepository->getLanguageOverlay($table, $row, new LanguageAspect($languageUid, $languageUid));
                 if ($overlay !== null) {
                     $record = $this->mapRecord($table, $overlay);
                     /** @var \TYPO3\CMS\Core\Domain\Record\LanguageInfo $langInfo */

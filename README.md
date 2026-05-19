@@ -8,7 +8,7 @@ You can use the PSR-14 events to get the index information or the webhook functi
 information to external services. Please do not use the internal messages, because they are handled internally in the
 extension.
 
-This extension was funded by the [TYPO3 Association](https://typo3.org): [community ideas I](https://typo3.org/article/members-have-selected-five-ideas-to-be-funded-in-quarter-3-2025) / [community idea II](https://talk.typo3.org/t/ext-seal-ecosystem-expansion-advanced-search-ai-vector-integration-tim-lochmuller/6594) & [first blogpost](https://typo3.org/article/typo3-meets-seal-a-breath-of-fresh-air-for-search) / second blogpost (WIP)
+This extension was funded by the [TYPO3 Association](https://typo3.org): [community ideas I](https://typo3.org/article/members-have-selected-five-ideas-to-be-funded-in-quarter-3-2025) / [community idea II](https://talk.typo3.org/t/ext-seal-ecosystem-expansion-advanced-search-ai-vector-integration-tim-lochmuller/6594) & [first blogpost](https://typo3.org/article/typo3-meets-seal-a-breath-of-fresh-air-for-search) / [second blogpost](https://news.typo3.com/article/extseal-takes-the-next-step-advanced-search-geo-features-ai-vector-integration)
 
 ## Installation & Configuration
 

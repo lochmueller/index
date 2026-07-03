@@ -11,6 +11,7 @@ use Lochmueller\Index\Enums\IndexPartialTrigger;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Hooks\DataHandlerUpdateHook;
 use Lochmueller\Index\Indexing\ActiveIndexing;
+use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
@@ -52,6 +53,7 @@ class DataHandlerUpdateHookTest extends AbstractTest
         $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
         $configurationLoaderStub->method('loadByPageTraversing')->willReturn($configuration);
 
+        $busStub = $this->createStub(Bus::class);
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock
             ->expects(self::once())
@@ -63,6 +65,7 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
+            bus: $busStub,
         );
         $subject->clearCacheCmd(['pageIdArray' => [123]], $this->createStub(DataHandler::class));
     }
@@ -80,11 +83,13 @@ class DataHandlerUpdateHookTest extends AbstractTest
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
 
+        $busStub = $this->createStub(Bus::class);
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
+            $busStub
         );
         $subject->clearCacheCmd(['pageIdArray' => [123]], $this->createStub(DataHandler::class));
     }
@@ -100,11 +105,13 @@ class DataHandlerUpdateHookTest extends AbstractTest
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
 
+        $busStub = $this->createStub(Bus::class);
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
+            $busStub
         );
         $subject->clearCacheCmd(['pageIdArray' => [123]], $this->createStub(DataHandler::class));
     }
@@ -122,11 +129,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
 
+        $busStub = $this->createStub(Bus::class);
+
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
+            $busStub
         );
         $subject->clearCacheCmd(['pageIdArray' => [123]], $this->createStub(DataHandler::class));
     }
@@ -143,12 +153,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
 
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
+        $busStub = $this->createStub(Bus::class);
 
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
+            $busStub
         );
         $subject->clearCacheCmd(['pageIdArray' => [0]], $this->createStub(DataHandler::class));
     }
@@ -165,12 +177,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
 
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::exactly(2))->method('fillQueue');
+        $busStub = $this->createStub(Bus::class);
 
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
+            $busStub
         );
         $subject->clearCacheCmd(['pageIdArray' => [123, 456]], $this->createStub(DataHandler::class));
     }
@@ -183,11 +197,13 @@ class DataHandlerUpdateHookTest extends AbstractTest
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
 
+        $busStub = $this->createStub(Bus::class);
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderMock,
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $this->createGenericRepositoryStub(),
+            $busStub
         );
         $subject->clearCacheCmd(['pageIdArray' => []], $this->createStub(DataHandler::class));
     }
@@ -199,12 +215,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
 
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
+        $busStub = $this->createStub(Bus::class);
 
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderMock,
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $this->createGenericRepositoryStub(),
+            $busStub
         );
         $subject->clearCacheCmd([], $this->createStub(DataHandler::class));
     }
@@ -229,11 +247,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
             ->method('fillQueue')
             ->with(self::isInstanceOf(Configuration::class), true);
 
+        $busStub = $this->createStub(Bus::class);
+
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
+            $busStub
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -264,11 +285,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
             ->method('fillQueue')
             ->with(self::isInstanceOf(Configuration::class), true);
 
+        $busStub = $this->createStub(Bus::class);
+
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
+            $busStub
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -287,11 +311,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
         $genericRepositoryMock = $this->createMock(GenericRepository::class);
         $genericRepositoryMock->expects(self::never())->method('setTableName');
 
+        $busStub = $this->createStub(Bus::class);
+
         $subject = new DataHandlerUpdateHook(
             $this->createStub(ConfigurationLoader::class),
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $genericRepositoryMock,
+            $busStub
         );
         $subject->processDatamap_afterDatabaseOperations(
             'new',
@@ -311,11 +338,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
 
+        $busStub = $this->createStub(Bus::class);
+
         $subject = new DataHandlerUpdateHook(
             $this->createStub(ConfigurationLoader::class),
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $genericRepositoryStub,
+            $busStub
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -342,12 +372,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
 
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
+        $busStub = $this->createStub(Bus::class);
 
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
+            $busStub
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -378,11 +410,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
             ->method('fillQueue')
             ->with(self::isInstanceOf(Configuration::class), true);
 
+        $busStub = $this->createStub(Bus::class);
+
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
+            $busStub
         );
         $subject->processCmdmap_postProcess(
             'move',
@@ -414,12 +449,15 @@ class DataHandlerUpdateHookTest extends AbstractTest
             ->expects(self::once())
             ->method('fillQueue')
             ->with(self::isInstanceOf(Configuration::class), true);
+        $busStub = $this->createStub(Bus::class);
+
 
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
+            $busStub
         );
         $subject->processCmdmap_postProcess(
             'copy',
@@ -439,12 +477,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
 
         $genericRepositoryMock = $this->createMock(GenericRepository::class);
         $genericRepositoryMock->expects(self::never())->method('setTableName');
+        $busStub = $this->createStub(Bus::class);
 
         $subject = new DataHandlerUpdateHook(
             $this->createStub(ConfigurationLoader::class),
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $genericRepositoryMock,
+            $busStub
         );
         $subject->processCmdmap_postProcess(
             'delete',
@@ -465,12 +505,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
 
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
+        $busStub = $this->createStub(Bus::class);
 
         $subject = new DataHandlerUpdateHook(
             $this->createStub(ConfigurationLoader::class),
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $genericRepositoryStub,
+            $busStub
         );
         $subject->processCmdmap_postProcess(
             'delete',
@@ -499,12 +541,14 @@ class DataHandlerUpdateHookTest extends AbstractTest
 
         $activeIndexingMock = $this->createMock(ActiveIndexing::class);
         $activeIndexingMock->expects(self::never())->method('fillQueue');
+        $busStub = $this->createStub(Bus::class);
 
         $subject = new DataHandlerUpdateHook(
             $configurationLoaderStub,
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
+            $busStub
         );
         $subject->processCmdmap_postProcess(
             'move',

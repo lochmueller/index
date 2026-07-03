@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Hooks;
 
+use HDNET\Calendarize\Domain\Model\Index;
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Enums\IndexPartialTrigger;
+use Lochmueller\Index\Event\DeletePageEvent;
 use Lochmueller\Index\Indexing\ActiveIndexing;
+use Lochmueller\Index\Queue\Bus;
+use Lochmueller\Index\Queue\Message\DeletePageMessage;
+use Lochmueller\Index\Service\DeletePageService;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -19,11 +24,12 @@ use TYPO3\CMS\Core\Utility\MathUtility;
 class DataHandlerUpdateHook
 {
     public function __construct(
-        protected ConfigurationLoader $configurationLoader,
-        protected ActiveIndexing $activeIndexing,
+        protected ConfigurationLoader      $configurationLoader,
+        protected ActiveIndexing           $activeIndexing,
         #[Autowire(service: 'cache.runtime')]
         private readonly FrontendInterface $cache,
         private readonly GenericRepository $genericRepository,
+        private readonly Bus $bus,
     ) {}
 
     /**
@@ -40,6 +46,11 @@ class DataHandlerUpdateHook
             $record = $this->genericRepository->setTableName($table)->findByUid((int) $id);
             if ($record) {
                 $field = $table === 'pages' ? 'uid' : 'pid';
+                if (isset($record['no_search']) && $record['no_search']) {
+                    $this->triggerDocumentDeleteForPage((int)$record['uid'], (int)$record['sys_language_uid'], IndexPartialTrigger::Datamap);
+                    return;
+                }
+
                 $this->triggerPartialIndexProcessForPage((int) $record[$field], IndexPartialTrigger::Datamap);
             }
         }
@@ -74,24 +85,49 @@ class DataHandlerUpdateHook
         }
     }
 
-    protected function triggerPartialIndexProcessForPage(int $pageId, IndexPartialTrigger $trigger): void
+    protected function triggerDocumentDeleteForPage(int $pageId, int $languageId, IndexPartialTrigger $trigger): void
     {
-        $alreadyTriggered = (array) $this->cache->get('index-already-triggered');
-        $configuration = $this->configurationLoader->loadByPageTraversing($pageId);
-        if (!$configuration instanceof Configuration || !in_array($trigger->value, $configuration->partialIndexing, true)) {
-            return;
-        }
-
-        if (in_array($pageId, $alreadyTriggered, true)) {
-            return;
-        }
-        $alreadyTriggered[] = $pageId;
-        $this->cache->set('index-already-triggered', $alreadyTriggered);
         if ($pageId === 0) {
             return;
         }
 
+        if (!($configuration = $this->getTriggerableConfiguration($pageId, $trigger)) || !$configuration->skipNoSearchPages) {
+            return;
+        }
+
+        $this->bus->dispatch(new DeletePageMessage($pageId, $languageId));
+    }
+
+    protected function triggerPartialIndexProcessForPage(int $pageId, IndexPartialTrigger $trigger): void
+    {
+        if ($pageId === 0) {
+            return;
+        }
+
+        if (!$configuration = $this->getTriggerableConfiguration($pageId, $trigger)) {
+            return;
+        }
+
         $this->activeIndexing->fillQueue($configuration->modifyForPartialIndexing($pageId), true);
+    }
+
+    private function getTriggerableConfiguration(int $pageId, IndexPartialTrigger $trigger): ?Configuration
+    {
+        $alreadyTriggered = (array) $this->cache->get('index-already-triggered');
+        $configuration = $this->configurationLoader->loadByPageTraversing($pageId);
+
+        if (!$configuration instanceof Configuration || !in_array($trigger->value, $configuration->partialIndexing, true)) {
+            return null;
+        }
+
+        if (in_array($pageId, $alreadyTriggered, true)) {
+            return null;
+        }
+
+        $alreadyTriggered[] = $pageId;
+        $this->cache->set('index-already-triggered', $alreadyTriggered);
+
+        return $configuration;
     }
 
 }

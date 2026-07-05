@@ -55,10 +55,6 @@ class PageTraversing
                     continue;
                 }
 
-                if ($configuration->skipNoSearchPages && ($row['no_search'] ?? false)) {
-                    continue;
-                }
-
                 foreach ($extenderConfiguration as $item) {
                     $dropOriginalUri = isset($item['dropOriginalUri']) && $item['dropOriginalUri'];
                     if (!isset($item['limitToPages']) || (is_array($item['limitToPages']) && in_array($relevantPageUid, $item['limitToPages'], true))) {
@@ -73,6 +69,10 @@ class PageTraversing
                             }
                         }
                     }
+                }
+
+                if ($configuration->skipNoSearchPages && ($row['no_search'] ?? false)) {
+                    continue;
                 }
 
                 $arguments = ['_language' => $language];

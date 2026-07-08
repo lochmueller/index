@@ -54,6 +54,7 @@ class HttpIndexingHandler implements IndexingInterface, LoggerAwareInterface
                 content: $content,
                 pageUid: $message->pageUid,
                 accessGroups: $message->accessGroups,
+                uri: (string) $message->uri,
             ));
         } catch (\Exception $exception) {
             $this->logger?->error($exception->getMessage(), ['exception' => $exception]);

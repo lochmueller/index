@@ -9,10 +9,9 @@ use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Enums\IndexPartialTrigger;
-use Lochmueller\Index\Event\DeletePageEvent;
 use Lochmueller\Index\Indexing\ActiveIndexing;
 use Lochmueller\Index\Queue\Bus;
-use Lochmueller\Index\Queue\Message\DeletePageMessage;
+use Lochmueller\Index\Queue\Message\DeIndexDocumentMessage;
 use Lochmueller\Index\Service\DeletePageService;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -95,7 +94,7 @@ class DataHandlerUpdateHook
             return;
         }
 
-        $this->bus->dispatch(new DeletePageMessage($pageId, $languageId));
+        $this->bus->dispatch(new DeIndexDocumentMessage($pageId, $languageId));
     }
 
     protected function triggerPartialIndexProcessForPage(int $pageId, IndexPartialTrigger $trigger): void

@@ -6,7 +6,7 @@ namespace Lochmueller\Index\Event;
 
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 
-final readonly class DeletePageEvent
+final readonly class DeIndexDocumentEvent
 {
     public function __construct(
         public SiteInterface $site,

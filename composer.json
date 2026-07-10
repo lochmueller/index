@@ -23,7 +23,7 @@
     "friendsofphp/php-cs-fixer": "^3.84",
     "friendsoftypo3/content-blocks": "^1.0 || ^2.0",
     "friendsoftypo3/tt-address": "^10.0",
-    "lochmueller/calendarize": "^14.0",
+    "lochmueller/calendarize": "^14.0 || ^15.0",
     "phpoffice/phppresentation": "dev-master as 1.2.1",
     "phpoffice/phpspreadsheet": "^5.4",
     "phpoffice/phpword": "^1.4",

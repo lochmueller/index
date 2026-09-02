@@ -18,6 +18,9 @@ use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\Schema\Capability\LanguageAwareSchemaCapability;
+use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
+use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ContentBlockContentType extends SimpleContentType
@@ -29,6 +32,7 @@ class ContentBlockContentType extends SimpleContentType
         private readonly GenericRepository $genericRepository,
         private readonly RecordFactory $recordFactory,
         private readonly PageRepository $pageRepository,
+        private readonly TcaSchemaFactory $tcaSchemaFactory,
     ) {}
 
     public function canHandle(Record $record): bool
@@ -198,13 +202,23 @@ class ContentBlockContentType extends SimpleContentType
     {
         $languages = [0, -1, $languageUid];
 
+        // Collections declared with languageAware: false have no language field: query them
+        // without a language restriction and use their single record in every language.
+        $schema = $this->tcaSchemaFactory->get($table);
+        $languageField = null;
+        if ($schema->isLanguageAware()) {
+            /** @var LanguageAwareSchemaCapability $languageCapability */
+            $languageCapability = $schema->getCapability(TcaSchemaCapability::Language);
+            $languageField = $languageCapability->getLanguageField()->getName();
+        }
+
         $rows = $this->genericRepository
             ->setTableName($table)
-            ->findByParentField($parentUid, $foreignField, $languages);
+            ->findByParentField($parentUid, $foreignField, $languages, $languageField);
 
         foreach ($rows as $row) {
             try {
-                if ($languageUid > 0) {
+                if ($languageUid > 0 && $languageField !== null) {
                     $overlay = $this->pageRepository->getLanguageOverlay(
                         $table,
                         $row,

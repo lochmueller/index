@@ -15,6 +15,11 @@ use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\Schema\Capability\LanguageAwareSchemaCapability;
+use TYPO3\CMS\Core\Schema\Field\FieldTypeInterface;
+use TYPO3\CMS\Core\Schema\Field\LanguageFieldType;
+use TYPO3\CMS\Core\Schema\TcaSchema;
+use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Site\Entity\Site;
 
 class ContentBlockContentTypeTest extends AbstractTest
@@ -42,12 +47,16 @@ class ContentBlockContentTypeTest extends AbstractTest
         ?HeaderContentType $headerContentType = null,
         array $contentBlockList = [],
         ?TableDefinitionCollection $tableDefinitionCollection = null,
+        ?GenericRepository $genericRepository = null,
+        ?RecordFactory $recordFactory = null,
+        ?TcaSchemaFactory $tcaSchemaFactory = null,
     ): TestableContentBlockContentType {
         return new TestableContentBlockContentType(
             $headerContentType ?? $this->createStub(HeaderContentType::class),
-            $this->createStub(GenericRepository::class),
-            $this->createStub(RecordFactory::class),
+            $genericRepository ?? $this->createStub(GenericRepository::class),
+            $recordFactory ?? $this->createStub(RecordFactory::class),
             $this->createStub(PageRepository::class),
+            $tcaSchemaFactory ?? $this->createStub(TcaSchemaFactory::class),
             $contentBlockList,
             $tableDefinitionCollection,
         );
@@ -297,11 +306,70 @@ class ContentBlockContentTypeTest extends AbstractTest
 
         self::assertCount(1, $queue);
     }
+
+    public function testFindChildRecordsKeepsChildrenOfTablesWithoutLanguageFieldInTranslations(): void
+    {
+        $row = ['uid' => 7, 'foreign_uid' => 42, 'sorting' => 1];
+        $childRecord = $this->createRecord('tx_test_items', ['uid' => 7]);
+
+        $genericRepository = $this->createMock(GenericRepository::class);
+        $genericRepository->method('setTableName')->willReturnSelf();
+        $genericRepository->expects(self::once())
+            ->method('findByParentField')
+            ->with(42, 'foreign_uid', [0, -1, 1], null)
+            ->willReturn(new \ArrayIterator([$row]));
+
+        $recordFactory = $this->createStub(RecordFactory::class);
+        $recordFactory->method('createResolvedRecordFromDatabaseRow')->willReturn($childRecord);
+
+        $tcaSchema = $this->createStub(TcaSchema::class);
+        $tcaSchema->method('isLanguageAware')->willReturn(false);
+        $tcaSchemaFactory = $this->createStub(TcaSchemaFactory::class);
+        $tcaSchemaFactory->method('get')->willReturn($tcaSchema);
+
+        $subject = $this->createSubject(
+            genericRepository: $genericRepository,
+            recordFactory: $recordFactory,
+            tcaSchemaFactory: $tcaSchemaFactory,
+        );
+
+        $reflection = new \ReflectionMethod($subject, 'findChildRecords');
+        $records = iterator_to_array($reflection->invoke($subject, 42, 'tx_test_items', 'foreign_uid', 1));
+
+        self::assertSame([$childRecord], $records);
+    }
+
+    public function testFindChildRecordsRestrictsToLanguageFieldForLanguageAwareTables(): void
+    {
+        $genericRepository = $this->createMock(GenericRepository::class);
+        $genericRepository->method('setTableName')->willReturnSelf();
+        $genericRepository->expects(self::once())
+            ->method('findByParentField')
+            ->with(42, 'foreign_uid', [0, -1, 0], 'sys_language_uid')
+            ->willReturn(new \ArrayIterator([]));
+
+        $languageCapability = new LanguageAwareSchemaCapability(
+            new LanguageFieldType('sys_language_uid', []),
+            $this->createStub(FieldTypeInterface::class),
+            null,
+            null,
+        );
+        $tcaSchema = $this->createStub(TcaSchema::class);
+        $tcaSchema->method('isLanguageAware')->willReturn(true);
+        $tcaSchema->method('getCapability')->willReturn($languageCapability);
+        $tcaSchemaFactory = $this->createStub(TcaSchemaFactory::class);
+        $tcaSchemaFactory->method('get')->willReturn($tcaSchema);
+
+        $subject = $this->createSubject(
+            genericRepository: $genericRepository,
+            tcaSchemaFactory: $tcaSchemaFactory,
+        );
+
+        $reflection = new \ReflectionMethod($subject, 'findChildRecords');
+        iterator_to_array($reflection->invoke($subject, 42, 'tx_test_items', 'foreign_uid', 0));
+    }
 }
 
-/**
- * Testable subclass that allows overriding protected methods
- */
 class TestableContentBlockContentType extends ContentBlockContentType
 {
     /**
@@ -312,10 +380,11 @@ class TestableContentBlockContentType extends ContentBlockContentType
         GenericRepository $genericRepository,
         RecordFactory $recordFactory,
         PageRepository $pageRepository,
+        TcaSchemaFactory $tcaSchemaFactory,
         private readonly array $testContentBlockList = [],
         private readonly ?TableDefinitionCollection $testTableDefinitionCollection = null,
     ) {
-        parent::__construct($headerContentType, $genericRepository, $recordFactory, $pageRepository);
+        parent::__construct($headerContentType, $genericRepository, $recordFactory, $pageRepository, $tcaSchemaFactory);
     }
 
     protected function getContentBlockList(): array

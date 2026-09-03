@@ -36,6 +36,7 @@ Possible types are:
 - news (Lochmueller\Index\Traversing\Extender\News)
 - address (Lochmueller\Index\Traversing\Extender\Address)
 - calendarize (Lochmueller\Index\Traversing\Extender\Calendarize)
+- sf_event_mgt (Lochmueller\Index\Traversing\Extender\SfEventMgt)
 
 ```json
 {

@@ -21,9 +21,7 @@ final class DeIndexDocumentHandler implements LoggerAwareInterface
     public function __construct(
         protected SiteFinder $siteFinder,
         private readonly EventDispatcherInterface $eventDispatcher,
-    )
-    {
-    }
+    ) {}
 
     #[AsMessageHandler]
     public function __invoke(DeIndexDocumentMessage $message): void
@@ -32,13 +30,13 @@ final class DeIndexDocumentHandler implements LoggerAwareInterface
             $site = $this->siteFinder->getSiteByPageId($message->pageUid);
             $language = $site->getLanguageById($message->languageId);
 
-            $uri = (string)$site->getRouter()->generateUri($message->pageUid, ['_language' => $language]);
+            $uri = (string) $site->getRouter()->generateUri($message->pageUid, ['_language' => $language]);
 
             $this->eventDispatcher->dispatch(new DeIndexDocumentEvent($site, $uri));
         } catch (SiteNotFoundException|\InvalidArgumentException|InvalidRouteArgumentsException $exception) {
             $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
         } catch (\Exception $exception) {
-            $d=1;
+            $d = 1;
         }
     }
 }

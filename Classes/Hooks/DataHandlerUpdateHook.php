@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Hooks;
 
-use HDNET\Calendarize\Domain\Model\Index;
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Lochmueller\Index\Domain\Repository\GenericRepository;
@@ -12,7 +11,6 @@ use Lochmueller\Index\Enums\IndexPartialTrigger;
 use Lochmueller\Index\Indexing\ActiveIndexing;
 use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\DeIndexDocumentMessage;
-use Lochmueller\Index\Service\DeletePageService;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -46,7 +44,7 @@ class DataHandlerUpdateHook
             if ($record) {
                 $field = $table === 'pages' ? 'uid' : 'pid';
                 if (isset($record['no_search']) && $record['no_search']) {
-                    $this->triggerDocumentDeleteForPage((int)$record['uid'], (int)$record['sys_language_uid'], IndexPartialTrigger::Datamap);
+                    $this->triggerDocumentDeleteForPage((int) $record['uid'], (int) $record['sys_language_uid'], IndexPartialTrigger::Datamap);
                     return;
                 }
 

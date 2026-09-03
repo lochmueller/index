@@ -37,7 +37,7 @@ class CacheIndexingHandler implements IndexingInterface, LoggerAwareInterface
             $configuration = $this->configurationLoader->loadByUid($message->indexConfigurationRecordId);
             $content = $this->contentProcessor->process(
                 $message->content,
-                $configuration?->contentProcessors ?? [],
+                $configuration->contentProcessors ?? [],
             );
 
             $this->eventDispatcher->dispatch(new IndexPageEvent(

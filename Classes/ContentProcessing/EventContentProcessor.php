@@ -20,7 +20,8 @@ class EventContentProcessor implements ContentProcessorInterface
 
     public function process(string $htmlContent): string
     {
-        $event = $this->eventDispatcher->dispatch(new ModifyContentEvent($htmlContent));
+        $event = new ModifyContentEvent($htmlContent);
+        $this->eventDispatcher->dispatch($event);
 
         return $event->content;
     }

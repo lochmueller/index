@@ -51,7 +51,7 @@ class FileIndexingHandler implements IndexingInterface, LoggerAwareInterface
             $content .= $this->fileExtractor->extract($file);
 
             $configuration = $this->configurationLoader->loadByUid($message->indexConfigurationRecordId);
-            $content = $this->contentProcessor->process($content, $configuration?->contentProcessors ?? []);
+            $content = $this->contentProcessor->process($content, $configuration->contentProcessors ?? []);
 
             $this->eventDispatcher->dispatch(new IndexFileEvent(
                 site: $this->siteFinder->getSiteByIdentifier($message->siteIdentifier),

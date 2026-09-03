@@ -51,7 +51,10 @@ class Configuration
             configuration: in_array(IndexTechnology::from($row['technology']), [IndexTechnology::Frontend, IndexTechnology::Http]) ? (array) json_decode($row['configuration'], true) : [],
             partialIndexing: GeneralUtility::trimExplode(',', $row['partial_indexing'] ?? '', true),
             languages: GeneralUtility::intExplode(',', $row['languages'] ?? '', true),
-            contentProcessors: GeneralUtility::trimExplode(',', $row['content_processors'] ?? '', true),
+            contentProcessors: array_values(array_filter(
+                GeneralUtility::trimExplode(',', $row['content_processors'] ?? '', true),
+                static fn(string $contentProcessor): bool => class_exists($contentProcessor),
+            )),
         );
     }
 

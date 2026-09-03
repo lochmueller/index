@@ -44,7 +44,7 @@ class FrontendIndexingHandler implements IndexingInterface, LoggerAwareInterface
             }
 
             $configuration = $this->configurationLoader->loadByUid($message->indexConfigurationRecordId);
-            $content = $this->contentProcessor->process($content, $configuration?->contentProcessors ?? []);
+            $content = $this->contentProcessor->process($content, $configuration->contentProcessors ?? []);
 
             $this->eventDispatcher->dispatch(new IndexPageEvent(
                 site: $site,

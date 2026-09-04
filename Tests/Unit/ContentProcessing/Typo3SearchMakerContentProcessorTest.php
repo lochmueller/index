@@ -78,4 +78,14 @@ class Typo3SearchMakerContentProcessorTest extends AbstractTest
 
         self::assertSame('', $subject->process(''));
     }
+
+    public function testGetLabelReturnsLocallangReference(): void
+    {
+        $subject = new Typo3SearchMakerContentProcessor();
+
+        self::assertStringContainsString(
+            'tx_index_domain_model_configuration.content_processors.type.typo3_search_marker',
+            $subject->getLabel()
+        );
+    }
 }

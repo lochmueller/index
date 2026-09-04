@@ -12,19 +12,20 @@ use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Hooks\DataHandlerUpdateHook;
 use Lochmueller\Index\Indexing\ActiveIndexing;
 use Lochmueller\Index\Queue\Bus;
+use Lochmueller\Index\Queue\Message\DeIndexDocumentMessage;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 
 class DataHandlerUpdateHookTest extends AbstractTest
 {
-    private function createConfiguration(array $partialIndexing = []): Configuration
+    private function createConfiguration(array $partialIndexing = [], bool $skipNoSearchPages = false): Configuration
     {
         return new Configuration(
             configurationId: 1,
             pageId: 10,
             technology: IndexTechnology::Database,
-            skipNoSearchPages: false,
+            skipNoSearchPages: $skipNoSearchPages,
             contentIndexing: true,
             levels: 99,
             fileMounts: [],
@@ -380,6 +381,265 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $cacheStub,
             $genericRepositoryStub,
             $busStub
+        );
+        $subject->processDatamap_afterDatabaseOperations(
+            'update',
+            'pages',
+            123,
+            [],
+            $this->createStub(DataHandler::class),
+        );
+    }
+
+    public function testProcessDatamapAfterDatabaseOperationsDispatchesDeIndexMessageForNoSearchPage(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Datamap->value], true);
+
+        $cacheStub = $this->createStub(FrontendInterface::class);
+        $cacheStub->method('get')->willReturn([]);
+
+        $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
+        $configurationLoaderStub->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn([
+            'uid' => 123,
+            'pid' => 10,
+            'sys_language_uid' => 2,
+            'no_search' => 1,
+        ]);
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock->expects(self::never())->method('fillQueue');
+
+        $dispatchedMessage = null;
+        $busMock = $this->createMock(Bus::class);
+        $busMock
+            ->expects(self::once())
+            ->method('dispatch')
+            ->willReturnCallback(function (object $message) use (&$dispatchedMessage): void {
+                $dispatchedMessage = $message;
+            });
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderStub,
+            $activeIndexingMock,
+            $cacheStub,
+            $genericRepositoryStub,
+            $busMock
+        );
+        $subject->processDatamap_afterDatabaseOperations(
+            'update',
+            'pages',
+            123,
+            [],
+            $this->createStub(DataHandler::class),
+        );
+
+        self::assertInstanceOf(DeIndexDocumentMessage::class, $dispatchedMessage);
+        self::assertSame(123, $dispatchedMessage->pageUid);
+        self::assertSame(2, $dispatchedMessage->languageId);
+    }
+
+    public function testProcessDatamapAfterDatabaseOperationsDoesNotDispatchDeIndexMessageWhenSkipNoSearchPagesIsDisabled(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Datamap->value], false);
+
+        $cacheStub = $this->createStub(FrontendInterface::class);
+        $cacheStub->method('get')->willReturn([]);
+
+        $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
+        $configurationLoaderStub->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn([
+            'uid' => 123,
+            'pid' => 10,
+            'sys_language_uid' => 0,
+            'no_search' => 1,
+        ]);
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock->expects(self::never())->method('fillQueue');
+
+        $busMock = $this->createMock(Bus::class);
+        $busMock->expects(self::never())->method('dispatch');
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderStub,
+            $activeIndexingMock,
+            $cacheStub,
+            $genericRepositoryStub,
+            $busMock
+        );
+        $subject->processDatamap_afterDatabaseOperations(
+            'update',
+            'pages',
+            123,
+            [],
+            $this->createStub(DataHandler::class),
+        );
+    }
+
+    public function testProcessDatamapAfterDatabaseOperationsDoesNotDispatchDeIndexMessageWhenTriggerNotConfigured(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Clearcache->value], true);
+
+        $cacheStub = $this->createStub(FrontendInterface::class);
+        $cacheStub->method('get')->willReturn([]);
+
+        $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
+        $configurationLoaderStub->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn([
+            'uid' => 123,
+            'pid' => 10,
+            'sys_language_uid' => 0,
+            'no_search' => 1,
+        ]);
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock->expects(self::never())->method('fillQueue');
+
+        $busMock = $this->createMock(Bus::class);
+        $busMock->expects(self::never())->method('dispatch');
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderStub,
+            $activeIndexingMock,
+            $cacheStub,
+            $genericRepositoryStub,
+            $busMock
+        );
+        $subject->processDatamap_afterDatabaseOperations(
+            'update',
+            'pages',
+            123,
+            [],
+            $this->createStub(DataHandler::class),
+        );
+    }
+
+    public function testProcessDatamapAfterDatabaseOperationsDoesNotDispatchDeIndexMessageForAlreadyTriggeredPage(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Datamap->value], true);
+
+        $cacheStub = $this->createStub(FrontendInterface::class);
+        $cacheStub->method('get')->willReturn([123]);
+
+        $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
+        $configurationLoaderStub->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn([
+            'uid' => 123,
+            'pid' => 10,
+            'sys_language_uid' => 0,
+            'no_search' => 1,
+        ]);
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock->expects(self::never())->method('fillQueue');
+
+        $busMock = $this->createMock(Bus::class);
+        $busMock->expects(self::never())->method('dispatch');
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderStub,
+            $activeIndexingMock,
+            $cacheStub,
+            $genericRepositoryStub,
+            $busMock
+        );
+        $subject->processDatamap_afterDatabaseOperations(
+            'update',
+            'pages',
+            123,
+            [],
+            $this->createStub(DataHandler::class),
+        );
+    }
+
+    public function testProcessDatamapAfterDatabaseOperationsDoesNotDispatchDeIndexMessageForPageIdZero(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Datamap->value], true);
+
+        $cacheStub = $this->createStub(FrontendInterface::class);
+        $cacheStub->method('get')->willReturn([]);
+
+        $configurationLoaderMock = $this->createMock(ConfigurationLoader::class);
+        $configurationLoaderMock->expects(self::never())->method('loadByPageTraversing');
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn([
+            'uid' => 0,
+            'pid' => 0,
+            'sys_language_uid' => 0,
+            'no_search' => 1,
+        ]);
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock->expects(self::never())->method('fillQueue');
+
+        $busMock = $this->createMock(Bus::class);
+        $busMock->expects(self::never())->method('dispatch');
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderMock,
+            $activeIndexingMock,
+            $cacheStub,
+            $genericRepositoryStub,
+            $busMock
+        );
+        $subject->processDatamap_afterDatabaseOperations(
+            'update',
+            'pages',
+            0,
+            [],
+            $this->createStub(DataHandler::class),
+        );
+    }
+
+    public function testProcessDatamapAfterDatabaseOperationsIndexesInsteadOfDeIndexingWhenNoSearchIsNotSet(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Datamap->value], true);
+
+        $cacheStub = $this->createStub(FrontendInterface::class);
+        $cacheStub->method('get')->willReturn([]);
+
+        $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
+        $configurationLoaderStub->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn([
+            'uid' => 123,
+            'pid' => 10,
+            'sys_language_uid' => 0,
+            'no_search' => 0,
+        ]);
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock
+            ->expects(self::once())
+            ->method('fillQueue')
+            ->with(self::isInstanceOf(Configuration::class), true);
+
+        $busMock = $this->createMock(Bus::class);
+        $busMock->expects(self::never())->method('dispatch');
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderStub,
+            $activeIndexingMock,
+            $cacheStub,
+            $genericRepositoryStub,
+            $busMock
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',

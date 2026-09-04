@@ -21,6 +21,6 @@ return (new Config())
     ->setFinder(
         (new Finder())
             ->in(__DIR__)
-            ->exclude(['.Build'])
+            ->exclude(['.Build', 'var'])
             ->notPath('ext_emconf.php')
     );

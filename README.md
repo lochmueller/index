@@ -33,6 +33,7 @@ first valid (`limitToPages`) extender is executed for every page.
 
 Possible types are:
 
+- record (Lochmueller\Index\Traversing\Extender\RecordExtender) - generic, see [below](#generic-record-extender)
 - news (Lochmueller\Index\Traversing\Extender\News)
 - address (Lochmueller\Index\Traversing\Extender\Address)
 - calendarize (Lochmueller\Index\Traversing\Extender\Calendarize)
@@ -56,6 +57,106 @@ Possible types are:
   ]
 }
 ```
+
+Every extender supports these common options, they are evaluated by the page traversing itself:
+
+| Option            | Type    | Description                                                                                     |
+|-------------------|---------|-------------------------------------------------------------------------------------------------|
+| `type`            | string  | Name of the extender (`getName()` of the `ExtenderInterface` implementation).                     |
+| `limitToPages`    | int[]   | Restrict the extender to these page UIDs. Without this option the extender is used on every page. |
+| `dropOriginalUri` | bool    | Do not index the page itself, only the URIs that are created by the extender.                     |
+
+#### Generic record extender
+
+Most detail views follow the same pattern: a TCA table, an optional record type filter and a plugin namespace with
+the controller, the action and the record argument. The `record` extender covers this pattern via configuration, so
+there is no need for an own PHP class. The configuration of the `news` extender looks like this:
+
+```json
+{
+  "extender": [
+    {
+      "type": "record",
+      "table": "tx_news_domain_model_news",
+      "recordTypes": [
+        "0"
+      ],
+      "recordStorages": [
+        12,
+        24
+      ],
+      "limitToPages": [
+        13
+      ],
+      "dropOriginalUri": true,
+      "arguments": {
+        "tx_news_pi1": {
+          "controller": "News",
+          "action": "detail",
+          "news": "{uid}"
+        }
+      }
+    }
+  ]
+}
+```
+
+| Option           | Type                | Description                                                                                                                      |
+|------------------|---------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| `table`          | string              | Required. TCA table of the detail records. Without this option the extender does nothing.                                          |
+| `recordStorages` | int[]               | Storage pages of the records. Defaults to the current detail page, if the option is missing or empty.                              |
+| `recordTypes`    | string[]            | Optional filter on the record type (TCA `type` field). Without this option all record types are used.                              |
+| `constraints`    | object              | Optional filter on record fields. A scalar value is compared as a string, an array works like an `IN` comparison.                  |
+| `arguments`      | object              | Routing arguments for the URI generation. The structure is passed to the page router, placeholders are resolved per record.        |
+
+The records are selected with the frontend restrictions (hidden, start/endtime, fe_group) and the language overlay
+handling of the extension, so the same rules as for the dedicated extenders apply.
+
+These placeholders can be used in every string of `arguments`:
+
+| Placeholder     | Value                                                                       |
+|-----------------|-----------------------------------------------------------------------------|
+| `{uid}`         | UID of the record                                                            |
+| `{pid}`         | PID of the record                                                            |
+| `{pageUid}`     | UID of the current detail page                                               |
+| `{languageId}`  | ID of the current site language                                              |
+| `{field:slug}`  | Value of the record field `slug` (every field of the record can be used)     |
+
+A string that only consists of one placeholder keeps the original type (`"{uid}"` becomes an integer), which is
+important for the aspects of the route enhancers. If a string contains more content, the placeholders are replaced
+inside the string (`"{uid}-{field:slug}"` becomes `"99-my-slug"`). Unknown placeholders stay untouched, so that
+broken configurations are visible in the generated URI. Fields that are not part of the record resolve to `null`.
+The `_language` argument is always set by the extender and cannot be overridden.
+
+If you want to ship a named preset for your own extension instead of repeating the configuration, extend the class
+and override `getBaseConfiguration()`. The values of the index configuration always win over the base configuration:
+
+```php
+class MyExtension extends RecordExtender
+{
+    public function getName(): string
+    {
+        return 'my_extension';
+    }
+
+    protected function getBaseConfiguration(): array
+    {
+        return [
+            'table' => 'tx_myextension_domain_model_item',
+            'arguments' => [
+                'tx_myextension_pi1' => [
+                    'controller' => 'Item',
+                    'action' => 'detail',
+                    'item' => '{uid}',
+                ],
+            ],
+        ];
+    }
+}
+```
+
+Use an own implementation of the `ExtenderInterface` if the URI generation needs real logic, e.g. more than one URI
+per record, an external data source or additional queries.
 
 ### Content processing
 

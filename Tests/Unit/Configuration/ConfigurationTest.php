@@ -90,7 +90,7 @@ class ConfigurationTest extends AbstractTest
         self::assertSame(3, $configuration->levels);
         self::assertSame(['fileadmin', 'uploads'], $configuration->fileMounts);
         self::assertSame(['pdf', 'doc', 'txt'], $configuration->fileTypes);
-        self::assertSame([], $configuration->configuration);
+        self::assertSame(['test' => 'value'], $configuration->configuration);
         self::assertSame(['pages', 'files'], $configuration->partialIndexing);
         self::assertSame([0, 1, 2], $configuration->languages);
         self::assertSame([

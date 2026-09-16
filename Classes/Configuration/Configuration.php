@@ -48,7 +48,7 @@ class Configuration
             levels: (int) $row['levels'],
             fileMounts: GeneralUtility::trimExplode(',', $row['file_mounts'] ?? ''),
             fileTypes: GeneralUtility::trimExplode(',', $row['file_types'] ?? ''),
-            configuration: in_array(IndexTechnology::from($row['technology']), [IndexTechnology::Frontend, IndexTechnology::Http]) ? (array) json_decode($row['configuration'], true) : [],
+            configuration: in_array(IndexTechnology::from($row['technology']), [IndexTechnology::Database, IndexTechnology::Frontend, IndexTechnology::Http]) ? (array) json_decode($row['configuration'] ?? '', true) : [],
             partialIndexing: GeneralUtility::trimExplode(',', $row['partial_indexing'] ?? '', true),
             languages: GeneralUtility::intExplode(',', $row['languages'] ?? '', true),
             contentProcessors: array_values(array_filter(

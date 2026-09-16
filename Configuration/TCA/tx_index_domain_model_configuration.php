@@ -175,7 +175,7 @@ return [
         IndexTechnology::Database->value => ['showitem' => '--div--;' . $lll . 'tx_index_domain_model_configuration.tab.general,
                     title,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.pages,
-                    technology,languages,skip_no_search_pages,content_indexing,levels,partial_indexing,content_processors,
+                    technology,languages,skip_no_search_pages,content_indexing,levels,configuration,partial_indexing,content_processors,
                     --div--;' . $lll . 'tx_index_domain_model_configuration.tab.files,
                     file_mounts,file_types,
                     --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,

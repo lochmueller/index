@@ -43,9 +43,10 @@ class GenericRepository extends AbstractRepository
      * Find records by parent content element UID.
      *
      * @param array<int> $languages
+     * @param string|null $languageField Language field of the table, null for tables that are not language aware
      * @return iterable<array<string, mixed>>
      */
-    public function findByParentContentElement(int $parentUid, array $languages): iterable
+    public function findByParentContentElement(int $parentUid, array $languages, ?string $languageField = 'sys_language_uid'): iterable
     {
         $queryBuilder = $this->createFrontendQueryBuilder();
 
@@ -53,9 +54,9 @@ class GenericRepository extends AbstractRepository
             ->from($this->getTableName())
             ->where(
                 $queryBuilder->expr()->eq('tt_content', $parentUid),
-                $queryBuilder->expr()->in('sys_language_uid', $languages),
             )
             ->orderBy('sorting', 'ASC');
+        $this->addLanguageRestriction($queryBuilder, $languageField, $languages);
 
         return $queryBuilder->executeQuery()->iterateAssociative();
     }
@@ -64,9 +65,10 @@ class GenericRepository extends AbstractRepository
      * Find records by a generic parent field and UID.
      *
      * @param array<int> $languages
+     * @param string|null $languageField Language field of the table, null for tables that are not language aware
      * @return iterable<array<string, mixed>>
      */
-    public function findByParentField(int $parentUid, string $foreignField, array $languages): iterable
+    public function findByParentField(int $parentUid, string $foreignField, array $languages, ?string $languageField = 'sys_language_uid'): iterable
     {
         $queryBuilder = $this->createFrontendQueryBuilder();
 
@@ -74,11 +76,26 @@ class GenericRepository extends AbstractRepository
             ->from($this->getTableName())
             ->where(
                 $queryBuilder->expr()->eq($foreignField, $parentUid),
-                $queryBuilder->expr()->in('sys_language_uid', $languages),
             )
             ->orderBy('sorting', 'ASC');
+        $this->addLanguageRestriction($queryBuilder, $languageField, $languages);
 
         return $queryBuilder->executeQuery()->iterateAssociative();
+    }
+
+    /**
+     * Tables that are not language aware (e.g. Content Blocks collections with
+     * languageAware: false) have no language column - filtering on it would throw.
+     *
+     * @param array<int> $languages
+     */
+    protected function addLanguageRestriction(QueryBuilder $queryBuilder, ?string $languageField, array $languages): void
+    {
+        if ($languageField === null || $languageField === '' || $languages === []) {
+            return;
+        }
+
+        $queryBuilder->andWhere($queryBuilder->expr()->in($languageField, $languages));
     }
 
 

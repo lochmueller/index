@@ -312,4 +312,86 @@ class GenericRepositoryTest extends AbstractTest
 
         self::assertSame([], $actualRecords);
     }
+
+    public function testFindByParentFieldRestrictsToGivenLanguageField(): void
+    {
+        $languages = [0, -1, 1];
+
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
+
+        $result = $this->createStub(Result::class);
+        $result->method('iterateAssociative')->willReturn(new \ArrayIterator([]));
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->method('eq')->willReturn('parent_uid = 42');
+        $expressionBuilder->expects(self::once())
+            ->method('in')
+            ->with('sys_language_uid', $languages)
+            ->willReturn('sys_language_uid IN (0, -1, 1)');
+
+        $restrictions = $this->createStub(QueryRestrictionContainerInterface::class);
+        $restrictions->method('add')->willReturnSelf();
+
+        $queryBuilder = $this->createMock(QueryBuilder::class);
+        $queryBuilder->method('getRestrictions')->willReturn($restrictions);
+        $queryBuilder->method('select')->willReturnSelf();
+        $queryBuilder->method('from')->willReturnSelf();
+        $queryBuilder->method('where')->willReturnSelf();
+        $queryBuilder->method('orderBy')->willReturnSelf();
+        $queryBuilder->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->method('executeQuery')->willReturn($result);
+        $queryBuilder->expects(self::once())
+            ->method('andWhere')
+            ->with('sys_language_uid IN (0, -1, 1)')
+            ->willReturnSelf();
+
+        $connectionPool = $this->createStub(ConnectionPool::class);
+        $connectionPool->method('getQueryBuilderForTable')->willReturn($queryBuilder);
+
+        $subject = new GenericRepository($connectionPool);
+        $subject->setTableName('tx_test_items');
+
+        iterator_to_array($subject->findByParentField(42, 'parent_uid', $languages, 'sys_language_uid'));
+    }
+
+    public function testFindByParentFieldSkipsLanguageRestrictionWithoutLanguageField(): void
+    {
+        $expectedRecords = [
+            ['uid' => 1, 'parent_uid' => 42, 'sorting' => 10],
+        ];
+
+        $frontendRestrictionContainerStub = $this->createStub(FrontendRestrictionContainer::class);
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $frontendRestrictionContainerStub);
+
+        $result = $this->createStub(Result::class);
+        $result->method('iterateAssociative')->willReturn(new \ArrayIterator($expectedRecords));
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->method('eq')->willReturn('parent_uid = 42');
+        $expressionBuilder->expects(self::never())->method('in');
+
+        $restrictions = $this->createStub(QueryRestrictionContainerInterface::class);
+        $restrictions->method('add')->willReturnSelf();
+
+        $queryBuilder = $this->createMock(QueryBuilder::class);
+        $queryBuilder->method('getRestrictions')->willReturn($restrictions);
+        $queryBuilder->method('select')->willReturnSelf();
+        $queryBuilder->method('from')->willReturnSelf();
+        $queryBuilder->method('where')->willReturnSelf();
+        $queryBuilder->method('orderBy')->willReturnSelf();
+        $queryBuilder->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->method('executeQuery')->willReturn($result);
+        $queryBuilder->expects(self::never())->method('andWhere');
+
+        $connectionPool = $this->createStub(ConnectionPool::class);
+        $connectionPool->method('getQueryBuilderForTable')->willReturn($queryBuilder);
+
+        $subject = new GenericRepository($connectionPool);
+        $subject->setTableName('tx_test_items');
+
+        $actualRecords = iterator_to_array($subject->findByParentField(42, 'parent_uid', [0, -1, 1], null));
+
+        self::assertSame($expectedRecords, $actualRecords);
+    }
 }

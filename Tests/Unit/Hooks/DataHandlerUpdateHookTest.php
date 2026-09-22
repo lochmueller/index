@@ -15,6 +15,8 @@ use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\DeIndexDocumentMessage;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\WorkspaceAspect;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 
 class DataHandlerUpdateHookTest extends AbstractTest
@@ -67,6 +69,7 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $cacheStub,
             $this->createGenericRepositoryStub(),
             bus: $busStub,
+            context: new Context(),
         );
         $subject->clearCacheCmd(['pageIdArray' => [123]], $this->createStub(DataHandler::class));
     }
@@ -90,7 +93,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->clearCacheCmd(['pageIdArray' => [123]], $this->createStub(DataHandler::class));
     }
@@ -112,7 +116,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->clearCacheCmd(['pageIdArray' => [123]], $this->createStub(DataHandler::class));
     }
@@ -137,7 +142,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->clearCacheCmd(['pageIdArray' => [123]], $this->createStub(DataHandler::class));
     }
@@ -161,7 +167,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->clearCacheCmd(['pageIdArray' => [0]], $this->createStub(DataHandler::class));
     }
@@ -185,7 +192,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $this->createGenericRepositoryStub(),
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->clearCacheCmd(['pageIdArray' => [123, 456]], $this->createStub(DataHandler::class));
     }
@@ -204,7 +212,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $this->createGenericRepositoryStub(),
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->clearCacheCmd(['pageIdArray' => []], $this->createStub(DataHandler::class));
     }
@@ -223,7 +232,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $this->createGenericRepositoryStub(),
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->clearCacheCmd([], $this->createStub(DataHandler::class));
     }
@@ -255,7 +265,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -293,7 +304,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -319,7 +331,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $genericRepositoryMock,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'new',
@@ -346,7 +359,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $genericRepositoryStub,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -380,7 +394,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -427,7 +442,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busMock
+            $busMock,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -472,7 +488,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busMock
+            $busMock,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -513,7 +530,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busMock
+            $busMock,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -554,7 +572,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busMock
+            $busMock,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -595,7 +614,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busMock
+            $busMock,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -639,7 +659,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busMock
+            $busMock,
+            new Context(),
         );
         $subject->processDatamap_afterDatabaseOperations(
             'update',
@@ -677,7 +698,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processCmdmap_postProcess(
             'move',
@@ -717,7 +739,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processCmdmap_postProcess(
             'copy',
@@ -744,7 +767,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $genericRepositoryMock,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processCmdmap_postProcess(
             'delete',
@@ -772,7 +796,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $this->createStub(FrontendInterface::class),
             $genericRepositoryStub,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processCmdmap_postProcess(
             'delete',
@@ -808,7 +833,8 @@ class DataHandlerUpdateHookTest extends AbstractTest
             $activeIndexingMock,
             $cacheStub,
             $genericRepositoryStub,
-            $busStub
+            $busStub,
+            new Context(),
         );
         $subject->processCmdmap_postProcess(
             'move',
@@ -819,5 +845,130 @@ class DataHandlerUpdateHookTest extends AbstractTest
             null,
             null,
         );
+    }
+
+    public function testProcessDatamapAfterDatabaseOperationsResolvesVersionToLiveRecord(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Datamap->value]);
+
+        $cacheStub = $this->createStub(FrontendInterface::class);
+        $cacheStub->method('get')->willReturn([]);
+
+        $configurationLoaderMock = $this->createMock(ConfigurationLoader::class);
+        $configurationLoaderMock
+            ->expects(self::once())
+            ->method('loadByPageTraversing')
+            ->with(123)
+            ->willReturn($configuration);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturnMap([
+            [456, ['uid' => 456, 'pid' => -1, 't3ver_wsid' => 1, 't3ver_oid' => 123]],
+            [123, ['uid' => 123, 'pid' => 10, 't3ver_wsid' => 0, 't3ver_oid' => 0]],
+        ]);
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock
+            ->expects(self::once())
+            ->method('fillQueue')
+            ->with(self::isInstanceOf(Configuration::class), true);
+
+        $busStub = $this->createStub(Bus::class);
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderMock,
+            $activeIndexingMock,
+            $cacheStub,
+            $genericRepositoryStub,
+            $busStub,
+            new Context(),
+        );
+        $subject->processDatamap_afterDatabaseOperations(
+            'update',
+            'pages',
+            456,
+            [],
+            $this->createStub(DataHandler::class),
+        );
+    }
+
+    public function testProcessDatamapAfterDatabaseOperationsSkipsVersionWithoutLiveRecord(): void
+    {
+        $configurationLoaderMock = $this->createMock(ConfigurationLoader::class);
+        $configurationLoaderMock->expects(self::never())->method('loadByPageTraversing');
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn(['uid' => 456, 'pid' => -1, 't3ver_wsid' => 1, 't3ver_oid' => 0]);
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock->expects(self::never())->method('fillQueue');
+
+        $busStub = $this->createStub(Bus::class);
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderMock,
+            $activeIndexingMock,
+            $this->createStub(FrontendInterface::class),
+            $genericRepositoryStub,
+            $busStub,
+            new Context(),
+        );
+        $subject->processDatamap_afterDatabaseOperations(
+            'update',
+            'pages',
+            456,
+            [],
+            $this->createStub(DataHandler::class),
+        );
+    }
+
+    public function testProcessCmdmapPostProcessIndexesWithLiveWorkspaceAspect(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Cmdmap->value]);
+
+        $cacheStub = $this->createStub(FrontendInterface::class);
+        $cacheStub->method('get')->willReturn([]);
+
+        $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
+        $configurationLoaderStub->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn(['uid' => 123, 'pid' => 10]);
+
+        $context = new Context();
+        $context->setAspect('workspace', new WorkspaceAspect(3));
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock
+            ->expects(self::once())
+            ->method('fillQueue')
+            ->willReturnCallback(static function () use ($context): void {
+                self::assertSame(0, $context->getAspect('workspace')->getId());
+            });
+
+        $busStub = $this->createStub(Bus::class);
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderStub,
+            $activeIndexingMock,
+            $cacheStub,
+            $genericRepositoryStub,
+            $busStub,
+            $context,
+        );
+        $subject->processCmdmap_postProcess(
+            'move',
+            'pages',
+            123,
+            null,
+            $this->createStub(DataHandler::class),
+            null,
+            null,
+        );
+
+        self::assertSame(3, $context->getAspect('workspace')->getId());
     }
 }

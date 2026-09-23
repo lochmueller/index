@@ -58,7 +58,8 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
             if ($configuration->contentIndexing) {
                 foreach ($contentElements as $record) {
                     $items = new \SplQueue();
-                    $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, [], $site);
+                    parse_str($message->uri->getQuery(), $arguments);
+                    $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, $arguments, $site);
 
                     $this->contentIndexing->getVariants($record, $items);
                     foreach ($items as $item) {
@@ -69,7 +70,8 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
                 }
             } else {
                 $items = new \SplQueue();
-                $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, [], $site);
+                parse_str($message->uri->getQuery(), $arguments);
+                $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, $arguments, $site);
 
                 foreach ($contentElements as $record) {
                     $this->contentIndexing->getVariants($record, $items);

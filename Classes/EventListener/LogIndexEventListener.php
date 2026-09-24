@@ -47,9 +47,9 @@ final class LogIndexEventListener implements LoggerAwareInterface
             $record['end_time'] = (int) $event->endTime;
             $this->deleteOldEntries();
         } elseif ($event instanceof IndexPageEvent) {
-            $record['pages_counter'] = ((int) $record['pages_counter']) + 1;
+            $record['pages_counter'] = ((int) ($record['pages_counter'] ?? 0)) + 1;
         } elseif ($event instanceof IndexFileEvent) {
-            $record['files_counter'] = ((int) $record['files_counter']) + 1;
+            $record['files_counter'] = ((int) ($record['files_counter'] ?? 0)) + 1;
         }
 
         if ($newRecord) {

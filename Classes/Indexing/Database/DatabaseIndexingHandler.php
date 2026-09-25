@@ -52,14 +52,14 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
                 $title .= ' | ' . $websiteTitle;
             }
             $accessGroups = $message->accessGroups;
+            parse_str($message->uri->getQuery(), $messageQueryArguments);
 
             $contentElements = $this->recordSelection->findRecordsOnPage('tt_content', [$message->pageUid], $message->language);
 
             if ($configuration->contentIndexing) {
                 foreach ($contentElements as $record) {
                     $items = new \SplQueue();
-                    parse_str($message->uri->getQuery(), $arguments);
-                    $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, $arguments, $site);
+                    $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, $messageQueryArguments, $site);
 
                     $this->contentIndexing->getVariants($record, $items);
                     foreach ($items as $item) {
@@ -70,8 +70,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
                 }
             } else {
                 $items = new \SplQueue();
-                parse_str($message->uri->getQuery(), $arguments);
-                $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, $arguments, $site);
+                $items[] = new DatabaseIndexingDto($title, '', $message->pageUid, $message->language, $messageQueryArguments, $site);
 
                 foreach ($contentElements as $record) {
                     $this->contentIndexing->getVariants($record, $items);

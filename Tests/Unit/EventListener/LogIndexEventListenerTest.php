@@ -184,6 +184,44 @@ class LogIndexEventListenerTest extends AbstractTest
         $subject($event);
     }
 
+    public function testInvokeWithIndexPageEventFromPageNotFound(): void
+    {
+        $siteStub = $this->createStub(SiteInterface::class);
+        $siteStub->method('getIdentifier')->willReturn('my-site');
+
+        $event = new IndexPageEvent(
+            site: $siteStub,
+            technology: IndexTechnology::Frontend,
+            type: IndexType::Partial,
+            indexConfigurationRecordId: 42,
+            indexProcessId: 'page-not-logged',
+            language: 0,
+            title: 'Test Page',
+            content: 'Test content',
+            pageUid: 123,
+            accessGroups: [0],
+            uri: 'https://example.com/test-page',
+        );
+
+        /** @var LogRepository&MockObject $logRepositoryMock */
+        $logRepositoryMock = $this->createMock(LogRepository::class);
+        $logRepositoryMock->expects(self::once())
+            ->method('findByIndexProcessId')
+            ->with('page-not-logged')
+            ->willReturn(null);
+        $logRepositoryMock->expects(self::once())->method('insert')
+        ->with([
+            'index_process_id' => 'page-not-logged',
+            'pages_counter' => 1,
+        ]);
+        $logRepositoryMock->expects(self::never())
+            ->method('update');
+
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);
+        $subject($event);
+    }
+
     public function testInvokeWithIndexFileEventIncrementsFilesCounter(): void
     {
         $siteStub = $this->createStub(SiteInterface::class);
@@ -246,6 +284,41 @@ class LogIndexEventListenerTest extends AbstractTest
                 ['index_process_id' => 'file-zero-process', 'files_counter' => 1],
                 ['index_process_id' => 'file-zero-process'],
             );
+
+        $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
+        $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);
+        $subject($event);
+    }
+
+    public function testInvokeWithIndexFileEventFromFileNotFound(): void
+    {
+        $siteStub = $this->createStub(SiteInterface::class);
+        $siteStub->method('getIdentifier')->willReturn('file-site');
+
+        $event = new IndexFileEvent(
+            site: $siteStub,
+            indexConfigurationRecordId: 10,
+            indexProcessId: 'file-not-found',
+            title: 'Test Document',
+            content: 'Document content',
+            fileIdentifier: '1:/documents/test.pdf',
+            uri: 'https://example.com/documents/test.pdf',
+        );
+
+        /** @var LogRepository&MockObject $logRepositoryMock */
+        $logRepositoryMock = $this->createMock(LogRepository::class);
+        $logRepositoryMock->expects(self::once())
+            ->method('findByIndexProcessId')
+            ->with('file-not-found')
+            ->willReturn(null);
+        $logRepositoryMock->expects(self::once())
+            ->method('insert')
+            ->with([
+                'index_process_id' => 'file-not-found',
+                'files_counter' => 1,
+            ]);
+        $logRepositoryMock->expects(self::never())
+            ->method('update');
 
         $extensionConfigurationStub = $this->createStub(ExtensionConfiguration::class);
         $subject = new LogIndexEventListener($logRepositoryMock, $extensionConfigurationStub);

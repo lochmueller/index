@@ -32,6 +32,8 @@ class Configuration
         public readonly array            $languages,
         public readonly array           $contentProcessors = [],
         public ?IndexType               $overrideIndexType = null,
+        public readonly string          $fetchUrl = '',
+        public readonly int             $fetchDepth = 3,
     ) {}
 
     /**
@@ -55,6 +57,8 @@ class Configuration
                 GeneralUtility::trimExplode(',', $row['content_processors'] ?? '', true),
                 static fn(string $contentProcessor): bool => class_exists($contentProcessor),
             )),
+            fetchUrl: trim((string) ($row['fetch_url'] ?? '')),
+            fetchDepth: (int) ($row['fetch_depth'] ?? 3),
         );
     }
 
@@ -73,7 +77,9 @@ class Configuration
             partialIndexing: $this->partialIndexing,
             languages: $this->languages,
             contentProcessors: $this->contentProcessors,
-            overrideIndexType: IndexType::Partial
+            overrideIndexType: IndexType::Partial,
+            fetchUrl: $this->fetchUrl,
+            fetchDepth: $this->fetchDepth,
         );
     }
 

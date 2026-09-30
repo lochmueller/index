@@ -195,6 +195,12 @@ different index mechanism on different sub pages.
     - Not directly selectable in the backend.
     - Used for content that is sent via webhook to the EXT:reactions endpoint.
     - This content uses the same path in the index workflow (internal message + event).
+- *Fetch*
+    - Downloads an external website (configured URL) and follows the links up to the configured depth.
+    - Only links with the same URL base (scheme, host and directory path) are followed.
+    - All URLs in the fetched HTML are converted to absolute URLs.
+    - Linked files that match the selected file types are indexed as files (content extraction only for text files).
+    - The whole crawling is done in one queue message, so please keep the depth small for big websites.
 - *File*
     - Not directly selectable in the backend.
     - Is used in the regular index process to select additional files.

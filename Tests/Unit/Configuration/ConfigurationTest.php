@@ -162,6 +162,52 @@ class ConfigurationTest extends AbstractTest
         self::assertSame([], $configuration->partialIndexing);
         self::assertSame([], $configuration->languages);
         self::assertSame([], $configuration->contentProcessors);
+        self::assertSame('', $configuration->fetchUrl);
+        self::assertSame(3, $configuration->fetchDepth);
+    }
+
+    public function testCreateByDatabaseRowWithFetchTechnology(): void
+    {
+        $row = [
+            'uid' => 5,
+            'pid' => 1,
+            'technology' => 'fetch',
+            'content_indexing' => 0,
+            'skip_no_search_pages' => 0,
+            'levels' => 0,
+            'fetch_url' => ' https://example.com/docs/ ',
+            'fetch_depth' => '2',
+        ];
+
+        $configuration = Configuration::createByDatabaseRow($row);
+
+        self::assertSame(IndexTechnology::Fetch, $configuration->technology);
+        self::assertSame('https://example.com/docs/', $configuration->fetchUrl);
+        self::assertSame(2, $configuration->fetchDepth);
+    }
+
+    public function testModifyForPartialIndexingKeepsFetchSettings(): void
+    {
+        $configuration = new Configuration(
+            configurationId: 1,
+            pageId: 10,
+            technology: IndexTechnology::Fetch,
+            skipNoSearchPages: false,
+            contentIndexing: false,
+            levels: 0,
+            fileMounts: [],
+            fileTypes: [],
+            configuration: [],
+            partialIndexing: [],
+            languages: [],
+            fetchUrl: 'https://example.com/',
+            fetchDepth: 5,
+        );
+
+        $result = $configuration->modifyForPartialIndexing(50);
+
+        self::assertSame('https://example.com/', $result->fetchUrl);
+        self::assertSame(5, $result->fetchDepth);
     }
 
     public function testModifyForPartialIndexingSetsCorrectValues(): void

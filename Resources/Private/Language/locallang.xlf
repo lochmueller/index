@@ -67,6 +67,18 @@
             <trans-unit id="tx_index_domain_model_configuration.levels.description">
                 <source>The number of levels of the index process. 0 -> only current page.</source>
             </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.fetch_url">
+                <source>URL</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.fetch_url.description">
+                <source>External start URL of the fetch process. Only links with the same URL base (scheme, host and directory path) are followed.</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.fetch_depth">
+                <source>Depth</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.fetch_depth.description">
+                <source>The number of link levels that are followed, starting at the URL. 0 -> only the URL itself.</source>
+            </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.skip_no_search_pages">
                 <source>Skip no search pages</source>
             </trans-unit>
@@ -120,6 +132,9 @@
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.technology.type.external">
                 <source>External (is used by reactions and not by manually configuration!)</source>
+            </trans-unit>
+            <trans-unit id="tx_index_domain_model_configuration.technology.type.fetch">
+                <source>Fetch (download an external website and follow the links)</source>
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.tab.general">
                 <source>General</source>

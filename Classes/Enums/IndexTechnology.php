@@ -12,4 +12,5 @@ enum IndexTechnology: string
     case Frontend = 'frontend';
     case Http = 'http';
     case External = 'external';
+    case Fetch = 'fetch';
 }

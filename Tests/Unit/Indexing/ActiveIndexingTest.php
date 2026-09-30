@@ -8,6 +8,7 @@ use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Indexing\ActiveIndexing;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingQueue;
+use Lochmueller\Index\Indexing\Fetch\FetchIndexingQueue;
 use Lochmueller\Index\Indexing\Frontend\FrontendIndexingQueue;
 use Lochmueller\Index\Indexing\Http\HttpIndexingQueue;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
@@ -26,7 +27,7 @@ class ActiveIndexingTest extends AbstractTest
         $frontendIndexQueue = $this->createStub(FrontendIndexingQueue::class);
         $httpIndexingQueue = $this->createStub(HttpIndexingQueue::class);
 
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue);
+        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
         $subject->fillQueue($configuration);
     }
 
@@ -43,7 +44,7 @@ class ActiveIndexingTest extends AbstractTest
 
         $httpIndexingQueue = $this->createStub(HttpIndexingQueue::class);
 
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue);
+        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
         $subject->fillQueue($configuration);
     }
 
@@ -59,7 +60,7 @@ class ActiveIndexingTest extends AbstractTest
             ->method('fillQueue')
             ->with($configuration, false);
 
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue);
+        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
         $subject->fillQueue($configuration);
     }
 
@@ -75,7 +76,7 @@ class ActiveIndexingTest extends AbstractTest
         $frontendIndexQueue = $this->createStub(FrontendIndexingQueue::class);
         $httpIndexingQueue = $this->createStub(HttpIndexingQueue::class);
 
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue);
+        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
         $subject->fillQueue($configuration, true);
     }
 
@@ -92,7 +93,7 @@ class ActiveIndexingTest extends AbstractTest
         $httpIndexingQueue = $this->createMock(HttpIndexingQueue::class);
         $httpIndexingQueue->expects(self::never())->method('fillQueue');
 
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue);
+        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
         $subject->fillQueue($configuration);
     }
 
@@ -109,7 +110,7 @@ class ActiveIndexingTest extends AbstractTest
         $httpIndexingQueue = $this->createMock(HttpIndexingQueue::class);
         $httpIndexingQueue->expects(self::never())->method('fillQueue');
 
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue);
+        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
         $subject->fillQueue($configuration);
     }
 
@@ -126,7 +127,24 @@ class ActiveIndexingTest extends AbstractTest
         $httpIndexingQueue = $this->createMock(HttpIndexingQueue::class);
         $httpIndexingQueue->expects(self::never())->method('fillQueue');
 
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue);
+        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
+        $subject->fillQueue($configuration);
+    }
+
+    public function testFillQueueCallsFetchIndexingQueueForFetchTechnology(): void
+    {
+        $configuration = $this->createConfiguration(IndexTechnology::Fetch);
+
+        $databaseIndexQueue = $this->createStub(DatabaseIndexingQueue::class);
+        $frontendIndexQueue = $this->createStub(FrontendIndexingQueue::class);
+        $httpIndexingQueue = $this->createStub(HttpIndexingQueue::class);
+
+        $fetchIndexingQueue = $this->createMock(FetchIndexingQueue::class);
+        $fetchIndexingQueue->expects(self::once())
+            ->method('fillQueue')
+            ->with($configuration, false);
+
+        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $fetchIndexingQueue);
         $subject->fillQueue($configuration);
     }
 

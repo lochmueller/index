@@ -7,6 +7,7 @@ namespace Lochmueller\Index\Indexing;
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingQueue;
+use Lochmueller\Index\Indexing\Fetch\FetchIndexingQueue;
 use Lochmueller\Index\Indexing\Frontend\FrontendIndexingQueue;
 use Lochmueller\Index\Indexing\Http\HttpIndexingQueue;
 
@@ -16,6 +17,7 @@ readonly class ActiveIndexing
         private DatabaseIndexingQueue $databaseIndexQueue,
         private FrontendIndexingQueue $frontendIndexQueue,
         private HttpIndexingQueue     $httpIndexingQueue,
+        private FetchIndexingQueue    $fetchIndexingQueue,
     ) {}
 
     public function fillQueue(Configuration $configuration, bool $skipFiles = false): void
@@ -26,6 +28,8 @@ readonly class ActiveIndexing
             $this->frontendIndexQueue->fillQueue($configuration, $skipFiles);
         } elseif ($configuration->technology === IndexTechnology::Http) {
             $this->httpIndexingQueue->fillQueue($configuration, $skipFiles);
+        } elseif ($configuration->technology === IndexTechnology::Fetch) {
+            $this->fetchIndexingQueue->fillQueue($configuration, $skipFiles);
         }
     }
 }

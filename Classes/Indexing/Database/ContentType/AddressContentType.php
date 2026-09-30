@@ -63,7 +63,9 @@ final class AddressContentType implements ContentTypeInterface
             return;
         }
 
-        $queue = new \SplQueue();
+        while (!$queue->isEmpty()) {
+            $queue->dequeue();
+        }
 
         foreach ($this->getAddressRecords($record, $dto->languageUid) as $addressRecord) {
             $arguments = [

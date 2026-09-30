@@ -78,7 +78,9 @@ class CalendarizeContentType implements ContentTypeInterface
     {
         /** @var DatabaseIndexingDto $dto */
         $dto = $queue->offsetGet(0);
-        $queue = new \SplQueue();
+        while (!$queue->isEmpty()) {
+            $queue->dequeue();
+        }
 
         foreach ($this->getIndexRecords($record, $dto->languageUid) as $record) {
             if ($record->getRecordType() === '0') {

@@ -9,7 +9,7 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 final class DatabaseIndexingDto
 {
     /**
-     * @param array<string, mixed> $arguments
+     * @param array<int|string, mixed> $arguments
      */
     public function __construct(
         public string       $title,

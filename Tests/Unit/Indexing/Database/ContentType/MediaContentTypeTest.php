@@ -10,6 +10,7 @@ use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Resource\Collection\LazyFileReferenceCollection;
+use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Site\Entity\Site;
 
 class MediaContentTypeTest extends AbstractTest
@@ -58,5 +59,30 @@ class MediaContentTypeTest extends AbstractTest
 
         $subject = new MediaContentType($headerContentType);
         $subject->addContent($record, $dto);
+    }
+
+    public function testAddContentAddsTitleAndDescriptionOfTwoMedias(): void
+    {
+        $first = $this->createStub(FileReference::class);
+        $first->method('getTitle')->willReturn('First Title');
+        $first->method('getDescription')->willReturn('First Description');
+
+        $second = $this->createStub(FileReference::class);
+        $second->method('getTitle')->willReturn('Second Title');
+        $second->method('getDescription')->willReturn('Second Description');
+
+        $collection = $this->createStub(LazyFileReferenceCollection::class);
+        $collection->method('getIterator')->willReturn(new \ArrayIterator([$first, $second]));
+
+        $record = $this->createStub(Record::class);
+        $record->method('getRecordType')->willReturn('media');
+        $record->method('get')->willReturnCallback(fn(string $field) => $field === 'assets' ? $collection : null);
+
+        $dto = $this->createDto();
+
+        $subject = new MediaContentType($this->createStub(HeaderContentType::class));
+        $subject->addContent($record, $dto);
+
+        self::assertSame('First Title First Description Second Title Second Description', $dto->content);
     }
 }

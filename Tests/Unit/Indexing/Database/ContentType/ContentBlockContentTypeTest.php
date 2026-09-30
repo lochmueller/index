@@ -10,7 +10,14 @@ use Lochmueller\Index\Indexing\Database\ContentType\HeaderContentType;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use PHPUnit\Framework\Attributes\DataProvider;
+use TYPO3\CMS\ContentBlocks\Definition\ContentType\ContentType;
+use TYPO3\CMS\ContentBlocks\Definition\ContentType\ContentTypeIcon;
 use TYPO3\CMS\ContentBlocks\Definition\TableDefinitionCollection;
+use TYPO3\CMS\ContentBlocks\Definition\TcaFieldDefinition;
+use TYPO3\CMS\ContentBlocks\Definition\TcaFieldDefinitionCollection;
+use TYPO3\CMS\ContentBlocks\FieldType\FieldTypeInterface as ContentBlockFieldTypeInterface;
+use TYPO3\CMS\ContentBlocks\Loader\LoadedContentBlock;
+use TYPO3\CMS\ContentBlocks\Registry\AutomaticLanguageKeysRegistry;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
@@ -367,6 +374,259 @@ class ContentBlockContentTypeTest extends AbstractTest
 
         $reflection = new \ReflectionMethod($subject, 'findChildRecords');
         iterator_to_array($reflection->invoke($subject, 42, 'tx_test_items', 'foreign_uid', 0));
+    }
+
+    public function testCanHandleReturnsTrueForRegisteredContentBlock(): void
+    {
+        $subject = $this->createSubject(contentBlockList: ['vendor_block' => $this->createLoadedContentBlock('vendor_block')]);
+
+        self::assertTrue($subject->canHandle($this->createRecord('vendor_block')));
+        self::assertFalse($subject->canHandle($this->createRecord('vendor_other')));
+    }
+
+    public function testAddContentAddsOnlyHeaderWithoutTableDefinitionCollection(): void
+    {
+        $record = $this->createRecord('vendor_block');
+        $dto = $this->createDto();
+
+        $headerContentType = $this->createMock(HeaderContentType::class);
+        $headerContentType->expects(self::once())
+            ->method('addContent')
+            ->with($record, $dto)
+            ->willReturnCallback(static function (Record $record, DatabaseIndexingDto $dto): void {
+                $dto->content .= '<h1>Header</h1>';
+            });
+
+        $subject = $this->createSubject(
+            headerContentType: $headerContentType,
+            contentBlockList: ['vendor_block' => $this->createLoadedContentBlock('vendor_block')],
+        );
+        $subject->addContent($record, $dto);
+
+        self::assertSame('<h1>Header</h1>', $dto->content);
+    }
+
+    public function testAddContentAddsOnlyHeaderWhenTableIsNotDefined(): void
+    {
+        $record = $this->createRecord('vendor_block', ['bodytext' => 'Body']);
+        $dto = $this->createDto();
+
+        $headerContentType = $this->createMock(HeaderContentType::class);
+        $headerContentType->expects(self::once())->method('addContent');
+
+        $subject = $this->createSubject(
+            headerContentType: $headerContentType,
+            contentBlockList: ['vendor_block' => $this->createLoadedContentBlock('vendor_block')],
+            tableDefinitionCollection: new TableDefinitionCollection(new AutomaticLanguageKeysRegistry()),
+        );
+        $subject->addContent($record, $dto);
+
+        self::assertSame('', $dto->content);
+    }
+
+    public function testExtractFieldsFromColumnsCollectsInputAndTextFields(): void
+    {
+        $record = $this->createRecord('vendor_block', [
+            'title_field' => ' Title ',
+            'text_field' => 'Some text',
+            'number_field' => 42,
+        ]);
+        $collection = $this->createFieldCollection([
+            'title_field' => 'input',
+            'text_field' => 'text',
+            'number_field' => 'input',
+        ]);
+        $dto = $this->createDto();
+
+        $this->invokeExtractFieldsFromColumns($record, ['title_field', 'text_field', 'number_field'], $collection, $dto, 0);
+
+        self::assertSame('Title Some text 42', $dto->content);
+    }
+
+    public function testExtractFieldsFromColumnsSkipsHeaderFields(): void
+    {
+        $record = $this->createRecord('vendor_block', [
+            'header' => 'Header',
+            'subheader' => 'Subheader',
+            'bodytext' => 'Body',
+        ]);
+        $collection = $this->createFieldCollection([
+            'header' => 'input',
+            'subheader' => 'input',
+            'bodytext' => 'text',
+        ]);
+        $dto = $this->createDto();
+
+        $this->invokeExtractFieldsFromColumns($record, ['header', 'subheader', 'bodytext'], $collection, $dto, 0);
+
+        self::assertSame('Body', $dto->content);
+    }
+
+    public function testExtractFieldsFromColumnsSkipsUnknownEmptyAndUnsupportedFields(): void
+    {
+        $record = $this->createRecord('vendor_block', [
+            'unknown' => 'Unknown',
+            'empty' => '   ',
+            'checkbox' => '1',
+            'bodytext' => 'Body',
+        ]);
+        $collection = $this->createFieldCollection([
+            'empty' => 'input',
+            'checkbox' => 'check',
+            'bodytext' => 'text',
+        ]);
+        $dto = $this->createDto();
+
+        $this->invokeExtractFieldsFromColumns($record, ['unknown', 'empty', 'checkbox', 'bodytext'], $collection, $dto, 0);
+
+        self::assertSame('Body', $dto->content);
+    }
+
+    public function testExtractFieldsFromColumnsAddsFileMetadata(): void
+    {
+        $fileReference = $this->createStub(FileReference::class);
+        $fileReference->method('getTitle')->willReturn('Image Title');
+        $fileReference->method('getDescription')->willReturn('');
+
+        $record = $this->createRecord('vendor_block', [
+            'bodytext' => 'Body',
+            'image' => [$fileReference],
+        ]);
+        $collection = $this->createFieldCollection([
+            'bodytext' => 'text',
+            'image' => 'file',
+        ]);
+        $dto = $this->createDto();
+
+        $this->invokeExtractFieldsFromColumns($record, ['bodytext', 'image'], $collection, $dto, 0);
+
+        self::assertSame('Body Image Title', $dto->content);
+    }
+
+    public function testExtractFieldsFromColumnsAppendsToExistingContent(): void
+    {
+        $record = $this->createRecord('vendor_block', ['bodytext' => 'Body']);
+        $collection = $this->createFieldCollection(['bodytext' => 'text']);
+        $dto = $this->createDto();
+        $dto->content = '<h1>Header</h1>';
+
+        $this->invokeExtractFieldsFromColumns($record, ['bodytext'], $collection, $dto, 0);
+
+        self::assertSame('<h1>Header</h1>Body', $dto->content);
+    }
+
+    public function testExtractFieldsFromColumnsStopsAtMaxInlineDepth(): void
+    {
+        $record = $this->createRecord('vendor_block', ['bodytext' => 'Body']);
+        $collection = $this->createFieldCollection(['bodytext' => 'text']);
+        $dto = $this->createDto();
+
+        $this->invokeExtractFieldsFromColumns($record, ['bodytext'], $collection, $dto, 11);
+
+        self::assertSame('', $dto->content);
+    }
+
+    public function testExtractInlineContentReturnsEmptyStringWithoutForeignTable(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition('items', 'inline', ['config' => ['type' => 'inline']]);
+
+        $genericRepository = $this->createMock(GenericRepository::class);
+        $genericRepository->expects(self::never())->method('findByParentField');
+
+        $subject = $this->createSubject(
+            genericRepository: $genericRepository,
+            tableDefinitionCollection: new TableDefinitionCollection(new AutomaticLanguageKeysRegistry()),
+        );
+
+        $reflection = new \ReflectionMethod($subject, 'extractInlineContent');
+        $result = $reflection->invoke($subject, $this->createRecord('vendor_block'), $fieldDefinition, $this->createDto(), 0);
+
+        self::assertSame('', $result);
+    }
+
+    public function testExtractInlineContentReturnsEmptyStringWhenForeignTableIsNotDefined(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition('items', 'inline', [
+            'config' => [
+                'type' => 'inline',
+                'foreign_table' => 'tx_vendor_items',
+                'foreign_field' => 'foreign_table_parent_uid',
+            ],
+        ]);
+
+        $genericRepository = $this->createMock(GenericRepository::class);
+        $genericRepository->expects(self::never())->method('findByParentField');
+
+        $subject = $this->createSubject(
+            genericRepository: $genericRepository,
+            tableDefinitionCollection: new TableDefinitionCollection(new AutomaticLanguageKeysRegistry()),
+        );
+
+        $reflection = new \ReflectionMethod($subject, 'extractInlineContent');
+        $result = $reflection->invoke($subject, $this->createRecord('vendor_block'), $fieldDefinition, $this->createDto(), 0);
+
+        self::assertSame('', $result);
+    }
+
+    private function createLoadedContentBlock(string $typeName): LoadedContentBlock
+    {
+        return new LoadedContentBlock(
+            name: 'vendor/block',
+            yaml: ['table' => 'tt_content', 'typeName' => $typeName],
+            icon: ContentTypeIcon::fromArray([]),
+            hostExtension: 'site_package',
+            extPath: 'EXT:site_package/ContentBlocks/ContentElements/block',
+            contentType: ContentType::CONTENT_ELEMENT,
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $tca
+     */
+    private function createFieldDefinition(string $identifier, string $tcaType, array $tca = []): TcaFieldDefinition
+    {
+        $fieldType = $this->createStub(ContentBlockFieldTypeInterface::class);
+        $fieldType->method('getTcaType')->willReturn($tcaType);
+        $fieldType->method('getTca')->willReturn($tca);
+
+        return new TcaFieldDefinition(
+            parentContentType: ContentType::CONTENT_ELEMENT,
+            parentTable: 'tt_content',
+            identifier: $identifier,
+            uniqueIdentifier: $identifier,
+            labelPath: '',
+            descriptionPath: '',
+            placeholderPath: '',
+            useExistingField: false,
+            fieldType: $fieldType,
+        );
+    }
+
+    /**
+     * @param array<string, string> $fields identifier => TCA type
+     */
+    private function createFieldCollection(array $fields): TcaFieldDefinitionCollection
+    {
+        $collection = new TcaFieldDefinitionCollection();
+        foreach ($fields as $identifier => $tcaType) {
+            $collection->addField($this->createFieldDefinition($identifier, $tcaType));
+        }
+        return $collection;
+    }
+
+    /**
+     * @param array<string> $columns
+     */
+    private function invokeExtractFieldsFromColumns(
+        Record $record,
+        array $columns,
+        TcaFieldDefinitionCollection $collection,
+        DatabaseIndexingDto $dto,
+        int $depth,
+    ): void {
+        $subject = $this->createSubject();
+        $reflection = new \ReflectionMethod($subject, 'extractFieldsFromColumns');
+        $reflection->invoke($subject, $record, $columns, $collection, 'tt_content', $dto, $depth);
     }
 }
 

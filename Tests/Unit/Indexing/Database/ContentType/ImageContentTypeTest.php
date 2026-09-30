@@ -10,6 +10,7 @@ use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Resource\Collection\LazyFileReferenceCollection;
+use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Site\Entity\Site;
 
 class ImageContentTypeTest extends AbstractTest
@@ -58,5 +59,30 @@ class ImageContentTypeTest extends AbstractTest
 
         $subject = new ImageContentType($headerContentType);
         $subject->addContent($record, $dto);
+    }
+
+    public function testAddContentAddsTitleAndDescriptionOfTwoImages(): void
+    {
+        $first = $this->createStub(FileReference::class);
+        $first->method('getTitle')->willReturn('First Title');
+        $first->method('getDescription')->willReturn('First Description');
+
+        $second = $this->createStub(FileReference::class);
+        $second->method('getTitle')->willReturn('Second Title');
+        $second->method('getDescription')->willReturn('Second Description');
+
+        $collection = $this->createStub(LazyFileReferenceCollection::class);
+        $collection->method('getIterator')->willReturn(new \ArrayIterator([$first, $second]));
+
+        $record = $this->createStub(Record::class);
+        $record->method('getRecordType')->willReturn('image');
+        $record->method('get')->willReturnCallback(fn(string $field) => $field === 'image' ? $collection : null);
+
+        $dto = $this->createDto();
+
+        $subject = new ImageContentType($this->createStub(HeaderContentType::class));
+        $subject->addContent($record, $dto);
+
+        self::assertSame('First Title First Description Second Title Second Description', $dto->content);
     }
 }

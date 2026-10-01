@@ -1059,17 +1059,22 @@ class ContentBlockContentTypeTest extends AbstractTest
         $fieldType->method('getTcaType')->willReturn($tcaType);
         $fieldType->method('getTca')->willReturn($tca);
 
-        return new TcaFieldDefinition(
-            parentContentType: ContentType::CONTENT_ELEMENT,
-            parentTable: 'tt_content',
-            identifier: $identifier,
-            uniqueIdentifier: $identifier,
-            labelPath: '',
-            descriptionPath: '',
-            placeholderPath: '',
-            useExistingField: false,
-            fieldType: $fieldType,
-        );
+        $arguments = [
+            'parentContentType' => ContentType::CONTENT_ELEMENT,
+            'identifier' => $identifier,
+            'uniqueIdentifier' => $identifier,
+            'labelPath' => '',
+            'descriptionPath' => '',
+            'placeholderPath' => '',
+            'useExistingField' => false,
+            'fieldType' => $fieldType,
+        ];
+        // "parentTable" was added in content-blocks 2.x
+        if (property_exists(TcaFieldDefinition::class, 'parentTable')) {
+            $arguments['parentTable'] = 'tt_content';
+        }
+
+        return new TcaFieldDefinition(...$arguments);
     }
 
     /**

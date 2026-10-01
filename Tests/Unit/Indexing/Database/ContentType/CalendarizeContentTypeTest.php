@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Tests\Unit\Indexing\Database\ContentType;
 
+use HDNET\Calendarize\Domain\Model\Index;
+use HDNET\Calendarize\Domain\Repository\IndexRepository;
 use Lochmueller\Index\Indexing\Database\ContentIndexing;
 use Lochmueller\Index\Indexing\Database\ContentType\CalendarizeContentType;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
@@ -13,10 +15,34 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use TYPO3\CMS\Core\Domain\FlexFormFieldValues;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\Core\View\ViewInterface;
+use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 class CalendarizeContentTypeTest extends AbstractTest
 {
+    protected bool $resetSingletonInstances = true;
+
+    /**
+     * IndexRepository is an Extbase repository (SingletonInterface), so it is registered as singleton.
+     */
+    private function registerIndexRepository(?Index $indexObject): void
+    {
+        $repository = $this->createStub(IndexRepository::class);
+        $repository->method('findByUid')->willReturn($indexObject);
+
+        GeneralUtility::setSingletonInstance(IndexRepository::class, $repository);
+    }
+
+    private function createIndexObject(?AbstractEntity $originalObject): Index
+    {
+        $index = $this->createStub(Index::class);
+        $index->method('getOriginalObject')->willReturn($originalObject);
+        return $index;
+    }
+
     private function createRecord(string $type): Record
     {
         $record = $this->createStub(Record::class);
@@ -130,6 +156,69 @@ class CalendarizeContentTypeTest extends AbstractTest
         self::assertSame('Content', $dto->content);
     }
 
+    public function testAddContentReturnsEarlyWhenIndexObjectNotFound(): void
+    {
+        $repository = $this->createMock(IndexRepository::class);
+        $repository->expects(self::once())->method('findByUid')->with(42)->willReturn(null);
+        GeneralUtility::setSingletonInstance(IndexRepository::class, $repository);
+
+        $viewFactory = $this->createMock(ViewFactoryInterface::class);
+        $viewFactory->expects(self::never())->method('create');
+
+        $dto = $this->createDto(['tx_calendarize_calendar' => ['index' => 42]]);
+
+        $this->createSubject(viewFactory: $viewFactory)->addContent($this->createRecord('calendarize_detail'), $dto);
+
+        self::assertSame('Content', $dto->content);
+    }
+
+    public function testAddContentReturnsEarlyWhenOriginalObjectMissing(): void
+    {
+        $this->registerIndexRepository($this->createIndexObject(null));
+
+        $viewFactory = $this->createMock(ViewFactoryInterface::class);
+        $viewFactory->expects(self::never())->method('create');
+
+        $dto = $this->createDto(['tx_calendarize_calendar' => ['index' => 42]]);
+
+        $this->createSubject(viewFactory: $viewFactory)->addContent($this->createRecord('calendarize_detail'), $dto);
+
+        self::assertSame('Content', $dto->content);
+    }
+
+    public function testAddContentAppendsRenderedDetailView(): void
+    {
+        $this->registerIndexRepository($this->createIndexObject($this->createStub(AbstractEntity::class)));
+
+        $view = $this->createMock(ViewInterface::class);
+        $view->expects(self::once())
+            ->method('assignMultiple')
+            ->with(['index' => 42])
+            ->willReturnSelf();
+        $view->expects(self::once())
+            ->method('render')
+            ->with('Calendar/Detail')
+            ->willReturn('<p>Event</p>');
+
+        $viewFactory = $this->createMock(ViewFactoryInterface::class);
+        $viewFactory->expects(self::once())
+            ->method('create')
+            ->with(self::callback(static function (ViewFactoryData $data): bool {
+                self::assertSame(['EXT:calendarize/Resources/Private/Templates'], $data->templateRootPaths);
+                self::assertSame(['EXT:calendarize/Resources/Private/Partials'], $data->partialRootPaths);
+                self::assertSame(['EXT:calendarize/Resources/Private/Layouts/'], $data->layoutRootPaths);
+                self::assertSame('html', $data->format);
+                return true;
+            }))
+            ->willReturn($view);
+
+        $dto = $this->createDto(['tx_calendarize_calendar' => ['index' => 42]]);
+
+        $this->createSubject(viewFactory: $viewFactory)->addContent($this->createRecord('calendarize_detail'), $dto);
+
+        self::assertSame('Content<p>Event</p>', $dto->content);
+    }
+
     public function testAddVariantsReplacesQueueWithIndexRecords(): void
     {
         $recordSelection = $this->createStub(RecordSelection::class);
@@ -228,6 +317,52 @@ class CalendarizeContentTypeTest extends AbstractTest
             'general' => [
                 'persistence' => [
                     'storagePid' => '5,7',
+                ],
+            ],
+        ]);
+
+        $queue = new \SplQueue();
+        $queue[] = $this->createDto();
+
+        $this->createSubject(recordSelection: $recordSelection)->addVariants($pluginRecord, $queue);
+    }
+
+    public function testAddVariantsTrimsAndIgnoresEmptyStoragePids(): void
+    {
+        $recordSelection = $this->createMock(RecordSelection::class);
+        $recordSelection->expects(self::once())
+            ->method('findRecordsOnPage')
+            ->with('tx_calendarize_domain_model_index', [3, 9], 1)
+            ->willReturn([]);
+
+        $pluginRecord = $this->createPluginRecord([
+            'general' => [
+                'persistence' => [
+                    'storagePid' => ' 3, ,9,',
+                ],
+            ],
+        ]);
+
+        $queue = new \SplQueue();
+        $queue[] = $this->createDto(languageUid: 1);
+
+        $this->createSubject(recordSelection: $recordSelection)->addVariants($pluginRecord, $queue);
+
+        self::assertCount(0, $queue);
+    }
+
+    public function testAddVariantsFallsBackToInvalidStorageForEmptyStoragePid(): void
+    {
+        $recordSelection = $this->createMock(RecordSelection::class);
+        $recordSelection->expects(self::once())
+            ->method('findRecordsOnPage')
+            ->with('tx_calendarize_domain_model_index', [-99], 0)
+            ->willReturn([]);
+
+        $pluginRecord = $this->createPluginRecord([
+            'general' => [
+                'persistence' => [
+                    'storagePid' => '',
                 ],
             ],
         ]);

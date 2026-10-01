@@ -12,6 +12,8 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 #[Autoconfigure(public: true)]
 readonly class FileExtractor
 {
+    public const MAX_FILE_SIZE_BYTES = 52428800;
+
     /**
      * @param iterable<FileExtractionInterface> $fileExtractor
      */
@@ -22,6 +24,10 @@ readonly class FileExtractor
 
     public function extract(FileInterface $file): ?string
     {
+        if ($file->getSize() > self::MAX_FILE_SIZE_BYTES) {
+            return null;
+        }
+
         foreach ($this->getExtractors() as $extractor) {
             if (in_array($file->getExtension(), $extractor->getFileExtensions(), true)) {
                 return $extractor->getFileContent($file);

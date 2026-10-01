@@ -57,6 +57,38 @@ class FileExtractorTest extends AbstractTest
         self::assertSame('First extractor', $result);
     }
 
+    public function testExtractReturnsNullWhenFileExceedsSizeLimit(): void
+    {
+        $file = $this->createStub(FileInterface::class);
+        $file->method('getExtension')->willReturn('pdf');
+        $file->method('getSize')->willReturn(FileExtractor::MAX_FILE_SIZE_BYTES + 1);
+
+        $extractor = $this->createStub(FileExtractionInterface::class);
+        $extractor->method('getFileExtensions')->willReturn(['pdf']);
+        $extractor->method('getFileContent')->willReturn('File content');
+
+        $subject = new FileExtractor([$extractor]);
+        $result = $subject->extract($file);
+
+        self::assertNull($result);
+    }
+
+    public function testExtractReturnsContentForFileAtSizeLimit(): void
+    {
+        $file = $this->createStub(FileInterface::class);
+        $file->method('getExtension')->willReturn('pdf');
+        $file->method('getSize')->willReturn(FileExtractor::MAX_FILE_SIZE_BYTES);
+
+        $extractor = $this->createStub(FileExtractionInterface::class);
+        $extractor->method('getFileExtensions')->willReturn(['pdf']);
+        $extractor->method('getFileContent')->willReturn('File content');
+
+        $subject = new FileExtractor([$extractor]);
+        $result = $subject->extract($file);
+
+        self::assertSame('File content', $result);
+    }
+
     public function testResolveFileTypesReturnsExtensionsForMatchingGroups(): void
     {
         $extractor1 = $this->createStub(FileExtractionInterface::class);

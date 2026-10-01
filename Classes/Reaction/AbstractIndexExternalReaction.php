@@ -15,6 +15,10 @@ use TYPO3\CMS\Reactions\Model\ReactionInstruction;
 
 abstract class AbstractIndexExternalReaction
 {
+    protected const MAX_URI_LENGTH = 2048;
+    protected const MAX_TITLE_LENGTH = 512;
+    protected const MAX_CONTENT_LENGTH = 2097152;
+
     public function __construct(
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly StreamFactoryInterface   $streamFactory,
@@ -58,10 +62,40 @@ abstract class AbstractIndexExternalReaction
 
         $language = (int) ($payload['meta']['language'] ?? 0);
 
-        $this->externalIndexingQueue->fillQueue($site, $language, $payload['data'], $this->isPage());
+        $this->externalIndexingQueue->fillQueue($site, $language, $this->normalizeData($payload), $this->isPage());
 
         return $this->jsonResponse([
             'success' => true,
         ]);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @return array{uri: string, title: string, content: string, accessGroups: int[]}
+     */
+    private function normalizeData(array $payload): array
+    {
+        $data = is_array($payload['data'] ?? null) ? $payload['data'] : [];
+        $accessGroups = is_array($data['accessGroups'] ?? null) ? $data['accessGroups'] : [];
+
+        return [
+            'uri' => mb_substr(trim($this->getStringValue($data, 'uri')), 0, self::MAX_URI_LENGTH),
+            'title' => mb_substr($this->getStringValue($data, 'title'), 0, self::MAX_TITLE_LENGTH),
+            'content' => mb_substr($this->getStringValue($data, 'content'), 0, self::MAX_CONTENT_LENGTH),
+            'accessGroups' => array_values(array_map(
+                static fn(mixed $accessGroup): int => (int) $accessGroup,
+                array_filter($accessGroups, static fn(mixed $accessGroup): bool => is_numeric($accessGroup)),
+            )),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function getStringValue(array $data, string $key): string
+    {
+        $value = $data[$key] ?? null;
+
+        return is_string($value) ? $value : '';
     }
 }

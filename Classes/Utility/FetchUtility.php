@@ -27,6 +27,11 @@ class FetchUtility implements LoggerAwareInterface
 
     public function download(string $url): ?FetchResponseDto
     {
+        if (!$this->isSupportedUrl($url)) {
+            $this->logger?->warning('Fetch aborted because only http and https URLs are supported', ['url' => $url]);
+            return null;
+        }
+
         try {
             $request = $this->requestFactory->createRequest('GET', $url)
                 ->withHeader('User-Agent', self::USER_AGENT);
@@ -46,6 +51,13 @@ class FetchUtility implements LoggerAwareInterface
             contentType: strtolower($response->getHeaderLine('Content-Type')),
             content: (string) $response->getBody(),
         );
+    }
+
+    public function isSupportedUrl(string $url): bool
+    {
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+
+        return $scheme === 'http' || $scheme === 'https';
     }
 
     /**

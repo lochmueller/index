@@ -21,7 +21,7 @@ class LogRepository extends AbstractRepository
         $qb = $this->getConnection()->createQueryBuilder();
         $record = $qb->select('*')
             ->from($this->getTableName())
-            ->where($qb->expr()->eq('index_process_id', $qb->expr()->literal($indexProcessId)))
+            ->where($qb->expr()->eq('index_process_id', $qb->createNamedParameter($indexProcessId)))
             ->setMaxResults(1)
             ->executeQuery()
             ->fetchAssociative();

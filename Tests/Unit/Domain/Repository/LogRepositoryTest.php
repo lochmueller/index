@@ -38,8 +38,7 @@ class LogRepositoryTest extends AbstractTest
         $result->method('fetchAssociative')->willReturn($expectedRecord);
 
         $expressionBuilder = $this->createStub(ExpressionBuilder::class);
-        $expressionBuilder->method('eq')->willReturn('index_process_id = "test-process-123"');
-        $expressionBuilder->method('literal')->willReturn('"test-process-123"');
+        $expressionBuilder->method('eq')->willReturn('index_process_id = :dcValue1');
 
         $queryBuilder = $this->createStub(QueryBuilder::class);
         $queryBuilder->method('select')->willReturnSelf();
@@ -47,6 +46,7 @@ class LogRepositoryTest extends AbstractTest
         $queryBuilder->method('where')->willReturnSelf();
         $queryBuilder->method('setMaxResults')->willReturnSelf();
         $queryBuilder->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->method('createNamedParameter')->willReturn(':dcValue1');
         $queryBuilder->method('executeQuery')->willReturn($result);
 
         $connection = $this->createStub(Connection::class);
@@ -69,8 +69,7 @@ class LogRepositoryTest extends AbstractTest
         $result->method('fetchAssociative')->willReturn(false);
 
         $expressionBuilder = $this->createStub(ExpressionBuilder::class);
-        $expressionBuilder->method('eq')->willReturn('index_process_id = "non-existent-process"');
-        $expressionBuilder->method('literal')->willReturn('"non-existent-process"');
+        $expressionBuilder->method('eq')->willReturn('index_process_id = :dcValue1');
 
         $queryBuilder = $this->createStub(QueryBuilder::class);
         $queryBuilder->method('select')->willReturnSelf();
@@ -78,6 +77,7 @@ class LogRepositoryTest extends AbstractTest
         $queryBuilder->method('where')->willReturnSelf();
         $queryBuilder->method('setMaxResults')->willReturnSelf();
         $queryBuilder->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->method('createNamedParameter')->willReturn(':dcValue1');
         $queryBuilder->method('executeQuery')->willReturn($result);
 
         $connection = $this->createStub(Connection::class);

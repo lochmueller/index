@@ -47,7 +47,7 @@ class IndexExternalFileReactionTest extends AbstractTest
         $externalIndexingQueue = $this->createMock(ExternalIndexingQueue::class);
         $externalIndexingQueue->expects(self::once())
             ->method('fillQueue')
-            ->with($site, 1, ['title' => 'Test File', 'content' => 'File content'], false);
+            ->with($site, 1, ['uri' => '', 'title' => 'Test File', 'content' => 'File content', 'accessGroups' => []], false);
 
         $response = $this->createStub(ResponseInterface::class);
         $response->method('withHeader')->willReturnSelf();

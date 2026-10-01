@@ -47,7 +47,7 @@ class IndexExternalPageReactionTest extends AbstractTest
         $externalIndexingQueue = $this->createMock(ExternalIndexingQueue::class);
         $externalIndexingQueue->expects(self::once())
             ->method('fillQueue')
-            ->with($site, 1, ['title' => 'Test Page', 'content' => 'Content'], true);
+            ->with($site, 1, ['uri' => '', 'title' => 'Test Page', 'content' => 'Content', 'accessGroups' => []], true);
 
         $response = $this->createStub(ResponseInterface::class);
         $response->method('withHeader')->willReturnSelf();
@@ -79,6 +79,158 @@ class IndexExternalPageReactionTest extends AbstractTest
                 'title' => 'Test Page',
                 'content' => 'Content',
             ],
+        ];
+
+        $subject->react($request, $payload, $reaction);
+    }
+
+    public function testReactNormalizesUntrustedDataPayload(): void
+    {
+        $site = $this->createStub(Site::class);
+
+        $siteFinder = $this->createStub(SiteFinder::class);
+        $siteFinder->method('getSiteByIdentifier')->willReturn($site);
+
+        $externalIndexingQueue = $this->createMock(ExternalIndexingQueue::class);
+        $externalIndexingQueue->expects(self::once())
+            ->method('fillQueue')
+            ->with($site, 2, [
+                'uri' => 'https://example.com/page',
+                'title' => 'Test Page',
+                'content' => 'Content',
+                'accessGroups' => [1, 2, 3],
+            ], true);
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('withHeader')->willReturnSelf();
+        $response->method('withBody')->willReturnSelf();
+
+        $responseFactory = $this->createStub(ResponseFactoryInterface::class);
+        $responseFactory->method('createResponse')->willReturn($response);
+
+        $stream = $this->createStub(StreamInterface::class);
+        $streamFactory = $this->createStub(StreamFactoryInterface::class);
+        $streamFactory->method('createStream')->willReturn($stream);
+
+        $subject = new IndexExternalPageReaction(
+            $responseFactory,
+            $streamFactory,
+            $siteFinder,
+            $externalIndexingQueue,
+        );
+
+        $request = $this->createStub(ServerRequestInterface::class);
+        $reaction = $this->createStub(ReactionInstruction::class);
+
+        $payload = [
+            'meta' => [
+                'siteIdentifier' => 'main-site',
+                'language' => 2,
+            ],
+            'data' => [
+                'uri' => '  https://example.com/page  ',
+                'title' => 'Test Page',
+                'content' => 'Content',
+                'accessGroups' => ['1', 2, 3.7, 'invalid', null, ['nested']],
+            ],
+        ];
+
+        $subject->react($request, $payload, $reaction);
+    }
+
+    public function testReactTruncatesTitleAndContentToMaximumLength(): void
+    {
+        $site = $this->createStub(Site::class);
+
+        $siteFinder = $this->createStub(SiteFinder::class);
+        $siteFinder->method('getSiteByIdentifier')->willReturn($site);
+
+        $externalIndexingQueue = $this->createMock(ExternalIndexingQueue::class);
+        $externalIndexingQueue->expects(self::once())
+            ->method('fillQueue')
+            ->with(
+                $site,
+                0,
+                self::callback(static fn(array $info): bool => mb_strlen($info['title']) === 512
+                        && mb_strlen($info['content']) === 2097152
+                        && mb_strlen($info['uri']) === 2048),
+                true,
+            );
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('withHeader')->willReturnSelf();
+        $response->method('withBody')->willReturnSelf();
+
+        $responseFactory = $this->createStub(ResponseFactoryInterface::class);
+        $responseFactory->method('createResponse')->willReturn($response);
+
+        $stream = $this->createStub(StreamInterface::class);
+        $streamFactory = $this->createStub(StreamFactoryInterface::class);
+        $streamFactory->method('createStream')->willReturn($stream);
+
+        $subject = new IndexExternalPageReaction(
+            $responseFactory,
+            $streamFactory,
+            $siteFinder,
+            $externalIndexingQueue,
+        );
+
+        $request = $this->createStub(ServerRequestInterface::class);
+        $reaction = $this->createStub(ReactionInstruction::class);
+
+        $payload = [
+            'meta' => [
+                'siteIdentifier' => 'main-site',
+            ],
+            'data' => [
+                'uri' => str_repeat('a', 4096),
+                'title' => str_repeat('t', 1024),
+                'content' => str_repeat('c', 4194304),
+                'accessGroups' => [],
+            ],
+        ];
+
+        $subject->react($request, $payload, $reaction);
+    }
+
+    public function testReactWithNonArrayDataCallsFillQueueWithEmptyValues(): void
+    {
+        $site = $this->createStub(Site::class);
+
+        $siteFinder = $this->createStub(SiteFinder::class);
+        $siteFinder->method('getSiteByIdentifier')->willReturn($site);
+
+        $externalIndexingQueue = $this->createMock(ExternalIndexingQueue::class);
+        $externalIndexingQueue->expects(self::once())
+            ->method('fillQueue')
+            ->with($site, 0, ['uri' => '', 'title' => '', 'content' => '', 'accessGroups' => []], true);
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('withHeader')->willReturnSelf();
+        $response->method('withBody')->willReturnSelf();
+
+        $responseFactory = $this->createStub(ResponseFactoryInterface::class);
+        $responseFactory->method('createResponse')->willReturn($response);
+
+        $stream = $this->createStub(StreamInterface::class);
+        $streamFactory = $this->createStub(StreamFactoryInterface::class);
+        $streamFactory->method('createStream')->willReturn($stream);
+
+        $subject = new IndexExternalPageReaction(
+            $responseFactory,
+            $streamFactory,
+            $siteFinder,
+            $externalIndexingQueue,
+        );
+
+        $request = $this->createStub(ServerRequestInterface::class);
+        $reaction = $this->createStub(ReactionInstruction::class);
+
+        $payload = [
+            'meta' => [
+                'siteIdentifier' => 'main-site',
+            ],
+            'data' => 'invalid payload',
         ];
 
         $subject->react($request, $payload, $reaction);

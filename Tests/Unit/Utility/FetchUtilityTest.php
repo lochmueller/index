@@ -52,6 +52,30 @@ class FetchUtilityTest extends AbstractTest
         self::assertNull($this->createSubject($client)->download('https://example.com/'));
     }
 
+    public function testIsSupportedUrlAllowsOnlyHttpAndHttps(): void
+    {
+        $subject = $this->createSubject();
+
+        self::assertTrue($subject->isSupportedUrl('https://example.com/'));
+        self::assertTrue($subject->isSupportedUrl('http://example.com/page.html'));
+        self::assertTrue($subject->isSupportedUrl('HTTPS://example.com/'));
+
+        self::assertFalse($subject->isSupportedUrl('file:///etc/passwd'));
+        self::assertFalse($subject->isSupportedUrl('ftp://example.com/file.txt'));
+        self::assertFalse($subject->isSupportedUrl('ssh://user@example.com'));
+        self::assertFalse($subject->isSupportedUrl('//example.com/'));
+        self::assertFalse($subject->isSupportedUrl('/local/path.html'));
+        self::assertFalse($subject->isSupportedUrl(''));
+    }
+
+    public function testDownloadRejectsNonHttpUrlBeforeRequest(): void
+    {
+        $client = $this->createStub(ClientInterface::class);
+        $client->method('sendRequest')->willReturn(new Response(200, [], 'local file content'));
+
+        self::assertNull($this->createSubject($client)->download('file:///etc/passwd'));
+    }
+
     public function testResolveUrl(): void
     {
         $subject = $this->createSubject();

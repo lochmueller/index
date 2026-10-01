@@ -6,22 +6,19 @@ namespace Lochmueller\Index\Indexing\Database\ContentType;
 
 use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
+use Lochmueller\Index\Utility\PackageManagementUtility;
 use TYPO3\CMS\ContentBlocks\Definition\ContentType\ContentType;
-use TYPO3\CMS\ContentBlocks\Definition\TableDefinitionCollection;
 use TYPO3\CMS\ContentBlocks\Definition\TcaFieldDefinition;
 use TYPO3\CMS\ContentBlocks\Definition\TcaFieldDefinitionCollection;
 use TYPO3\CMS\ContentBlocks\Loader\LoadedContentBlock;
-use TYPO3\CMS\ContentBlocks\Registry\ContentBlockRegistry;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
-use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Schema\Capability\LanguageAwareSchemaCapability;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ContentBlockContentType extends SimpleContentType
 {
@@ -33,11 +30,12 @@ class ContentBlockContentType extends SimpleContentType
         private readonly RecordFactory $recordFactory,
         private readonly PageRepository $pageRepository,
         private readonly TcaSchemaFactory $tcaSchemaFactory,
+        private readonly PackageManagementUtility $packageManagementUtility,
     ) {}
 
     public function canHandle(Record $record): bool
     {
-        $contentBlocks = $this->getContentBlockList();
+        $contentBlocks = $this->packageManagementUtility->getContentBlockList();
         $recordType = $record->getRecordType();
         return $recordType !== null && array_key_exists($recordType, $contentBlocks);
     }
@@ -49,7 +47,7 @@ class ContentBlockContentType extends SimpleContentType
             return;
         }
 
-        $contentBlock = $this->getContentBlockList()[$recordType] ?? null;
+        $contentBlock = $this->packageManagementUtility->getContentBlockList()[$recordType] ?? null;
         if (!($contentBlock instanceof LoadedContentBlock)) {
             return;
         }
@@ -63,7 +61,7 @@ class ContentBlockContentType extends SimpleContentType
 
     protected function extractContentBlockFields(Record $record, LoadedContentBlock $contentBlock, DatabaseIndexingDto $dto): void
     {
-        $tableDefinitionCollection = $this->getTableDefinitionCollection();
+        $tableDefinitionCollection = $this->packageManagementUtility->getContentBlockTableDefinitionCollection();
         if ($tableDefinitionCollection === null) {
             return;
         }
@@ -155,7 +153,7 @@ class ContentBlockContentType extends SimpleContentType
             return '';
         }
 
-        $tableDefinitionCollection = $this->getTableDefinitionCollection();
+        $tableDefinitionCollection = $this->packageManagementUtility->getContentBlockTableDefinitionCollection();
         if ($tableDefinitionCollection === null || !$tableDefinitionCollection->hasTable($foreignTable)) {
             return '';
         }
@@ -291,45 +289,5 @@ class ContentBlockContentType extends SimpleContentType
         } catch (\Exception) {
             return '';
         }
-    }
-
-    protected function getTableDefinitionCollection(): ?TableDefinitionCollection
-    {
-        static $tableDefinitionCollection = null;
-        static $initialized = false;
-
-        if (!$initialized) {
-            $initialized = true;
-            $packageManager = GeneralUtility::makeInstance(PackageManager::class);
-            if ($packageManager->isPackageActive('content_blocks') && class_exists(TableDefinitionCollection::class)) {
-                $tableDefinitionCollection = GeneralUtility::makeInstance(TableDefinitionCollection::class);
-            }
-        }
-
-        return $tableDefinitionCollection;
-    }
-
-    /**
-     * @return array<string, LoadedContentBlock>
-     */
-    protected function getContentBlockList(): array
-    {
-        static $contentBlockList = null;
-        if ($contentBlockList === null) {
-            $contentBlockList = [];
-            $packageManager = GeneralUtility::makeInstance(PackageManager::class);
-            if ($packageManager->isPackageActive('content_blocks') && class_exists(ContentBlockRegistry::class) && class_exists(ContentType::class)) {
-                $registry = GeneralUtility::makeInstance(ContentBlockRegistry::class);
-                foreach ($registry->getAll() as $loadedContentBlock) {
-                    if ($loadedContentBlock->getContentType() === ContentType::CONTENT_ELEMENT) {
-                        $yaml = $loadedContentBlock->getYaml();
-                        if (isset($yaml['typeName'])) {
-                            $contentBlockList[$yaml['typeName']] = $loadedContentBlock;
-                        }
-                    }
-                }
-            }
-        }
-        return $contentBlockList;
     }
 }

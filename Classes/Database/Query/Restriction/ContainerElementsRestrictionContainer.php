@@ -21,12 +21,14 @@ class ContainerElementsRestrictionContainer implements QueryRestrictionInterface
     {
         $constraints = [];
         $packageManager = GeneralUtility::makeInstance(PackageManager::class);
-        foreach ($queriedTables as $tableAlias => $tableName) {
-            if ($packageManager->isPackageActive('container') && $tableName === 'tt_content') {
-                $constraints[] = $expressionBuilder->eq(
-                    $tableAlias . '.tx_container_parent',
-                    $this->containerParent,
-                );
+        if ($packageManager->isPackageActive('container')) {
+            foreach ($queriedTables as $tableAlias => $tableName) {
+                if ($tableName === 'tt_content') {
+                    $constraints[] = $expressionBuilder->eq(
+                        $tableAlias . '.tx_container_parent',
+                        $this->containerParent,
+                    );
+                }
             }
         }
 

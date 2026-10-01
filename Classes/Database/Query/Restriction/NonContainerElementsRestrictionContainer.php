@@ -19,12 +19,14 @@ class NonContainerElementsRestrictionContainer implements QueryRestrictionInterf
     {
         $constraints = [];
         $packageManager = GeneralUtility::makeInstance(PackageManager::class);
-        foreach ($queriedTables as $tableAlias => $tableName) {
-            if ($packageManager->isPackageActive('container') && $tableName === 'tt_content') {
-                $constraints[] = $expressionBuilder->eq(
-                    $tableAlias . '.tx_container_parent',
-                    0,
-                );
+        if ($packageManager->isPackageActive('container')) {
+            foreach ($queriedTables as $tableAlias => $tableName) {
+                if ($tableName === 'tt_content') {
+                    $constraints[] = $expressionBuilder->eq(
+                        $tableAlias . '.tx_container_parent',
+                        0,
+                    );
+                }
             }
         }
 

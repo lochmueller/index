@@ -9,8 +9,8 @@ use Lochmueller\Index\Indexing\Database\ContentType\ContentBlockContentType;
 use Lochmueller\Index\Indexing\Database\ContentType\HeaderContentType;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingDto;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
+use Lochmueller\Index\Utility\PackageManagementUtility;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use TYPO3\CMS\ContentBlocks\Definition\Capability\TableDefinitionCapability;
 use TYPO3\CMS\ContentBlocks\Definition\ContentType\ContentType;
 use TYPO3\CMS\ContentBlocks\Definition\ContentType\ContentTypeDefinitionCollection;
@@ -25,15 +25,12 @@ use TYPO3\CMS\ContentBlocks\Definition\TcaFieldDefinitionCollection;
 use TYPO3\CMS\ContentBlocks\FieldType\FieldTypeInterface as ContentBlockFieldTypeInterface;
 use TYPO3\CMS\ContentBlocks\Loader\LoadedContentBlock;
 use TYPO3\CMS\ContentBlocks\Registry\AutomaticLanguageKeysRegistry;
-use TYPO3\CMS\ContentBlocks\Registry\ContentBlockRegistry;
-use TYPO3\CMS\ContentBlocks\Schema\SimpleTcaSchemaFactory;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\Record\LanguageInfo;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
-use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Schema\Capability\LanguageAwareSchemaCapability;
 use TYPO3\CMS\Core\Schema\Field\FieldTypeInterface;
@@ -41,7 +38,6 @@ use TYPO3\CMS\Core\Schema\Field\LanguageFieldType;
 use TYPO3\CMS\Core\Schema\TcaSchema;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Site\Entity\Site;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ContentBlockContentTypeTest extends AbstractTest
 {
@@ -72,15 +68,18 @@ class ContentBlockContentTypeTest extends AbstractTest
         ?RecordFactory $recordFactory = null,
         ?TcaSchemaFactory $tcaSchemaFactory = null,
         ?PageRepository $pageRepository = null,
-    ): TestableContentBlockContentType {
-        return new TestableContentBlockContentType(
+    ): ContentBlockContentType {
+        $packageManagementUtility = $this->createStub(PackageManagementUtility::class);
+        $packageManagementUtility->method('getContentBlockList')->willReturn($contentBlockList);
+        $packageManagementUtility->method('getContentBlockTableDefinitionCollection')->willReturn($tableDefinitionCollection);
+
+        return new ContentBlockContentType(
             $headerContentType ?? $this->createStub(HeaderContentType::class),
             $genericRepository ?? $this->createStub(GenericRepository::class),
             $recordFactory ?? $this->createStub(RecordFactory::class),
             $pageRepository ?? $this->createStub(PageRepository::class),
             $tcaSchemaFactory ?? $this->createStub(TcaSchemaFactory::class),
-            $contentBlockList,
-            $tableDefinitionCollection,
+            $packageManagementUtility,
         );
     }
 
@@ -941,92 +940,9 @@ class ContentBlockContentTypeTest extends AbstractTest
     }
 
     /**
-     * Runs in a separate process because the lookups cache their results in function-level static variables.
-     */
-    #[RunInSeparateProcess]
-    public function testContentBlockLookupsAreEmptyWhenContentBlocksIsNotActive(): void
-    {
-        $this->resetSingletonInstances = true;
-
-        $packageManager = $this->createMock(PackageManager::class);
-        $packageManager->expects(self::exactly(2))
-            ->method('isPackageActive')
-            ->with('content_blocks')
-            ->willReturn(false);
-        GeneralUtility::setSingletonInstance(PackageManager::class, $packageManager);
-
-        $subject = $this->createRealSubject();
-        $getContentBlockList = new \ReflectionMethod($subject, 'getContentBlockList');
-        $getTableDefinitionCollection = new \ReflectionMethod($subject, 'getTableDefinitionCollection');
-
-        self::assertSame([], $getContentBlockList->invoke($subject));
-        self::assertSame([], $getContentBlockList->invoke($subject));
-        self::assertNull($getTableDefinitionCollection->invoke($subject));
-        self::assertNull($getTableDefinitionCollection->invoke($subject));
-        self::assertFalse($subject->canHandle($this->createRecord('vendor_block')));
-    }
-
-    /**
-     * Runs in a separate process because the lookups cache their results in function-level static variables.
-     */
-    #[RunInSeparateProcess]
-    public function testContentBlockLookupsUseContentBlocksServicesWhenActive(): void
-    {
-        $this->resetSingletonInstances = true;
-
-        $packageManager = $this->createStub(PackageManager::class);
-        $packageManager->method('isPackageActive')->willReturn(true);
-        GeneralUtility::setSingletonInstance(PackageManager::class, $packageManager);
-
-        $simpleTcaSchemaFactory = $this->createStub(SimpleTcaSchemaFactory::class);
-        $simpleTcaSchemaFactory->method('has')->willReturn(false);
-
-        $contentElement = $this->createLoadedContentBlock(
-            'vendor_block',
-            ['table' => 'tt_content', 'typeName' => 'vendor_block', 'typeField' => 'CType'],
-        );
-        $registry = new ContentBlockRegistry($simpleTcaSchemaFactory);
-        $registry->register($this->createLoadedContentBlock('', ['table' => 'tt_content'], 'vendor/without-type-name'));
-        $registry->register($contentElement);
-        $registry->register($this->createLoadedContentBlock(
-            'vendor_record',
-            ['table' => 'tx_vendor_record', 'typeName' => 'vendor_record', 'typeField' => 'type'],
-            'vendor/record',
-            ContentType::RECORD_TYPE,
-        ));
-        GeneralUtility::addInstance(ContentBlockRegistry::class, $registry);
-
-        $tableDefinitionCollection = new TableDefinitionCollection(new AutomaticLanguageKeysRegistry());
-        GeneralUtility::addInstance(TableDefinitionCollection::class, $tableDefinitionCollection);
-
-        $subject = $this->createRealSubject();
-        $getContentBlockList = new \ReflectionMethod($subject, 'getContentBlockList');
-        $getTableDefinitionCollection = new \ReflectionMethod($subject, 'getTableDefinitionCollection');
-
-        // Second calls must be served from the static cache, as no further instances are queued.
-        self::assertSame(['vendor_block' => $contentElement], $getContentBlockList->invoke($subject));
-        self::assertSame(['vendor_block' => $contentElement], $getContentBlockList->invoke($subject));
-        self::assertSame($tableDefinitionCollection, $getTableDefinitionCollection->invoke($subject));
-        self::assertSame($tableDefinitionCollection, $getTableDefinitionCollection->invoke($subject));
-        self::assertTrue($subject->canHandle($this->createRecord('vendor_block')));
-        self::assertFalse($subject->canHandle($this->createRecord('vendor_record')));
-    }
-
-    private function createRealSubject(): ContentBlockContentType
-    {
-        return new ContentBlockContentType(
-            $this->createStub(HeaderContentType::class),
-            $this->createStub(GenericRepository::class),
-            $this->createStub(RecordFactory::class),
-            $this->createStub(PageRepository::class),
-            $this->createStub(TcaSchemaFactory::class),
-        );
-    }
-
-    /**
      * @param list<Record> $childRecords
      */
-    private function createInlineSubject(array $childRecords): TestableContentBlockContentType
+    private function createInlineSubject(array $childRecords): ContentBlockContentType
     {
         $genericRepository = $this->createStub(GenericRepository::class);
         $genericRepository->method('setTableName')->willReturnSelf();
@@ -1181,33 +1097,5 @@ class ContentBlockContentTypeTest extends AbstractTest
         $subject = $this->createSubject();
         $reflection = new \ReflectionMethod($subject, 'extractFieldsFromColumns');
         $reflection->invoke($subject, $record, $columns, $collection, 'tt_content', $dto, $depth);
-    }
-}
-
-class TestableContentBlockContentType extends ContentBlockContentType
-{
-    /**
-     * @param array<string, mixed> $testContentBlockList
-     */
-    public function __construct(
-        HeaderContentType $headerContentType,
-        GenericRepository $genericRepository,
-        RecordFactory $recordFactory,
-        PageRepository $pageRepository,
-        TcaSchemaFactory $tcaSchemaFactory,
-        private readonly array $testContentBlockList = [],
-        private readonly ?TableDefinitionCollection $testTableDefinitionCollection = null,
-    ) {
-        parent::__construct($headerContentType, $genericRepository, $recordFactory, $pageRepository, $tcaSchemaFactory);
-    }
-
-    protected function getContentBlockList(): array
-    {
-        return $this->testContentBlockList;
-    }
-
-    protected function getTableDefinitionCollection(): ?TableDefinitionCollection
-    {
-        return $this->testTableDefinitionCollection;
     }
 }

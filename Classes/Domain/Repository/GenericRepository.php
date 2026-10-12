@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Lochmueller\Index\Domain\Repository;
 
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionInterface;
+use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class GenericRepository extends AbstractRepository
@@ -135,6 +138,37 @@ class GenericRepository extends AbstractRepository
             ->from($this->getTableName())
             ->where(
                 ...$where
+            );
+
+        return $queryBuilder->executeQuery()->iterateAssociative();
+    }
+
+    /**
+     * Live records whose starttime or endtime is reached in the given time range.
+     *
+     * @param int $from Excluded
+     * @param int $to Included
+     * @return iterable<array<string, mixed>>
+     */
+    public function findByPublishingDateRange(int $from, int $to): iterable
+    {
+        $queryBuilder = $this->createQueryBuilder();
+        $queryBuilder->getRestrictions()
+            ->removeAll()
+            ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
+            ->add(GeneralUtility::makeInstance(WorkspaceRestriction::class, 0));
+
+        $expr = $queryBuilder->expr();
+        $fromParameter = $queryBuilder->createNamedParameter($from, Connection::PARAM_INT);
+        $toParameter = $queryBuilder->createNamedParameter($to, Connection::PARAM_INT);
+
+        $queryBuilder->select('*')
+            ->from($this->getTableName())
+            ->where(
+                $expr->or(
+                    $expr->and($expr->gt('starttime', $fromParameter), $expr->lte('starttime', $toParameter)),
+                    $expr->and($expr->gt('endtime', $fromParameter), $expr->lte('endtime', $toParameter)),
+                ),
             );
 
         return $queryBuilder->executeQuery()->iterateAssociative();

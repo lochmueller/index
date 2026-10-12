@@ -39,7 +39,7 @@ class HttpRequestBuilderTest extends AbstractTest
         self::assertSame('<html>Test content</html>', $result);
     }
 
-    public function testBuildRequestForPageReturnsEmptyStringOnNon200Status(): void
+    public function testBuildRequestForPageReturnsNullOnNon200Status(): void
     {
         $uri = $this->createStub(UriInterface::class);
 
@@ -56,10 +56,10 @@ class HttpRequestBuilderTest extends AbstractTest
         $subject = new HttpRequestBuilder($client, $requestFactory);
         $result = $subject->buildRequestForPage($uri);
 
-        self::assertSame('', $result);
+        self::assertNull($result);
     }
 
-    public function testBuildRequestForPageReturnsEmptyStringOnException(): void
+    public function testBuildRequestForPageReturnsNullOnException(): void
     {
         $uri = $this->createStub(UriInterface::class);
 
@@ -73,7 +73,7 @@ class HttpRequestBuilderTest extends AbstractTest
         $subject = new HttpRequestBuilder($client, $requestFactory);
         $result = $subject->buildRequestForPage($uri);
 
-        self::assertSame('', $result);
+        self::assertNull($result);
     }
 
     public function testBuildRequestForPageCreatesGetRequest(): void

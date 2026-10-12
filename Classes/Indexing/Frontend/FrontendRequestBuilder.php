@@ -7,6 +7,7 @@ namespace Lochmueller\Index\Indexing\Frontend;
 use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Http\MiddlewareDispatcher;
 use TYPO3\CMS\Core\Http\NormalizedParams;
@@ -37,7 +38,7 @@ class FrontendRequestBuilder implements LoggerAwareInterface
             'SERVER_NAME' => $uri->getHost(),
             'HTTPS' => $uri->getScheme() === 'https' ? 'on' : 'off',
             'REMOTE_ADDR' => '127.0.0.1',
-            'CONTEXT_DOCUMENT_ROOT' => '/app/public',
+            'CONTEXT_DOCUMENT_ROOT' => Environment::getPublicPath(),
             'REQUEST_URI' => parse_url((string) $uri, PHP_URL_PATH),
         ];
 
@@ -55,6 +56,12 @@ class FrontendRequestBuilder implements LoggerAwareInterface
                 $dispatcher = $this->buildDispatcher();
                 return $dispatcher->handle($serverRequest);
             });
+
+            if ($response->getStatusCode() !== 200) {
+                // Error pages, redirects and access denied pages are not part of the index
+                $this->logger?->warning('Skip url ' . $uri . ' because of a non 200 status code', ['status' => $response->getStatusCode()]);
+                return null;
+            }
 
             $response->getBody()->rewind();
             return $response->getBody()->getContents();

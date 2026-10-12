@@ -90,6 +90,31 @@ class HttpIndexingHandlerTest extends AbstractTest
         $subject->__invoke($message);
     }
 
+    public function testInvokeDoesNotDispatchEventIfPageCannotBeFetched(): void
+    {
+        $siteFinder = $this->createStub(SiteFinder::class);
+        $siteFinder->method('getSiteByIdentifier')->willReturn($this->createStub(Site::class));
+
+        $httpRequestBuilder = $this->createStub(HttpRequestBuilder::class);
+        $httpRequestBuilder->method('buildRequestForPage')->willReturn(null);
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::never())->method('dispatch');
+
+        $subject = new HttpIndexingHandler($siteFinder, $eventDispatcher, $httpRequestBuilder, new ContentProcessor([]), $this->createStub(ConfigurationLoader::class));
+
+        $subject->__invoke(new HttpIndexMessage(
+            siteIdentifier: 'test-site',
+            technology: IndexTechnology::Http,
+            type: IndexType::Full,
+            indexConfigurationRecordId: 1,
+            uri: $this->createStub(UriInterface::class),
+            pageUid: 42,
+            indexProcessId: 'process-123',
+            language: 0,
+        ));
+    }
+
     public function testInvokeReturnsEarlyOnSiteFinderException(): void
     {
         $uri = $this->createStub(UriInterface::class);

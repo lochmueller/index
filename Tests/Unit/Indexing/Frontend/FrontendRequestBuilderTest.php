@@ -26,6 +26,7 @@ class FrontendRequestBuilderTest extends AbstractTest
         $stream->method('getContents')->willReturn('<html><body>Test Content</body></html>');
 
         $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($stream);
 
         $frontendContextBuilder = $this->createStub(FrontendContextBuilder::class);
@@ -67,6 +68,29 @@ class FrontendRequestBuilderTest extends AbstractTest
         self::assertNull($result);
     }
 
+    public function testBuildRequestForPageReturnsNullForErrorPages(): void
+    {
+        $uri = $this->createStub(UriInterface::class);
+        $uri->method('getHost')->willReturn('example.com');
+        $uri->method('getScheme')->willReturn('https');
+        $uri->method('__toString')->willReturn('https://example.com/missing');
+
+        $stream = $this->createStub(StreamInterface::class);
+        $stream->method('getContents')->willReturn('<html><body>Page not found</body></html>');
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(404);
+        $response->method('getBody')->willReturn($stream);
+
+        $frontendContextBuilder = $this->createStub(FrontendContextBuilder::class);
+        $frontendContextBuilder->method('executeInFrontendContext')
+            ->willReturnCallback(fn(callable $callback) => $response);
+
+        $subject = new FrontendRequestBuilder($this->createStub(Application::class), $frontendContextBuilder);
+
+        self::assertNull($subject->buildRequestForPage($uri));
+    }
+
     public function testBuildRequestForPageHandlesHttpScheme(): void
     {
         $uri = $this->createStub(UriInterface::class);
@@ -78,6 +102,7 @@ class FrontendRequestBuilderTest extends AbstractTest
         $stream->method('getContents')->willReturn('content');
 
         $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($stream);
 
         $frontendContextBuilder = $this->createStub(FrontendContextBuilder::class);
@@ -104,6 +129,7 @@ class FrontendRequestBuilderTest extends AbstractTest
         $stream->method('getContents')->willReturn('query content');
 
         $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($stream);
 
         $frontendContextBuilder = $this->createStub(FrontendContextBuilder::class);

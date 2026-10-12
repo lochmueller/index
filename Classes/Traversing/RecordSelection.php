@@ -6,6 +6,7 @@ namespace Lochmueller\Index\Traversing;
 
 use Lochmueller\Index\Database\Query\Restriction\NonContainerElementsRestrictionContainer;
 use Lochmueller\Index\Domain\Repository\GenericRepository;
+use Lochmueller\Index\Utility\PageVisibility;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionInterface;
@@ -103,7 +104,7 @@ class RecordSelection
             return null;
         }
 
-        if ($this->isExcludedDoktype($row)) {
+        if ($this->isExcludedDoktype($row) || !PageVisibility::isVisible($row, time())) {
             return null;
         }
 
@@ -113,7 +114,7 @@ class RecordSelection
             if ($row[$languageCapability->getLanguageField()->getName()] !== $language) {
                 return null;
             }
-            if ($this->pageRepository->checkIfPageIsHidden($pageUid, $languageAspect)) {
+            if ($this->pageRepository->checkIfPageIsHidden($pageUid, $languageAspect) || !PageVisibility::isVisible($row, time())) {
                 return null;
             }
         }
@@ -125,14 +126,7 @@ class RecordSelection
      */
     protected function isExcludedDoktype(array $row): bool
     {
-        return isset($row['doktype']) && in_array((int) $row['doktype'], [
-            PageRepository::DOKTYPE_SYSFOLDER,
-            PageRepository::DOKTYPE_SPACER,
-            PageRepository::DOKTYPE_LINK,
-            PageRepository::DOKTYPE_BE_USER_SECTION,
-            PageRepository::DOKTYPE_SHORTCUT,
-            PageRepository::DOKTYPE_MOUNTPOINT,
-        ], true);
+        return PageVisibility::isExcludedDoktype($row);
     }
 
 }

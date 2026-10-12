@@ -81,4 +81,74 @@ class ContentProcessorTest extends AbstractTest
 
         self::assertSame([], $params['items']);
     }
+
+    public function testProcessAppliesOnlyActiveProcessorsInOrder(): void
+    {
+        $processorA = new class implements ContentProcessorInterface {
+            public function getLabel(): string
+            {
+                return 'A';
+            }
+
+            public function process(string $htmlContent): string
+            {
+                return $htmlContent . '-A';
+            }
+        };
+
+        $processorB = new class implements ContentProcessorInterface {
+            public function getLabel(): string
+            {
+                return 'B';
+            }
+
+            public function process(string $htmlContent): string
+            {
+                return $htmlContent . '-B';
+            }
+        };
+
+        $processorC = new class implements ContentProcessorInterface {
+            public function getLabel(): string
+            {
+                return 'C';
+            }
+
+            public function process(string $htmlContent): string
+            {
+                return $htmlContent . '-C';
+            }
+        };
+
+        $subject = new ContentProcessor([$processorA, $processorB, $processorC]);
+
+        self::assertSame('content-A-C', $subject->process('content', [$processorC::class, $processorA::class]));
+    }
+
+    public function testProcessReturnsContentUnchangedWithoutActiveProcessors(): void
+    {
+        $processor = new class implements ContentProcessorInterface {
+            public function getLabel(): string
+            {
+                return 'Label';
+            }
+
+            public function process(string $htmlContent): string
+            {
+                return 'modified';
+            }
+        };
+
+        $subject = new ContentProcessor([$processor]);
+
+        self::assertSame('content', $subject->process('content', []));
+        self::assertSame('content', $subject->process('content', ['NotExisting\\Processor']));
+    }
+
+    public function testProcessWithoutProcessorsReturnsContentUnchanged(): void
+    {
+        $subject = new ContentProcessor([]);
+
+        self::assertSame('content', $subject->process('content', [ContentProcessorInterface::class]));
+    }
 }

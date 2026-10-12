@@ -16,17 +16,19 @@ class HttpRequestBuilder implements LoggerAwareInterface
 
     public function __construct(protected ClientInterface $client, protected RequestFactory $requestFactory) {}
 
-    public function buildRequestForPage(UriInterface $uri): string
+    public function buildRequestForPage(UriInterface $uri): ?string
     {
         $request = $this->requestFactory->createRequest('GET', $uri);
         try {
             $response = $this->client->sendRequest($request);
         } catch (\Exception $e) {
             $this->logger?->error($e->getMessage(), ['exception' => $e]);
-            return '';
+            return null;
         }
         if ($response->getStatusCode() !== 200) {
-            return '';
+            // Error pages, redirects and access denied pages are not part of the index
+            $this->logger?->warning('Skip url ' . $uri . ' because of a non 200 status code', ['status' => $response->getStatusCode()]);
+            return null;
         }
 
         return $response->getBody()->getContents();

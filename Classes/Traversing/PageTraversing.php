@@ -9,6 +9,7 @@ use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Lochmueller\Index\Domain\Repository\PagesRepository;
 use Lochmueller\Index\Utility\AccessGroupParser;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
 class PageTraversing
@@ -37,11 +38,11 @@ class PageTraversing
         $targetLanguages = [];
         $languages = $site->getLanguages();
         if (empty($configuration->languages)) {
-            $targetLanguages = $languages;
+            $targetLanguages = array_filter($languages, static fn(SiteLanguage $language): bool => $language->isEnabled());
         } else {
             foreach ($configuration->languages as $languageId) {
                 foreach ($languages as $language) {
-                    if ($language->getLanguageId() === $languageId) {
+                    if ($language->getLanguageId() === $languageId && $language->isEnabled()) {
                         $targetLanguages[$language->getLanguageId()] = $language;
                     }
                 }

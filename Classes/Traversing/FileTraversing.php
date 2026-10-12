@@ -30,11 +30,12 @@ class FileTraversing
     {
         $row = $this->genericRepository->setTableName('sys_filemounts')->findByUid($fileMountUid);
         if ($row) {
+            $fileExtensions = array_map(strtolower(...), $fileExtensions);
             /** @var Folder $folder */
             $folder = $this->resourceFactory->getFolderObjectFromCombinedIdentifier($row['identifier']);
             foreach ($folder->getFiles(recursive: true) as $file) {
                 /** @var File $file */
-                if (in_array($file->getExtension(), $fileExtensions)) {
+                if (in_array(strtolower($file->getExtension()), $fileExtensions, true)) {
                     yield $file;
                 }
             }

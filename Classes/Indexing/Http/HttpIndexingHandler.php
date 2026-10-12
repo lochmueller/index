@@ -34,6 +34,9 @@ class HttpIndexingHandler implements IndexingInterface, LoggerAwareInterface
             $site = $this->siteFinder->getSiteByIdentifier($message->siteIdentifier);
 
             $content = $this->httpRequestBuilder->buildRequestForPage($message->uri);
+            if ($content === null) {
+                return;
+            }
 
             $title = '';
             if (preg_match('/<title\b[^>]*>([\s\S]*?)<\/title>/i', $content, $matches)) {

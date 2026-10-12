@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Lochmueller\Index\Domain\Repository;
 
 use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
+use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\RootlineUtility;
 
@@ -35,6 +37,29 @@ class PagesRepository extends AbstractRepository
         foreach ($statement->iterateAssociative() as $row) {
             yield (int) $row['uid'];
         }
+    }
+
+    /**
+     * Live translations of a page, independent of their visibility.
+     *
+     * @return iterable<array<string, mixed>>
+     */
+    public function findTranslations(int $pageUid): iterable
+    {
+        $queryBuilder = $this->connectionPool->getQueryBuilderForTable($this->getTableName());
+        $queryBuilder->getRestrictions()
+            ->removeAll()
+            ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
+            ->add(GeneralUtility::makeInstance(WorkspaceRestriction::class, 0));
+
+        $queryBuilder->select('*')
+            ->from($this->getTableName())
+            ->where(
+                $queryBuilder->expr()->eq('l10n_parent', $queryBuilder->createNamedParameter($pageUid, Connection::PARAM_INT)),
+                $queryBuilder->expr()->gt('sys_language_uid', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+            );
+
+        yield from $queryBuilder->executeQuery()->iterateAssociative();
     }
 
     /**

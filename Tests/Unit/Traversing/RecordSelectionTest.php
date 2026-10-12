@@ -290,6 +290,51 @@ class RecordSelectionTest extends AbstractTest
         self::assertNull($subject->findRenderablePage(1, 2));
     }
 
+    /**
+     * @param array<string, int> $visibilityFields
+     */
+    #[DataProvider('invisibleDefaultPageDataProvider')]
+    public function testFindRenderablePageReturnsNullForInvisibleDefaultLanguagePage(array $visibilityFields): void
+    {
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturn($genericRepositoryStub);
+        $genericRepositoryStub->method('findByUid')->willReturn([
+            'uid' => 1,
+            'pid' => 0,
+            'doktype' => PageRepository::DOKTYPE_DEFAULT,
+            'sys_language_uid' => 0,
+        ] + $visibilityFields);
+
+        $tcaSchemaStub = $this->createStub(TcaSchema::class);
+        $tcaSchemaStub->method('getCapability')->willReturn(new LanguageAwareSchemaCapability(
+            new LanguageFieldType('sys_language_uid', []),
+            $this->createStub(FieldTypeInterface::class),
+            null,
+            null,
+        ));
+        $tcaSchemaFactoryStub = $this->createStub(TcaSchemaFactory::class);
+        $tcaSchemaFactoryStub->method('get')->willReturn($tcaSchemaStub);
+
+        $subject = new RecordSelection(
+            $this->createStub(RecordFactory::class),
+            $this->createStub(PageRepository::class),
+            $tcaSchemaFactoryStub,
+            $genericRepositoryStub,
+        );
+
+        self::assertNull($subject->findRenderablePage(1));
+    }
+
+    /**
+     * @return iterable<string, array{array<string, int>}>
+     */
+    public static function invisibleDefaultPageDataProvider(): iterable
+    {
+        yield 'hidden' => [['hidden' => 1]];
+        yield 'starttime in the future' => [['starttime' => time() + 3600]];
+        yield 'endtime in the past' => [['endtime' => time() - 3600]];
+    }
+
     public function testFindRenderablePageReturnsOverlayForTranslatedPage(): void
     {
         $row = [

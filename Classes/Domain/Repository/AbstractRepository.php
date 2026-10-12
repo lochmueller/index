@@ -41,8 +41,8 @@ abstract class AbstractRepository
     /**
      * @return array<string, mixed>|null
      */
-    public function findByUid(int $uid): ?array
+    public function findByUid(int $uid, bool $includeDeleted = false): ?array
     {
-        return BackendUtility::getRecord($this->getTableName(), $uid);
+        return BackendUtility::getRecord($this->getTableName(), $uid, '*', '', !$includeDeleted);
     }
 }

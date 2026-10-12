@@ -50,6 +50,45 @@ class DeIndexDocumentHandlerTest extends AbstractTest
         $subject(new DeIndexDocumentMessage(pageUid: 42, languageId: 1));
     }
 
+    public function testEventIsDispatchedWithResolvedUriOfMessage(): void
+    {
+        $site = $this->createStub(Site::class);
+
+        $siteFinder = $this->createMock(SiteFinder::class);
+        $siteFinder->expects(self::once())->method('getSiteByIdentifier')->with('main')->willReturn($site);
+        $siteFinder->expects(self::never())->method('getSiteByPageId');
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())
+            ->method('dispatch')
+            ->with(self::callback(static fn(object $event): bool => $event instanceof DeIndexDocumentEvent
+                && $event->site === $site
+                && $event->uri === 'https://example.com/old-slug'))
+            ->willReturnArgument(0);
+
+        $subject = new DeIndexDocumentHandler($siteFinder, $eventDispatcher);
+
+        $subject(new DeIndexDocumentMessage(pageUid: 42, languageId: 0, uri: 'https://example.com/old-slug', siteIdentifier: 'main'));
+    }
+
+    public function testUnexpectedExceptionIsLogged(): void
+    {
+        $exception = new \RuntimeException('Unexpected', 1234567893);
+
+        $siteFinder = $this->createStub(SiteFinder::class);
+        $siteFinder->method('getSiteByIdentifier')->willThrowException($exception);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('error')
+            ->with($exception->getMessage(), ['exception' => $exception]);
+
+        $subject = new DeIndexDocumentHandler($siteFinder, $this->createStub(EventDispatcherInterface::class));
+        $subject->setLogger($logger);
+
+        $subject(new DeIndexDocumentMessage(pageUid: 42, languageId: 0, uri: 'https://example.com/page', siteIdentifier: 'main'));
+    }
+
     public function testExceptionIsLoggedWhenSiteIsNotFound(): void
     {
         $exception = new SiteNotFoundException('No site found for page 42', 1234567890);

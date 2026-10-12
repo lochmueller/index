@@ -106,6 +106,28 @@ class FileTraversingTest extends AbstractTest
         self::assertSame($docxFile, $result[1]);
     }
 
+    public function testFindFilesInFileMountUidRecursiveMatchesExtensionsCaseInsensitive(): void
+    {
+        $upperCaseFile = $this->createStub(File::class);
+        $upperCaseFile->method('getExtension')->willReturn('PDF');
+
+        $folder = $this->createStub(Folder::class);
+        $folder->method('getFiles')->willReturn([$upperCaseFile]);
+
+        $genericRepository = $this->createStub(GenericRepository::class);
+        $genericRepository->method('setTableName')->willReturnSelf();
+        $genericRepository->method('findByUid')->willReturn(['identifier' => '1:/documents/']);
+
+        $resourceFactory = $this->createStub(ResourceFactory::class);
+        $resourceFactory->method('getFolderObjectFromCombinedIdentifier')->willReturn($folder);
+
+        $subject = new FileTraversing($resourceFactory, $genericRepository);
+
+        $result = iterator_to_array($subject->findFilesInFileMountUidRecursive(1, ['Pdf']));
+
+        self::assertSame([$upperCaseFile], $result);
+    }
+
     public function testFindFilesInFileMountUidRecursiveYieldsNoFilesWhenExtensionsDontMatch(): void
     {
         $fileMountUid = 1;

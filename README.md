@@ -16,6 +16,9 @@ This extension was funded by the [TYPO3 Association](https://typo3.org): [commun
 2. Create at least two scheduler tasks and take care that the scheduler is executed:
     - `index:queue` (example: every two days at midnight) fills up the message queue with the indexed pages via full
       index
+    - `index:publishing-dates` (example: every 15 minutes, optional) de-indexes pages whose endtime was reached and
+      partially indexes pages and content elements whose starttime or endtime was reached since the last run. Hidden,
+      moved and deleted pages are handled directly in the backend (partial indexing trigger `datamap`/`cmdmap`)
     - `messenger:consume index` (based on
       the [documentation](https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/MessageBus/Index.html#message-bus-consume-command))
       to handle the index processes of the queue

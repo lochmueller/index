@@ -84,6 +84,31 @@ class PageTraversingTest extends AbstractTest
         yield 'non-existing language is ignored' => [[0, 99], [0, 1], [0]];
     }
 
+    /**
+     * @param array<int> $configuredLanguages
+     */
+    #[DataProvider('disabledLanguageDataProvider')]
+    public function testGetFrontendInformationSkipsDisabledLanguages(array $configuredLanguages): void
+    {
+        $subject = $this->createSubject(siteLanguageIds: [0, 1, 2], disabledLanguageIds: [1]);
+
+        $result = $this->collect($subject->getFrontendInformation($this->createConfiguration(languages: $configuredLanguages)));
+
+        self::assertSame(
+            [0, 2],
+            array_map(static fn(FrontendInformationDto $dto): int => $dto->language->getLanguageId(), $result),
+        );
+    }
+
+    /**
+     * @return iterable<string, array{array<int>}>
+     */
+    public static function disabledLanguageDataProvider(): iterable
+    {
+        yield 'all site languages' => [[]];
+        yield 'configured languages' => [[0, 1, 2]];
+    }
+
     public function testGetFrontendInformationCreatesDtoWithExpectedValues(): void
     {
         $row = ['uid' => 1, 'fe_group' => '1,2', 'no_search' => 0];
@@ -367,10 +392,11 @@ class PageTraversingTest extends AbstractTest
         ?ConfigurationLoader $configurationLoader = null,
         ?RecordSelection $recordSelection = null,
         ?PagesRepository $pagesRepository = null,
+        array $disabledLanguageIds = [],
     ): PageTraversing {
         $siteLanguages = [];
         foreach ($siteLanguageIds as $languageId) {
-            $siteLanguages[$languageId] = $this->createSiteLanguage($languageId);
+            $siteLanguages[$languageId] = $this->createSiteLanguage($languageId, !in_array($languageId, $disabledLanguageIds, true));
         }
 
         $routerStub = $this->createStub(PageRouter::class);
@@ -411,10 +437,11 @@ class PageTraversingTest extends AbstractTest
         );
     }
 
-    private function createSiteLanguage(int $languageId): SiteLanguage
+    private function createSiteLanguage(int $languageId, bool $enabled = true): SiteLanguage
     {
         $languageStub = $this->createStub(SiteLanguage::class);
         $languageStub->method('getLanguageId')->willReturn($languageId);
+        $languageStub->method('isEnabled')->willReturn($enabled);
 
         return $languageStub;
     }

@@ -19,6 +19,8 @@ use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\WorkspaceAspect;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\Exception\Page\PageNotFoundException;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Utility\MathUtility;
 
 #[Autoconfigure(public: true)]
@@ -191,13 +193,25 @@ class DataHandlerUpdateHook
             return;
         }
 
-        if (!$configuration = $this->getTriggerableConfiguration($pageId, $trigger)) {
-            return;
-        }
+        try {
+            if (!$configuration = $this->getTriggerableConfiguration($pageId, $trigger)) {
+                return;
+            }
 
-        $this->runInLiveWorkspace(
-            fn() => $this->activeIndexing->fillQueue($configuration->modifyForPartialIndexing($pageId), true)
-        );
+            $this->runInLiveWorkspace(
+                fn() => $this->activeIndexing->fillQueue($configuration->modifyForPartialIndexing($pageId), true)
+            );
+        } catch (PageNotFoundException|SiteNotFoundException) {
+            // The page has no live root line: it exists only in a workspace, e.g.
+            // a new page whose content is published before the page itself.
+            // Depending on the workspace of the context, the root line lookup
+            // fails (PageNotFoundException) or the site lookup in the live
+            // workspace does (SiteNotFoundException). There is nothing live to
+            // index yet, and throwing here aborts the whole DataHandler run (the
+            // publish). Forget the page, so publishing the page later in the same
+            // run still triggers indexing.
+            $this->forgetTriggeredPage($pageId);
+        }
     }
 
     /**
@@ -352,6 +366,12 @@ class DataHandlerUpdateHook
         } finally {
             $this->context->setAspect('workspace', $workspaceAspect);
         }
+    }
+
+    private function forgetTriggeredPage(int $pageId): void
+    {
+        $alreadyTriggered = (array) $this->cache->get('index-already-triggered');
+        $this->cache->set('index-already-triggered', array_values(array_diff($alreadyTriggered, [$pageId])));
     }
 
     private function getConfigurationWithTrigger(int $pageId, IndexPartialTrigger $trigger): ?Configuration

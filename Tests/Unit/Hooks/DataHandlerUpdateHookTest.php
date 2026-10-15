@@ -20,6 +20,8 @@ use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\WorkspaceAspect;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\Exception\Page\PageNotFoundException;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 
 class DataHandlerUpdateHookTest extends AbstractTest
 {
@@ -1295,5 +1297,119 @@ class DataHandlerUpdateHookTest extends AbstractTest
             new Context(),
             $deIndexDocumentMessageFactory,
         );
+    }
+
+    /**
+     * In-memory stand-in for cache.runtime, so the already-triggered list
+     * survives between two hook calls.
+     */
+    private function createRuntimeCacheStub(): FrontendInterface
+    {
+        $store = [];
+        $stub = $this->createStub(FrontendInterface::class);
+        $stub->method('get')->willReturnCallback(static function (string $key) use (&$store) {
+            return $store[$key] ?? false;
+        });
+        $stub->method('set')->willReturnCallback(static function (string $key, mixed $value) use (&$store): void {
+            $store[$key] = $value;
+        });
+
+        return $stub;
+    }
+
+    public function testProcessCmdmapPostProcessSkipsPageWithoutLiveSite(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Cmdmap->value]);
+
+        $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
+        $configurationLoaderStub->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn(['uid' => 456, 'pid' => 123]);
+
+        $activeIndexingStub = $this->createStub(ActiveIndexing::class);
+        $activeIndexingStub->method('fillQueue')->willThrowException(new SiteNotFoundException('No site found in root line of page 123'));
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderStub,
+            $activeIndexingStub,
+            $this->createRuntimeCacheStub(),
+            $genericRepositoryStub,
+            $this->createStub(Bus::class),
+            new Context(),
+            $this->createStub(DeIndexDocumentMessageFactory::class),
+        );
+
+        // Publishing content of a page that exists only in the workspace must not abort the DataHandler run
+        $subject->processCmdmap_postProcess('version', 'tt_content', 456, null, $this->createStub(DataHandler::class), null, null);
+        self::assertTrue(true);
+    }
+
+    public function testPageWithoutLiveSiteIsIndexedWhenPublishedLaterInTheSameRun(): void
+    {
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Cmdmap->value]);
+
+        $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
+        $configurationLoaderStub->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturnCallback(
+            static fn(int $uid): array => $uid === 123 ? ['uid' => 123, 'pid' => 10] : ['uid' => 456, 'pid' => 123]
+        );
+
+        // The content goes first, while its page is not live yet; then the page itself
+        $calls = 0;
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock
+            ->expects(self::exactly(2))
+            ->method('fillQueue')
+            ->willReturnCallback(static function () use (&$calls): void {
+                if (++$calls === 1) {
+                    throw new SiteNotFoundException('No site found in root line of page 123');
+                }
+            });
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderStub,
+            $activeIndexingMock,
+            $this->createRuntimeCacheStub(),
+            $genericRepositoryStub,
+            $this->createStub(Bus::class),
+            new Context(),
+            $this->createStub(DeIndexDocumentMessageFactory::class),
+        );
+
+        $dataHandler = $this->createStub(DataHandler::class);
+        $subject->processCmdmap_postProcess('version', 'tt_content', 456, null, $dataHandler, null, null);
+        $subject->processCmdmap_postProcess('version', 'pages', 123, null, $dataHandler, null, null);
+    }
+
+    public function testProcessCmdmapPostProcessSkipsPageWithoutLiveRootline(): void
+    {
+        $configurationLoaderStub = $this->createStub(ConfigurationLoader::class);
+        $configurationLoaderStub->method('loadByPageTraversing')
+            ->willThrowException(new PageNotFoundException('Broken rootline. Could not resolve page with uid 123.'));
+
+        $genericRepositoryStub = $this->createStub(GenericRepository::class);
+        $genericRepositoryStub->method('setTableName')->willReturnSelf();
+        $genericRepositoryStub->method('findByUid')->willReturn(['uid' => 456, 'pid' => 123]);
+
+        $activeIndexingMock = $this->createMock(ActiveIndexing::class);
+        $activeIndexingMock->expects(self::never())->method('fillQueue');
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoaderStub,
+            $activeIndexingMock,
+            $this->createRuntimeCacheStub(),
+            $genericRepositoryStub,
+            $this->createStub(Bus::class),
+            new Context(),
+            $this->createStub(DeIndexDocumentMessageFactory::class),
+        );
+
+        // Same situation without a workspace in the context (CLI, scheduler): the root line lookup fails first
+        $subject->processCmdmap_postProcess('version', 'tt_content', 456, null, $this->createStub(DataHandler::class), null, null);
     }
 }

@@ -6,6 +6,7 @@ namespace Lochmueller\Index\Domain\Repository;
 
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\QueryHelper;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionInterface;
@@ -57,8 +58,8 @@ class GenericRepository extends AbstractRepository
             ->from($this->getTableName())
             ->where(
                 $queryBuilder->expr()->eq('tt_content', $parentUid),
-            )
-            ->orderBy('sorting', 'ASC');
+            );
+        $this->addSorting($queryBuilder);
         $this->addLanguageRestriction($queryBuilder, $languageField, $languages);
 
         return $queryBuilder->executeQuery()->iterateAssociative();
@@ -79,11 +80,30 @@ class GenericRepository extends AbstractRepository
             ->from($this->getTableName())
             ->where(
                 $queryBuilder->expr()->eq($foreignField, $parentUid),
-            )
-            ->orderBy('sorting', 'ASC');
+            );
+        $this->addSorting($queryBuilder);
         $this->addLanguageRestriction($queryBuilder, $languageField, $languages);
 
         return $queryBuilder->executeQuery()->iterateAssociative();
+    }
+
+    /**
+     * Not every table has a "sorting" column (e.g. tx_bootstrappackage_timeline_item sorts by "date"),
+     * so the order is taken from the TCA "sortby" or "default_sortby" configuration of the table.
+     */
+    protected function addSorting(QueryBuilder $queryBuilder): void
+    {
+        $ctrl = $GLOBALS['TCA'][$this->getTableName()]['ctrl'] ?? [];
+
+        $sortBy = (string) ($ctrl['sortby'] ?? '');
+        if ($sortBy !== '') {
+            $queryBuilder->orderBy($sortBy, 'ASC');
+            return;
+        }
+
+        foreach (QueryHelper::parseOrderBy((string) ($ctrl['default_sortby'] ?? '')) as [$fieldName, $order]) {
+            $queryBuilder->addOrderBy($fieldName, strtoupper((string) $order) === 'DESC' ? 'DESC' : 'ASC');
+        }
     }
 
     /**

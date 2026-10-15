@@ -7,6 +7,7 @@ namespace Lochmueller\Index\Tests\Unit\Domain\Repository;
 use Doctrine\DBAL\Result;
 use Lochmueller\Index\Domain\Repository\GenericRepository;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
+use PHPUnit\Framework\MockObject\MockObject;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Expression\ExpressionBuilder;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
@@ -393,5 +394,84 @@ class GenericRepositoryTest extends AbstractTest
         $actualRecords = iterator_to_array($subject->findByParentField(42, 'parent_uid', [0, -1, 1], null));
 
         self::assertSame($expectedRecords, $actualRecords);
+    }
+
+    public function testFindByParentFieldOrdersBySortbyColumnFromTca(): void
+    {
+        $GLOBALS['TCA']['tx_test_items']['ctrl']['sortby'] = 'sorting';
+
+        $queryBuilder = $this->createParentQueryBuilderMock();
+        $queryBuilder->expects(self::once())->method('orderBy')->with('sorting', 'ASC')->willReturnSelf();
+        $queryBuilder->expects(self::never())->method('addOrderBy');
+
+        $this->createSubjectForQueryBuilder($queryBuilder)->findByParentField(42, 'parent_uid', [], null);
+    }
+
+    public function testFindByParentContentElementOrdersByDefaultSortbyFromTca(): void
+    {
+        $GLOBALS['TCA']['tx_test_items']['ctrl']['default_sortby'] = 'ORDER BY date DESC, title';
+
+        $orderings = [];
+        $queryBuilder = $this->createParentQueryBuilderMock();
+        $queryBuilder->expects(self::never())->method('orderBy');
+        $queryBuilder->expects(self::exactly(2))
+            ->method('addOrderBy')
+            ->willReturnCallback(function (string $fieldName, string $order) use (&$orderings, $queryBuilder): QueryBuilder {
+                $orderings[] = [$fieldName, $order];
+                return $queryBuilder;
+            });
+
+        $this->createSubjectForQueryBuilder($queryBuilder)->findByParentContentElement(42, [], null);
+
+        self::assertSame([['date', 'DESC'], ['title', 'ASC']], $orderings);
+    }
+
+    public function testFindByParentContentElementSkipsOrderingWithoutSortingConfiguration(): void
+    {
+        $GLOBALS['TCA']['tx_test_items']['ctrl'] = [];
+
+        $queryBuilder = $this->createParentQueryBuilderMock();
+        $queryBuilder->expects(self::never())->method('orderBy');
+        $queryBuilder->expects(self::never())->method('addOrderBy');
+
+        $this->createSubjectForQueryBuilder($queryBuilder)->findByParentContentElement(42, [], null);
+    }
+
+    protected function tearDown(): void
+    {
+        unset($GLOBALS['TCA']['tx_test_items']);
+        parent::tearDown();
+    }
+
+    private function createParentQueryBuilderMock(): QueryBuilder&MockObject
+    {
+        GeneralUtility::addInstance(FrontendRestrictionContainer::class, $this->createStub(FrontendRestrictionContainer::class));
+
+        $result = $this->createStub(Result::class);
+        $result->method('iterateAssociative')->willReturn(new \ArrayIterator([]));
+
+        $expressionBuilder = $this->createStub(ExpressionBuilder::class);
+        $expressionBuilder->method('eq')->willReturn('parent = 42');
+
+        $restrictions = $this->createStub(QueryRestrictionContainerInterface::class);
+        $restrictions->method('add')->willReturnSelf();
+
+        $queryBuilder = $this->createMock(QueryBuilder::class);
+        $queryBuilder->method('getRestrictions')->willReturn($restrictions);
+        $queryBuilder->method('select')->willReturnSelf();
+        $queryBuilder->method('from')->willReturnSelf();
+        $queryBuilder->method('where')->willReturnSelf();
+        $queryBuilder->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->method('executeQuery')->willReturn($result);
+
+        return $queryBuilder;
+    }
+
+    private function createSubjectForQueryBuilder(QueryBuilder $queryBuilder): GenericRepository
+    {
+        $connectionPool = $this->createStub(ConnectionPool::class);
+        $connectionPool->method('getQueryBuilderForTable')->willReturn($queryBuilder);
+
+        return (new GenericRepository($connectionPool))->setTableName('tx_test_items');
     }
 }

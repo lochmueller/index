@@ -161,6 +161,36 @@ class MyExtension extends RecordExtender
 Use an own implementation of the `ExtenderInterface` if the URI generation needs real logic, e.g. more than one URI
 per record, an external data source or additional queries.
 
+#### Import configuration from files
+
+Comprehensive configurations can be stored in files of your site package and imported via `@import`. So the
+configuration is part of your deployment and keeps in sync between your environments. `@import` accepts a single file
+or a list of files (`.json`, `.yaml` or `.yml`):
+
+```json
+{
+  "@import": [
+    "EXT:my_sitepackage/Configuration/Index/Base.yaml",
+    "EXT:my_sitepackage/Configuration/Index/News.json"
+  ]
+}
+```
+
+- The files are merged in the given order. Values of the index configuration record always win over imported values.
+- Objects are merged recursively, lists (e.g. `extender`) are replaced as a whole.
+- Imported files can use `@import` again. Relative paths are resolved relative to the importing file.
+- YAML files are loaded via the TYPO3 YAML loader, so `imports` and placeholders like `%env(INDEX_NEWS_STORAGE)%` are
+  supported. Use them for values that differ between your environments.
+- Only files inside of the TYPO3 project are allowed. Missing or invalid files are skipped and logged as warning.
+
+```yaml
+extender:
+  - type: news
+    limitToPages: [13, 392]
+    recordStorages: ['%env(INDEX_NEWS_STORAGE)%']
+    dropOriginalUri: true
+```
+
 ### Content processing
 
 Before the generated HTML is handed over to the indexing process, it can be piped through a chain of content

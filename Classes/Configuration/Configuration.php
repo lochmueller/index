@@ -38,9 +38,12 @@ class Configuration
 
     /**
      * @param array<string, mixed> $row
+     * @param array<string, mixed>|null $configuration Already resolved configuration (e.g. incl. imports), otherwise the JSON of the row is used
      */
-    public static function createByDatabaseRow(array $row): Configuration
+    public static function createByDatabaseRow(array $row, ?array $configuration = null): Configuration
     {
+        $configuration ??= (array) json_decode($row['configuration'] ?? '', true);
+
         return new self(
             configurationId: (int) $row['uid'],
             pageId: (int) $row['pid'],
@@ -50,7 +53,7 @@ class Configuration
             levels: (int) $row['levels'],
             fileMounts: GeneralUtility::trimExplode(',', $row['file_mounts'] ?? ''),
             fileTypes: GeneralUtility::trimExplode(',', $row['file_types'] ?? ''),
-            configuration: in_array(IndexTechnology::from($row['technology']), [IndexTechnology::Database, IndexTechnology::Frontend, IndexTechnology::Http]) ? (array) json_decode($row['configuration'] ?? '', true) : [],
+            configuration: in_array(IndexTechnology::from($row['technology']), [IndexTechnology::Database, IndexTechnology::Frontend, IndexTechnology::Http]) ? $configuration : [],
             partialIndexing: GeneralUtility::trimExplode(',', $row['partial_indexing'] ?? '', true),
             languages: GeneralUtility::intExplode(',', $row['languages'] ?? '', true),
             contentProcessors: array_values(array_filter(

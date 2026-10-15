@@ -23,7 +23,7 @@
                 <source>Configuration</source>
             </trans-unit>
             <trans-unit id="tx_index_domain_model_configuration.configuration.description">
-                <source>Configuration of the index process via JSON.</source>
+                <source>Configuration of the index process via JSON. Use "@import" to load the configuration from files, e.g. {"@import": "EXT:my_sitepackage/Configuration/Index.yaml"}.</source>
             </trans-unit>
             <trans-unit id="tx_index_domain_model_log.pages_counter">
                 <source>Pages counter</source>

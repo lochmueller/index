@@ -99,6 +99,39 @@ class ConfigurationTest extends AbstractTest
         ], $configuration->contentProcessors);
     }
 
+    public function testCreateByDatabaseRowPrefersGivenConfiguration(): void
+    {
+        $row = [
+            'uid' => 1,
+            'pid' => 1,
+            'technology' => 'database',
+            'content_indexing' => 0,
+            'skip_no_search_pages' => 0,
+            'levels' => 0,
+            'configuration' => '{"@import": "EXT:my_ext/Configuration/Index.json"}',
+        ];
+
+        $configuration = Configuration::createByDatabaseRow($row, ['extender' => []]);
+
+        self::assertSame(['extender' => []], $configuration->configuration);
+    }
+
+    public function testCreateByDatabaseRowIgnoresGivenConfigurationForCacheTechnology(): void
+    {
+        $row = [
+            'uid' => 1,
+            'pid' => 1,
+            'technology' => 'cache',
+            'content_indexing' => 0,
+            'skip_no_search_pages' => 0,
+            'levels' => 0,
+        ];
+
+        $configuration = Configuration::createByDatabaseRow($row, ['extender' => []]);
+
+        self::assertSame([], $configuration->configuration);
+    }
+
     public function testCreateByDatabaseRowWithFrontendTechnologyParsesConfiguration(): void
     {
         $row = [

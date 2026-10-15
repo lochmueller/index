@@ -6,6 +6,7 @@ namespace Lochmueller\Index\Tests\Unit\Configuration;
 
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Configuration\ConfigurationLoader;
+use Lochmueller\Index\Configuration\ConfigurationResolver;
 use Lochmueller\Index\Domain\Repository\ConfigurationRepository;
 use Lochmueller\Index\Domain\Repository\PagesRepository;
 use Lochmueller\Index\Enums\IndexTechnology;
@@ -28,6 +29,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->loadByUid(999);
 
@@ -43,6 +45,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->loadByUid(1);
 
@@ -57,6 +60,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->loadByPage(999);
 
@@ -72,6 +76,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->loadByPage(10);
 
@@ -88,6 +93,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->getAll();
 
@@ -104,6 +110,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->getAll();
 
@@ -119,6 +126,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->loadByPageTraversing(10);
 
@@ -141,6 +149,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $pagesRepository,
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->loadByPageTraversing(15);
 
@@ -162,6 +171,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $pagesRepository,
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->loadByPageTraversing(15);
 
@@ -180,6 +190,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->loadBySite($site);
 
@@ -197,6 +208,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = $subject->loadBySite($site);
 
@@ -224,6 +236,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $pagesRepository,
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = iterator_to_array($subject->loadAllBySite($site));
 
@@ -248,6 +261,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $this->createStub(ConfigurationRepository::class),
             $pagesRepository,
+            $this->createStub(ConfigurationResolver::class),
         );
         $result = iterator_to_array($subject->loadAllBySite($site));
 
@@ -278,6 +292,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $configurationRepository,
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $subject->preloadConfigurations();
         $result = $subject->getAll();
@@ -285,6 +300,39 @@ class ConfigurationLoaderTest extends AbstractTest
         self::assertCount(1, $result);
         self::assertArrayHasKey(1, $result);
         self::assertSame(10, $result[1]->pageId);
+    }
+
+    public function testPreloadConfigurationsUsesResolvedConfiguration(): void
+    {
+        $this->resetConfigurationCache();
+
+        $configurationRepository = $this->createStub(ConfigurationRepository::class);
+        $configurationRepository->method('findAll')->willReturn([
+            [
+                'uid' => 1,
+                'pid' => 10,
+                'technology' => 'database',
+                'content_indexing' => 1,
+                'skip_no_search_pages' => 0,
+                'levels' => 0,
+                'file_mounts' => '',
+                'file_types' => '',
+                'configuration' => '{"@import": "EXT:my_ext/Configuration/Index.json"}',
+                'partial_indexing' => '',
+                'languages' => '',
+            ],
+        ]);
+
+        $configurationResolver = $this->createStub(ConfigurationResolver::class);
+        $configurationResolver->method('resolve')->willReturn(['extender' => [['type' => 'news']]]);
+
+        $subject = new ConfigurationLoader(
+            $configurationRepository,
+            $this->createStub(PagesRepository::class),
+            $configurationResolver,
+        );
+
+        self::assertSame(['extender' => [['type' => 'news']]], $subject->loadByUid(1)?->configuration);
     }
 
     public function testPreloadConfigurationsOnlyExecutesOnce(): void
@@ -297,6 +345,7 @@ class ConfigurationLoaderTest extends AbstractTest
         $subject = new ConfigurationLoader(
             $configurationRepository,
             $this->createStub(PagesRepository::class),
+            $this->createStub(ConfigurationResolver::class),
         );
         $subject->preloadConfigurations();
         $subject->preloadConfigurations();

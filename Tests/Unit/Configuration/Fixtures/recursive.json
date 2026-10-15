@@ -1,0 +1,6 @@
+{
+  "@import": "recursive.json",
+  "options": {
+    "a": "recursive"
+  }
+}

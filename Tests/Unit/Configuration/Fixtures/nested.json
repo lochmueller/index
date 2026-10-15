@@ -1,0 +1,6 @@
+{
+  "@import": "Nested/child.json",
+  "options": {
+    "a": "nested"
+  }
+}

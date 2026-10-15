@@ -1,0 +1,4 @@
+extender:
+  - type: news
+    limitToPages: [13]
+    recordStorages: ['%env(INDEX_TEST_STORAGE)%']

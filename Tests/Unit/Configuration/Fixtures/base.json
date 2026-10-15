@@ -1,0 +1,13 @@
+{
+  "extender": [
+    {
+      "type": "news",
+      "limitToPages": [13],
+      "recordStorages": [12]
+    }
+  ],
+  "options": {
+    "a": "base",
+    "b": "base"
+  }
+}

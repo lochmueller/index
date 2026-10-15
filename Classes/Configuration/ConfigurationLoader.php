@@ -17,6 +17,7 @@ class ConfigurationLoader
     public function __construct(
         protected readonly ConfigurationRepository $configurationRepository,
         protected readonly PagesRepository $pagesRepository,
+        protected readonly ConfigurationResolver $configurationResolver,
     ) {}
 
     public function loadByPage(int $pageUid): ?Configuration
@@ -90,7 +91,10 @@ class ConfigurationLoader
     {
         if (!self::$preloadExecuted) {
             foreach ($this->configurationRepository->findAll() as $item) {
-                self::$runtimeConfigurationCache[(int) $item['uid']] = Configuration::createByDatabaseRow($item);
+                self::$runtimeConfigurationCache[(int) $item['uid']] = Configuration::createByDatabaseRow(
+                    $item,
+                    $this->configurationResolver->resolve((string) ($item['configuration'] ?? '')),
+                );
             }
             self::$preloadExecuted = true;
         }

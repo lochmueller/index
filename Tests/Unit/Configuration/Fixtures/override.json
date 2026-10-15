@@ -1,0 +1,11 @@
+{
+  "extender": [
+    {
+      "type": "address"
+    }
+  ],
+  "options": {
+    "b": "override",
+    "c": "override"
+  }
+}

@@ -75,7 +75,11 @@ class BootstrapPackageInlineContentType extends AbstractBootstrapPackageContentT
 
         // Timeline items have date field
         if ($parentType === 'timeline') {
-            $date = trim((string) $item->get('date'));
+            // datetime fields are resolved to \DateTimeImmutable by the Record API
+            $dateValue = $item->get('date');
+            $date = $dateValue instanceof \DateTimeInterface
+                ? $dateValue->format('Y-m-d')
+                : trim((string) $dateValue);
             if ($date !== '') {
                 $dto->content .= '<time>' . $date . '</time>';
             }

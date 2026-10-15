@@ -17,6 +17,7 @@ use Lochmueller\Index\Tests\Unit\AbstractTest;
 use Lochmueller\Index\Traversing\RecordSelection;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\UriInterface;
+use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Routing\RouterInterface;
 use TYPO3\CMS\Core\Site\Entity\Site;
@@ -268,6 +269,35 @@ class DatabaseIndexingHandlerTest extends AbstractTest
         $configurationLoader = $this->createStub(ConfigurationLoader::class);
 
         $subject = $this->createSubject($siteFinder, $contentIndexing, $eventDispatcher, $recordSelection, $configurationLoader);
+        $subject->__invoke($message);
+    }
+
+    public function testInvokeCatchesErrorAndLogsError(): void
+    {
+        $site = $this->createSiteWithRouter();
+        $message = $this->createMessage();
+
+        $siteFinder = $this->createStub(SiteFinder::class);
+        $siteFinder->method('getSiteByIdentifier')->willReturn($site);
+
+        $configurationLoader = $this->createStub(ConfigurationLoader::class);
+        $configurationLoader->method('loadByUid')->willReturn($this->createConfiguration());
+
+        $recordSelection = $this->createStub(RecordSelection::class);
+        $recordSelection->method('findRenderablePage')->willReturn(['title' => 'Page Title']);
+        $recordSelection->method('findRecordsOnPage')->willReturn([$this->createStub(Record::class)]);
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::never())->method('dispatch');
+
+        $contentIndexing = $this->createStub(ContentIndexing::class);
+        $contentIndexing->method('addContent')->willThrowException(new \Error('Object could not be converted to string'));
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('error')->with('Object could not be converted to string');
+
+        $subject = $this->createSubject($siteFinder, $contentIndexing, $eventDispatcher, $recordSelection, $configurationLoader);
+        $subject->setLogger($logger);
         $subject->__invoke($message);
     }
 

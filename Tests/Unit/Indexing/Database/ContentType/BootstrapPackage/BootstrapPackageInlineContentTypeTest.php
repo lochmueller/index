@@ -395,6 +395,31 @@ class BootstrapPackageInlineContentTypeTest extends AbstractTest
     }
 
     /**
+     * Timeline dates of type=datetime are resolved to \DateTimeImmutable by the Record API (TYPO3 v13.4 and v14)
+     */
+    public function testTimelineItemWithDateTimeObjectIsFormatted(): void
+    {
+        $this->setBootstrapPackageActive(true);
+
+        $record = $this->createRecordWithFields('timeline', ['uid' => 123]);
+        $dto = $this->createDto();
+
+        $itemRecord = $this->createItemRecord([
+            'header' => 'Milestone',
+            'date' => new \DateTimeImmutable('2024-05-17 13:45:00'),
+        ]);
+
+        $headerContentType = $this->createStub(HeaderContentType::class);
+        $inlineRelationService = $this->createStub(InlineRelationService::class);
+        $inlineRelationService->method('findByParent')->willReturn([$itemRecord]);
+
+        $subject = new BootstrapPackageInlineContentType($headerContentType, $inlineRelationService);
+        $subject->addContent($record, $dto);
+
+        self::assertSame('<h3>Milestone</h3><time>2024-05-17</time>', $dto->content);
+    }
+
+    /**
      * Test that inline items with empty fields are handled gracefully
      */
     #[DataProvider('allInlineTypesProvider')]

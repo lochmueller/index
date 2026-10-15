@@ -81,7 +81,7 @@ class DatabaseIndexingHandler implements IndexingInterface, LoggerAwareInterface
 
                 $this->indexItems($items, $message, $site, $accessGroups, $configuration);
             }
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
         }
     }

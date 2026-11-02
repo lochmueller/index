@@ -8,7 +8,7 @@ use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Indexing\File\FileIndexingQueue;
-use Lochmueller\Index\Indexing\IndexingInterface;
+use Lochmueller\Index\Indexing\IndexQueueInterface;
 use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\DatabaseIndexMessage;
 use Lochmueller\Index\Queue\Message\FinishProcessMessage;
@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
 #[Autoconfigure(lazy: true)]
-class DatabaseIndexingQueue implements IndexingInterface
+class DatabaseIndexingQueue implements IndexQueueInterface
 {
     public function __construct(
         private Bus $bus,
@@ -26,6 +26,11 @@ class DatabaseIndexingQueue implements IndexingInterface
         private PageTraversing      $pageTraversing,
         private FileIndexingQueue   $fileIndexing,
     ) {}
+
+    public function getTechnology(): IndexTechnology
+    {
+        return IndexTechnology::Database;
+    }
 
     public function fillQueue(Configuration $configuration, bool $skipFiles = false): void
     {

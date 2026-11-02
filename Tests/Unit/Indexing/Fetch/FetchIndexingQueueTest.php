@@ -123,4 +123,13 @@ class FetchIndexingQueueTest extends AbstractTest
         $subject = new FetchIndexingQueue($bus, $this->createSiteFinder());
         $subject->fillQueue($this->createConfiguration(''));
     }
+    public function testGetTechnologyReturnsTheTechnologyOfTheQueue(): void
+    {
+        $subject = new FetchIndexingQueue(
+            $this->createStub(Bus::class),
+            $this->createStub(SiteFinder::class),
+        );
+
+        self::assertSame(IndexTechnology::Fetch, $subject->getTechnology());
+    }
 }

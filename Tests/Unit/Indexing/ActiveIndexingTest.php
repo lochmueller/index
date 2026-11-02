@@ -7,145 +7,121 @@ namespace Lochmueller\Index\Tests\Unit\Indexing;
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Indexing\ActiveIndexing;
-use Lochmueller\Index\Indexing\Database\DatabaseIndexingQueue;
-use Lochmueller\Index\Indexing\Fetch\FetchIndexingQueue;
-use Lochmueller\Index\Indexing\Frontend\FrontendIndexingQueue;
-use Lochmueller\Index\Indexing\Http\HttpIndexingQueue;
+use Lochmueller\Index\Indexing\IndexQueueInterface;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Log\LoggerInterface;
 
 class ActiveIndexingTest extends AbstractTest
 {
-    public function testFillQueueCallsDatabaseIndexingQueueForDatabaseTechnology(): void
-    {
-        $configuration = $this->createConfiguration(IndexTechnology::Database);
-
-        $databaseIndexQueue = $this->createMock(DatabaseIndexingQueue::class);
-        $databaseIndexQueue->expects(self::once())
-            ->method('fillQueue')
-            ->with($configuration, false);
-
-        $frontendIndexQueue = $this->createStub(FrontendIndexingQueue::class);
-        $httpIndexingQueue = $this->createStub(HttpIndexingQueue::class);
-
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
-        $subject->fillQueue($configuration);
-    }
-
-    public function testFillQueueCallsFrontendIndexingQueueForFrontendTechnology(): void
+    public function testFillQueueCallsTheQueueOfTheTechnologyOfTheConfiguration(): void
     {
         $configuration = $this->createConfiguration(IndexTechnology::Frontend);
 
-        $databaseIndexQueue = $this->createStub(DatabaseIndexingQueue::class);
+        $databaseQueue = $this->createQueue(IndexTechnology::Database);
+        $frontendQueue = $this->createQueue(IndexTechnology::Frontend);
+        $httpQueue = $this->createQueue(IndexTechnology::Http);
 
-        $frontendIndexQueue = $this->createMock(FrontendIndexingQueue::class);
-        $frontendIndexQueue->expects(self::once())
-            ->method('fillQueue')
-            ->with($configuration, false);
-
-        $httpIndexingQueue = $this->createStub(HttpIndexingQueue::class);
-
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
+        $subject = new ActiveIndexing([$databaseQueue, $frontendQueue, $httpQueue]);
         $subject->fillQueue($configuration);
-    }
 
-    public function testFillQueueCallsHttpIndexingQueueForHttpTechnology(): void
-    {
-        $configuration = $this->createConfiguration(IndexTechnology::Http);
-
-        $databaseIndexQueue = $this->createStub(DatabaseIndexingQueue::class);
-        $frontendIndexQueue = $this->createStub(FrontendIndexingQueue::class);
-
-        $httpIndexingQueue = $this->createMock(HttpIndexingQueue::class);
-        $httpIndexingQueue->expects(self::once())
-            ->method('fillQueue')
-            ->with($configuration, false);
-
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
-        $subject->fillQueue($configuration);
+        self::assertSame([[$configuration, false]], $frontendQueue->calls);
+        self::assertSame([], $databaseQueue->calls);
+        self::assertSame([], $httpQueue->calls);
     }
 
     public function testFillQueuePassesSkipFilesParameter(): void
     {
         $configuration = $this->createConfiguration(IndexTechnology::Database);
 
-        $databaseIndexQueue = $this->createMock(DatabaseIndexingQueue::class);
-        $databaseIndexQueue->expects(self::once())
-            ->method('fillQueue')
-            ->with($configuration, true);
+        $databaseQueue = $this->createQueue(IndexTechnology::Database);
 
-        $frontendIndexQueue = $this->createStub(FrontendIndexingQueue::class);
-        $httpIndexingQueue = $this->createStub(HttpIndexingQueue::class);
-
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
+        $subject = new ActiveIndexing([$databaseQueue]);
         $subject->fillQueue($configuration, true);
+
+        self::assertSame([[$configuration, true]], $databaseQueue->calls);
     }
 
-    public function testFillQueueDoesNothingForNoneTechnology(): void
+    /**
+     * Of two queues for the same technology the first one wins, so a shipped technology can be
+     * replaced via the priority of the "index.technology" tag.
+     */
+    public function testFirstQueueOfATechnologyWins(): void
     {
-        $configuration = $this->createConfiguration(IndexTechnology::None);
+        $configuration = $this->createConfiguration(IndexTechnology::Database);
 
-        $databaseIndexQueue = $this->createMock(DatabaseIndexingQueue::class);
-        $databaseIndexQueue->expects(self::never())->method('fillQueue');
+        $ownQueue = $this->createQueue(IndexTechnology::Database);
+        $shippedQueue = $this->createQueue(IndexTechnology::Database);
 
-        $frontendIndexQueue = $this->createMock(FrontendIndexingQueue::class);
-        $frontendIndexQueue->expects(self::never())->method('fillQueue');
-
-        $httpIndexingQueue = $this->createMock(HttpIndexingQueue::class);
-        $httpIndexingQueue->expects(self::never())->method('fillQueue');
-
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
+        $subject = new ActiveIndexing([$ownQueue, $shippedQueue]);
         $subject->fillQueue($configuration);
+
+        self::assertCount(1, $ownQueue->calls);
+        self::assertSame([], $shippedQueue->calls);
     }
 
-    public function testFillQueueDoesNothingForCacheTechnology(): void
+    /**
+     * @return array<string, array{IndexTechnology}>
+     */
+    public static function technologiesWithOwnEntryPointDataProvider(): array
     {
-        $configuration = $this->createConfiguration(IndexTechnology::Cache);
-
-        $databaseIndexQueue = $this->createMock(DatabaseIndexingQueue::class);
-        $databaseIndexQueue->expects(self::never())->method('fillQueue');
-
-        $frontendIndexQueue = $this->createMock(FrontendIndexingQueue::class);
-        $frontendIndexQueue->expects(self::never())->method('fillQueue');
-
-        $httpIndexingQueue = $this->createMock(HttpIndexingQueue::class);
-        $httpIndexingQueue->expects(self::never())->method('fillQueue');
-
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
-        $subject->fillQueue($configuration);
+        return [
+            'none' => [IndexTechnology::None],
+            'cache' => [IndexTechnology::Cache],
+            'external' => [IndexTechnology::External],
+        ];
     }
 
-    public function testFillQueueDoesNothingForExternalTechnology(): void
+    #[DataProvider('technologiesWithOwnEntryPointDataProvider')]
+    public function testFillQueueDoesNothingForTechnologiesThatAreNotTriggeredByAConfiguration(IndexTechnology $technology): void
     {
-        $configuration = $this->createConfiguration(IndexTechnology::External);
+        $queue = $this->createQueue($technology);
 
-        $databaseIndexQueue = $this->createMock(DatabaseIndexingQueue::class);
-        $databaseIndexQueue->expects(self::never())->method('fillQueue');
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('warning');
 
-        $frontendIndexQueue = $this->createMock(FrontendIndexingQueue::class);
-        $frontendIndexQueue->expects(self::never())->method('fillQueue');
+        $subject = new ActiveIndexing([$queue]);
+        $subject->setLogger($logger);
+        $subject->fillQueue($this->createConfiguration($technology));
 
-        $httpIndexingQueue = $this->createMock(HttpIndexingQueue::class);
-        $httpIndexingQueue->expects(self::never())->method('fillQueue');
-
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $this->createStub(FetchIndexingQueue::class));
-        $subject->fillQueue($configuration);
+        self::assertSame([], $queue->calls);
     }
 
-    public function testFillQueueCallsFetchIndexingQueueForFetchTechnology(): void
+    public function testMissingQueueOfATechnologyIsLogged(): void
     {
         $configuration = $this->createConfiguration(IndexTechnology::Fetch);
 
-        $databaseIndexQueue = $this->createStub(DatabaseIndexingQueue::class);
-        $frontendIndexQueue = $this->createStub(FrontendIndexingQueue::class);
-        $httpIndexingQueue = $this->createStub(HttpIndexingQueue::class);
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('warning')
+            ->with('Index configuration is skipped because no queue handles its technology', [
+                'technology' => 'fetch',
+                'configurationId' => 1,
+            ]);
 
-        $fetchIndexingQueue = $this->createMock(FetchIndexingQueue::class);
-        $fetchIndexingQueue->expects(self::once())
-            ->method('fillQueue')
-            ->with($configuration, false);
-
-        $subject = new ActiveIndexing($databaseIndexQueue, $frontendIndexQueue, $httpIndexingQueue, $fetchIndexingQueue);
+        $subject = new ActiveIndexing([$this->createQueue(IndexTechnology::Database)]);
+        $subject->setLogger($logger);
         $subject->fillQueue($configuration);
+    }
+
+    private function createQueue(IndexTechnology $technology): IndexQueueInterface
+    {
+        return new class ($technology) implements IndexQueueInterface {
+            /** @var array<int, array{Configuration, bool}> */
+            public array $calls = [];
+
+            public function __construct(private readonly IndexTechnology $technology) {}
+
+            public function getTechnology(): IndexTechnology
+            {
+                return $this->technology;
+            }
+
+            public function fillQueue(Configuration $configuration, bool $skipFiles = false): void
+            {
+                $this->calls[] = [$configuration, $skipFiles];
+            }
+        };
     }
 
     private function createConfiguration(IndexTechnology $technology): Configuration

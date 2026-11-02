@@ -314,4 +314,15 @@ class FrontendIndexingQueueTest extends AbstractTest
         self::assertSame(IndexTechnology::Frontend, $dispatchedMessages[0]->technology);
         self::assertSame(IndexTechnology::Frontend, $dispatchedMessages[1]->technology);
     }
+    public function testGetTechnologyReturnsTheTechnologyOfTheQueue(): void
+    {
+        $subject = new FrontendIndexingQueue(
+            $this->createStub(Bus::class),
+            $this->createStub(FileIndexingQueue::class),
+            $this->createStub(PageTraversing::class),
+            $this->createStub(SiteFinder::class),
+        );
+
+        self::assertSame(IndexTechnology::Frontend, $subject->getTechnology());
+    }
 }

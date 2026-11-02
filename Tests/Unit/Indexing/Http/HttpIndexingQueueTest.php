@@ -258,4 +258,15 @@ class HttpIndexingQueueTest extends AbstractTest
         self::assertSame($processIds[1], $processIds[2]);
         self::assertStringStartsWith('http-index', $processIds[0]);
     }
+    public function testGetTechnologyReturnsTheTechnologyOfTheQueue(): void
+    {
+        $subject = new HttpIndexingQueue(
+            $this->createStub(Bus::class),
+            $this->createStub(FileIndexingQueue::class),
+            $this->createStub(PageTraversing::class),
+            $this->createStub(SiteFinder::class),
+        );
+
+        self::assertSame(IndexTechnology::Http, $subject->getTechnology());
+    }
 }

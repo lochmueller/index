@@ -253,7 +253,7 @@ Tests/
 ## Important Notes
 
 1. **Always run linters before committing**: `composer code-fix && composer code-check`
-2. **Static analysis level**: PHPStan Level 5
+2. **Static analysis level**: PHPStan Level 8
 3. **TYPO3 DI**: Use constructor injection, configure in `Services.yaml`
 4. **Database changes**: Update TCA files in `Configuration/TCA/`
 5. **Vendor directory**: Located at `.Build/vendor/`

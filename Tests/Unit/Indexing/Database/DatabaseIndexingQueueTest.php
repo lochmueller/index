@@ -481,4 +481,15 @@ class DatabaseIndexingQueueTest extends AbstractTest
         self::assertSame(IndexType::Full, $finishMessage->type);
         self::assertSame(77, $finishMessage->indexConfigurationRecordId);
     }
+    public function testGetTechnologyReturnsTheTechnologyOfTheQueue(): void
+    {
+        $subject = new DatabaseIndexingQueue(
+            $this->createStub(Bus::class),
+            $this->createStub(SiteFinder::class),
+            $this->createStub(PageTraversing::class),
+            $this->createStub(FileIndexingQueue::class),
+        );
+
+        self::assertSame(IndexTechnology::Database, $subject->getTechnology());
+    }
 }

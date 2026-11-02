@@ -7,7 +7,7 @@ namespace Lochmueller\Index\Indexing\Fetch;
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
-use Lochmueller\Index\Indexing\IndexingInterface;
+use Lochmueller\Index\Indexing\IndexQueueInterface;
 use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\FetchIndexMessage;
 use Lochmueller\Index\Queue\Message\FinishProcessMessage;
@@ -16,12 +16,17 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
 #[Autoconfigure(lazy: true)]
-readonly class FetchIndexingQueue implements IndexingInterface
+readonly class FetchIndexingQueue implements IndexQueueInterface
 {
     public function __construct(
         private Bus        $bus,
         private SiteFinder $siteFinder,
     ) {}
+
+    public function getTechnology(): IndexTechnology
+    {
+        return IndexTechnology::Fetch;
+    }
 
     public function fillQueue(Configuration $configuration, bool $skipFiles = false): void
     {

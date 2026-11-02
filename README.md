@@ -287,6 +287,41 @@ integrations. These are very "internal" options to extend the index process:
 - **index.file_extractor** - Extract content from files in the index process.
 - **index.extender** - Extend the URI queue in the Page traversing.
 - **index.content_processor** - Modify the HTML content before indexing (selectable per index configuration).
+- **index.technology** - Fill the queue for one index technology of an index configuration record.
+
+#### Own index technology
+
+`ActiveIndexing` collects every service that implements `IndexQueueInterface` via the `index.technology` tag and
+asks each one for its technology, so an own technology needs no change in a core class of the extension:
+
+```php
+use Lochmueller\Index\Configuration\Configuration;
+use Lochmueller\Index\Enums\IndexTechnology;
+use Lochmueller\Index\Indexing\IndexQueueInterface;
+
+class SolrIndexingQueue implements IndexQueueInterface
+{
+    public function getTechnology(): IndexTechnology
+    {
+        return IndexTechnology::Solr;
+    }
+
+    public function fillQueue(Configuration $configuration, bool $skipFiles = false): void
+    {
+        // dispatch your own messages
+    }
+}
+```
+
+Two limitations are worth knowing:
+
+- `IndexTechnology` is a PHP enum and therefore closed, so a completely new technology still needs a new case in
+  that enum. Within the extension this is the only place that has to be touched.
+- If two services return the same technology, the first one of the tag wins. Use the `priority` of the
+  `index.technology` tag to replace a shipped technology with your own implementation.
+
+The technologies that are not started from an index configuration record have their own entry points and are not
+part of this tag: *Cache* is filled during a frontend request and *External* by a reaction.
 
 ### Webhooks / Reactions
 

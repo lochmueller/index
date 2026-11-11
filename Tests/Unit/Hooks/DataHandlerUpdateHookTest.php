@@ -1249,6 +1249,147 @@ class DataHandlerUpdateHookTest extends AbstractTest
         $subject->processDatamap_afterDatabaseOperations('new', 'tt_content', 'NEW123abc', [], $dataHandlerStub);
     }
 
+    #[DataProvider('invisibleHttpRecordChanges')]
+    public function testInvisibleConfiguredRecordIsQueuedForRecordIndexing(string $operation): void
+    {
+        $table = 'tx_example_domain_model_item';
+        $GLOBALS['TCA'][$table]['ctrl'] = [
+            'delete' => 'deleted',
+            'enablecolumns' => ['disabled' => 'hidden'],
+        ];
+        $record = [
+            'uid' => 42,
+            'pid' => 12,
+            'sys_language_uid' => 2,
+            'hidden' => 1,
+            'deleted' => $operation === 'delete' ? 1 : 0,
+        ];
+        $configuration = new Configuration(
+            configurationId: 7,
+            pageId: 10,
+            technology: IndexTechnology::Http,
+            skipNoSearchPages: false,
+            contentIndexing: true,
+            levels: 0,
+            fileMounts: [],
+            fileTypes: [],
+            configuration: [
+                'records' => [[
+                    'table' => 'tx_example_domain_model_item',
+                    'recordStorages' => [12],
+                    'fields' => ['title' => 'title'],
+                ]],
+            ],
+            partialIndexing: [IndexPartialTrigger::Datamap->value, IndexPartialTrigger::Cmdmap->value],
+            languages: [],
+        );
+
+        $configurationLoader = $this->createStub(ConfigurationLoader::class);
+        $configurationLoader->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepository = $this->createStub(GenericRepository::class);
+        $genericRepository->method('setTableName')->willReturnSelf();
+        $genericRepository->method('findByUid')->willReturnCallback(
+            static fn(int $uid, bool $includeDeleted = false): ?array => $operation === 'delete'
+                ? ($includeDeleted ? $record : null)
+                : $record,
+        );
+
+        $cache = $this->createStub(FrontendInterface::class);
+        $cache->method('get')->willReturn([]);
+        $activeIndexing = $this->createMock(ActiveIndexing::class);
+        $activeIndexing->expects(self::once())->method('fillQueue');
+        $activeIndexing->expects(self::once())
+            ->method('queueRecordChange')
+            ->with(
+                $table,
+                $operation === 'delete' ? $record : null,
+                $operation === 'delete' ? null : $record,
+                $operation === 'delete' ? IndexPartialTrigger::Cmdmap : IndexPartialTrigger::Datamap,
+            );
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoader,
+            $activeIndexing,
+            $cache,
+            $genericRepository,
+            $this->createStub(Bus::class),
+            new Context(),
+            $this->createStub(DeIndexDocumentMessageFactory::class),
+        );
+
+        if ($operation === 'hide') {
+            $subject->processDatamap_afterDatabaseOperations(
+                'update',
+                'tx_example_domain_model_item',
+                42,
+                ['hidden' => 1],
+                $this->createStub(DataHandler::class),
+            );
+        } else {
+            $subject->processCmdmap_postProcess(
+                'delete',
+                'tx_example_domain_model_item',
+                42,
+                null,
+                $this->createStub(DataHandler::class),
+                null,
+                null,
+            );
+        }
+
+        unset($GLOBALS['TCA'][$table]);
+    }
+
+    public function testMovingConfiguredRecordQueuesItsOldAndNewLocations(): void
+    {
+        $table = 'tx_example_domain_model_item';
+        $recordBeforeMove = ['uid' => 42, 'pid' => 12, 'sys_language_uid' => 0];
+        $recordAfterMove = ['uid' => 42, 'pid' => 13, 'sys_language_uid' => 0];
+        $configuration = $this->createConfiguration([IndexPartialTrigger::Cmdmap->value]);
+        $configurationLoader = $this->createStub(ConfigurationLoader::class);
+        $configurationLoader->method('loadByPageTraversing')->willReturn($configuration);
+
+        $genericRepository = $this->createStub(GenericRepository::class);
+        $genericRepository->method('setTableName')->willReturnSelf();
+        $genericRepository->method('findByUid')->willReturnOnConsecutiveCalls($recordBeforeMove, $recordAfterMove);
+
+        $activeIndexing = $this->createMock(ActiveIndexing::class);
+        $activeIndexing->expects(self::once())
+            ->method('queueRecordChange')
+            ->with($table, $recordBeforeMove, $recordAfterMove, IndexPartialTrigger::Cmdmap);
+        $activeIndexing->expects(self::once())->method('fillQueue');
+
+        $subject = new DataHandlerUpdateHook(
+            $configurationLoader,
+            $activeIndexing,
+            $this->createRuntimeCacheStub(),
+            $genericRepository,
+            $this->createStub(Bus::class),
+            new Context(),
+            $this->createStub(DeIndexDocumentMessageFactory::class),
+        );
+        $dataHandler = $this->createStub(DataHandler::class);
+
+        $subject->processCmdmap_preProcess('move', $table, 42, 13, $dataHandler, null);
+        $subject->processCmdmap_postProcess('move', $table, 42, 13, $dataHandler, null, null);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function invisibleHttpRecordChanges(): iterable
+    {
+        yield 'hidden' => ['hide'];
+        yield 'deleted' => ['delete'];
+    }
+
+    protected function tearDown(): void
+    {
+        unset($GLOBALS['TCA']['tx_example_domain_model_item']);
+        parent::tearDown();
+    }
+
     /**
      * @param \ArrayObject<int, array<string, mixed>|null> $records Live page records by uid - changes are visible to the subject
      * @param array<int, DeIndexDocumentMessage> $dispatched

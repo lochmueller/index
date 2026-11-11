@@ -9,6 +9,7 @@ use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Indexing\File\FileIndexingQueue;
 use Lochmueller\Index\Indexing\Frontend\FrontendIndexingQueue;
+use Lochmueller\Index\Indexing\Record\RecordIndexingQueueInterface;
 use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\FinishProcessMessage;
 use Lochmueller\Index\Queue\Message\FrontendIndexMessage;
@@ -77,7 +78,7 @@ class FrontendIndexingQueueTest extends AbstractTest
                 $dispatchedMessages[] = $message;
             });
 
-        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration());
 
         self::assertInstanceOf(StartProcessMessage::class, $dispatchedMessages[0]);
@@ -107,7 +108,7 @@ class FrontendIndexingQueueTest extends AbstractTest
                 $dispatchedMessages[] = $message;
             });
 
-        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration());
 
         self::assertInstanceOf(StartProcessMessage::class, $dispatchedMessages[0]);
@@ -139,7 +140,7 @@ class FrontendIndexingQueueTest extends AbstractTest
                 $dispatchedMessages[] = $message;
             });
 
-        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration(IndexType::Partial));
 
         self::assertSame(IndexType::Partial, $dispatchedMessages[0]->type);
@@ -165,7 +166,7 @@ class FrontendIndexingQueueTest extends AbstractTest
                 $dispatchedMessages[] = $message;
             });
 
-        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration());
 
         self::assertSame(IndexType::Full, $dispatchedMessages[0]->type);
@@ -193,7 +194,7 @@ class FrontendIndexingQueueTest extends AbstractTest
 
         $bus = $this->createStub(Bus::class);
 
-        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration());
     }
 
@@ -213,7 +214,7 @@ class FrontendIndexingQueueTest extends AbstractTest
 
         $bus = $this->createStub(Bus::class);
 
-        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration(), skipFiles: true);
     }
 
@@ -248,7 +249,7 @@ class FrontendIndexingQueueTest extends AbstractTest
                 }
             });
 
-        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration());
 
         self::assertCount(3, $frontendMessages);
@@ -279,7 +280,7 @@ class FrontendIndexingQueueTest extends AbstractTest
                 $processIds[] = $message->indexProcessId;
             });
 
-        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration());
 
         self::assertCount(3, $processIds);
@@ -308,7 +309,7 @@ class FrontendIndexingQueueTest extends AbstractTest
                 $dispatchedMessages[] = $message;
             });
 
-        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new FrontendIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration());
 
         self::assertSame(IndexTechnology::Frontend, $dispatchedMessages[0]->technology);
@@ -320,9 +321,45 @@ class FrontendIndexingQueueTest extends AbstractTest
             $this->createStub(Bus::class),
             $this->createStub(FileIndexingQueue::class),
             $this->createStub(PageTraversing::class),
+            $this->createStub(RecordIndexingQueueInterface::class),
             $this->createStub(SiteFinder::class),
         );
 
         self::assertSame(IndexTechnology::Frontend, $subject->getTechnology());
+    }
+
+    public function testFillQueueDelegatesConfiguredRecordsToTheSharedQueue(): void
+    {
+        $configuration = new Configuration(
+            configurationId: 7,
+            pageId: 1,
+            technology: IndexTechnology::Frontend,
+            skipNoSearchPages: false,
+            contentIndexing: true,
+            levels: 0,
+            fileMounts: [],
+            fileTypes: [],
+            configuration: ['records' => [['table' => 'tx_example_domain_model_item', 'recordStorages' => [12]]]],
+            partialIndexing: [],
+            languages: [],
+        );
+        $site = $this->createStub(Site::class);
+        $siteFinder = $this->createStub(SiteFinder::class);
+        $siteFinder->method('getSiteByPageId')->willReturn($site);
+        $pageTraversing = $this->createStub(PageTraversing::class);
+        $pageTraversing->method('getFrontendInformation')->willReturn([]);
+        $recordIndexingQueue = $this->createMock(RecordIndexingQueueInterface::class);
+        $recordIndexingQueue->expects(self::once())
+            ->method('queueConfiguredRecords')
+            ->with($configuration, $site, self::isString(), IndexType::Full);
+
+        $subject = new FrontendIndexingQueue(
+            $this->createStub(Bus::class),
+            $this->createStub(FileIndexingQueue::class),
+            $pageTraversing,
+            $recordIndexingQueue,
+            $siteFinder,
+        );
+        $subject->fillQueue($configuration, true);
     }
 }

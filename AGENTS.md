@@ -19,7 +19,8 @@ All commands are run via Composer from the package root:
 |---------|-------------|
 | `composer code-fix` | Auto-fix code style with PHP-CS-Fixer |
 | `composer code-check` | Run PHPStan static analysis |
-| `composer code-test` | Run PHPUnit tests |
+| `composer code-test` | Run unit and functional PHPUnit suites |
+| `composer phpunit-functional` | Run the functional PHPUnit suite |
 
 ### Running a Single Test
 
@@ -32,6 +33,9 @@ composer code-test
 
 # Run a specific test method
 .Build/bin/phpunit -c Tests/UnitTests.xml --filter testMethodName
+
+# Run functional tests
+composer phpunit-functional
 
 # Run tests by group
 .Build/bin/phpunit -c Tests/UnitTests.xml --group=tmp
@@ -204,6 +208,12 @@ class ExampleTest extends AbstractTest
 - Test files location: `Tests/Unit/{SubDirectory}/{ClassName}Test.php`
 - Use Stubs instead of Mocks, if there are no expectations (avoid notices in the execution)
 
+### Functional Tests
+
+- Put TYPO3 database and DataHandler integration tests in `Tests/Functional/`.
+- Extend TYPO3's `FunctionalTestCase` and load only the required system extensions.
+- Run them with `composer phpunit-functional`; SQLite is the configured test database.
+
 ## Dependency Injection Tags
 
 | Tag | Purpose |
@@ -247,7 +257,9 @@ Configuration/
   TCA/              # Table Configuration Array
 Tests/
   Unit/             # PHPUnit tests
-  UnitTests.xml     # PHPUnit configuration
+  Functional/       # TYPO3 database integration tests
+  UnitTests.xml     # Unit PHPUnit configuration
+  FunctionalTests.xml # Functional PHPUnit configuration
 ```
 
 ## Important Notes

@@ -11,9 +11,12 @@ use PHPUnit\Framework\MockObject\MockObject;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Expression\ExpressionBuilder;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
+use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionContainerInterface;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionInterface;
+use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class GenericRepositoryTest extends AbstractTest
@@ -240,6 +243,57 @@ class GenericRepositoryTest extends AbstractTest
         $actualRecords = iterator_to_array($subject->findRecordsOnPages($pageUids, $languageField, $languages));
 
         self::assertSame($expectedRecords, $actualRecords);
+    }
+
+    public function testFindRecordsOnStoragesAddsVisibilityAndLiveWorkspaceRestrictions(): void
+    {
+        $storageUids = [12, 24];
+        $expectedRecords = [
+            ['uid' => 77, 'pid' => 12],
+        ];
+
+        $hiddenRestriction = $this->createStub(HiddenRestriction::class);
+        $workspaceRestriction = $this->createStub(WorkspaceRestriction::class);
+        GeneralUtility::addInstance(HiddenRestriction::class, $hiddenRestriction);
+        GeneralUtility::addInstance(WorkspaceRestriction::class, $workspaceRestriction);
+
+        $result = $this->createStub(Result::class);
+        $result->method('iterateAssociative')->willReturn(new \ArrayIterator($expectedRecords));
+
+        $expressionBuilder = $this->createStub(ExpressionBuilder::class);
+        $expressionBuilder->method('in')->willReturn('pid IN (12, 24, -99)');
+
+        $deletedRestriction = $this->createStub(DeletedRestriction::class);
+        GeneralUtility::addInstance(DeletedRestriction::class, $deletedRestriction);
+
+        $restrictions = $this->createMock(QueryRestrictionContainerInterface::class);
+        $addedRestrictions = [];
+        $restrictions->expects(self::exactly(3))
+            ->method('add')
+            ->willReturnCallback(function (QueryRestrictionInterface $restriction) use (&$addedRestrictions, $restrictions): QueryRestrictionContainerInterface {
+                $addedRestrictions[] = $restriction;
+                return $restrictions;
+            });
+        $restrictions->expects(self::once())->method('removeAll')->willReturnSelf();
+
+        $queryBuilder = $this->createStub(QueryBuilder::class);
+        $queryBuilder->method('getRestrictions')->willReturn($restrictions);
+        $queryBuilder->method('select')->willReturnSelf();
+        $queryBuilder->method('from')->willReturnSelf();
+        $queryBuilder->method('where')->willReturnSelf();
+        $queryBuilder->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->method('executeQuery')->willReturn($result);
+
+        $connectionPool = $this->createStub(ConnectionPool::class);
+        $connectionPool->method('getQueryBuilderForTable')->willReturn($queryBuilder);
+
+        $subject = new GenericRepository($connectionPool);
+        $subject->setTableName('tx_test_items');
+
+        $actualRecords = iterator_to_array($subject->findRecordsOnStorages($storageUids));
+
+        self::assertSame($expectedRecords, $actualRecords);
+        self::assertSame([$deletedRestriction, $hiddenRestriction, $workspaceRestriction], $addedRestrictions);
     }
 
     public function testFindRecordsOnPagesAddsCustomRestrictions(): void

@@ -9,6 +9,7 @@ use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Indexing\File\FileIndexingQueue;
 use Lochmueller\Index\Indexing\IndexQueueInterface;
+use Lochmueller\Index\Indexing\Record\RecordIndexingQueueInterface;
 use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\DatabaseIndexMessage;
 use Lochmueller\Index\Queue\Message\FinishProcessMessage;
@@ -25,6 +26,7 @@ class DatabaseIndexingQueue implements IndexQueueInterface
         private SiteFinder          $siteFinder,
         private PageTraversing      $pageTraversing,
         private FileIndexingQueue   $fileIndexing,
+        private RecordIndexingQueueInterface $recordIndexingQueue,
     ) {}
 
     public function getTechnology(): IndexTechnology
@@ -61,6 +63,8 @@ class DatabaseIndexingQueue implements IndexQueueInterface
                 accessGroups: $info->accessGroups,
             ));
         }
+
+        $this->recordIndexingQueue->queueConfiguredRecords($configuration, $site, $id, $indexType);
 
         if (!$skipFiles) {
             $this->fileIndexing->fillQueue($configuration, $site, $id);

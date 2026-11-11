@@ -33,6 +33,11 @@ class DataHandlerUpdateHook
      */
     private array $documentsBeforeChange = [];
 
+    /**
+     * @var array<string, array<int, array<string, mixed>>>
+     */
+    private array $recordsBeforeChange = [];
+
     public function __construct(
         protected ConfigurationLoader      $configurationLoader,
         protected ActiveIndexing           $activeIndexing,
@@ -53,12 +58,20 @@ class DataHandlerUpdateHook
         int|string $id,
         DataHandler $dataHandler,
     ): void {
-        if ($table !== 'pages' || !isset($incomingFieldArray['slug']) || !MathUtility::canBeInterpretedAsInteger($id)) {
+        if (!MathUtility::canBeInterpretedAsInteger($id)) {
             return;
         }
 
-        // A slug change only affects the language of the record
-        $this->rememberDocuments((int) $id, IndexPartialTrigger::Datamap, false);
+        if ($table === 'pages') {
+            if (isset($incomingFieldArray['slug'])) {
+                $this->rememberDocuments((int) $id, IndexPartialTrigger::Datamap, false);
+            }
+            return;
+        }
+
+        if (array_intersect(['pid', 'sys_language_uid', 'l10n_parent'], array_keys($incomingFieldArray)) !== []) {
+            $this->rememberRecord($table, (int) $id);
+        }
     }
 
     /**
@@ -84,6 +97,12 @@ class DataHandlerUpdateHook
         }
 
         if ($table !== 'pages') {
+            $this->activeIndexing->queueRecordChange(
+                $table,
+                $this->takeRecordBeforeChange($table, (int) $id),
+                $record,
+                IndexPartialTrigger::Datamap,
+            );
             $this->triggerPartialIndexProcessForPage((int) $record['pid'], IndexPartialTrigger::Datamap);
             return;
         }
@@ -119,12 +138,20 @@ class DataHandlerUpdateHook
         DataHandler $dataHandler,
         mixed $pasteUpdate,
     ): void {
-        if ($table !== 'pages' || !in_array($command, ['move', 'delete'], true) || !MathUtility::canBeInterpretedAsInteger($id)) {
+        if (!MathUtility::canBeInterpretedAsInteger($id)) {
             return;
         }
 
-        // Moving or deleting a page in the default language affects all translations
-        $this->rememberDocuments((int) $id, IndexPartialTrigger::Cmdmap, true);
+        if ($table === 'pages') {
+            if (in_array($command, ['move', 'delete'], true)) {
+                $this->rememberDocuments((int) $id, IndexPartialTrigger::Cmdmap, true);
+            }
+            return;
+        }
+
+        if (in_array($command, ['move', 'delete'], true)) {
+            $this->rememberRecord($table, (int) $id);
+        }
     }
 
     public function processCmdmap_postProcess(
@@ -172,7 +199,22 @@ class DataHandlerUpdateHook
             $record = $this->genericRepository->setTableName($table)->findByUid((int) $id, true);
         }
         if ($record) {
+            if ($table !== 'pages') {
+                $this->activeIndexing->queueRecordChange(
+                    $table,
+                    $this->takeRecordBeforeChange($table, (int) $id) ?? ($command === 'delete' ? $record : null),
+                    $command === 'delete' ? null : $record,
+                    IndexPartialTrigger::Cmdmap,
+                );
+            }
             $this->triggerPartialIndexProcessForPage((int) $record['pid'], IndexPartialTrigger::Cmdmap);
+        } elseif ($table !== 'pages' && $command === 'delete') {
+            $this->activeIndexing->queueRecordChange(
+                $table,
+                $this->takeRecordBeforeChange($table, (int) $id),
+                null,
+                IndexPartialTrigger::Cmdmap,
+            );
         }
     }
 
@@ -264,6 +306,25 @@ class DataHandlerUpdateHook
         unset($this->documentsBeforeChange[$uid]);
 
         return $documents;
+    }
+
+    private function rememberRecord(string $table, int $uid): void
+    {
+        $record = $this->resolveLiveRecord($table, $uid);
+        if ($record !== null) {
+            $this->recordsBeforeChange[$table][$uid] = $record;
+        }
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function takeRecordBeforeChange(string $table, int $uid): ?array
+    {
+        $record = $this->recordsBeforeChange[$table][$uid] ?? null;
+        unset($this->recordsBeforeChange[$table][$uid]);
+
+        return $record;
     }
 
     /**

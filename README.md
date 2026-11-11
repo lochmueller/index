@@ -161,6 +161,58 @@ class MyExtension extends RecordExtender
 Use an own implementation of the `ExtenderInterface` if the URI generation needs real logic, e.g. more than one URI
 per record, an external data source or additional queries.
 
+#### Standalone record indexing
+
+Records that do not have a detail page can be indexed as standalone documents by the Database, Frontend and HTTP
+technologies. They are selected from the configured storage pages, indexed without an HTTP request, and stored with an
+empty `uri`. Fetch, Cache and External indexing do not use the `records` configuration.
+
+```json
+{
+  "records": [
+    {
+      "table": "tx_myextension_domain_model_item",
+      "recordStorages": [12, 24],
+      "recordTypes": ["0"],
+      "fields": {
+        "title": { "source": "title" },
+        "description": { "source": "description" },
+        "departmentId": { "source": "department", "type": "integer", "filterable": true }
+      }
+    }
+  ]
+}
+```
+
+Each table can be configured once. `recordStorages` is required and contains the PID values where records are stored.
+`recordTypes` and `constraints` are optional filters. Each entry in `fields` maps a SEAL field name to a TCA field;
+`source` defaults to the SEAL field name. The SEAL type is inferred from the TCA schema and can be overridden with
+`text`, `integer`, `float`, `boolean` or `datetime`. Text fields are searchable by default. Numeric, boolean and date
+fields are filterable or sortable only when those options are enabled. A `title` field is required.
+
+The asynchronous `Lochmueller\Index\Event\IndexRecordEvent` is dispatched after the configured raw database values
+are loaded. It exposes the TYPO3 `Record`, its `recordType`, the table's `TcaSchema`, and the resolved
+`fieldDefinitions` (including each field's inferred or configured type and `multiple` setting). Listeners can use
+those TYPO3 APIs to resolve relations or inspect field configuration, then change values in the mutable `fields`
+array before the handler normalizes them and dispatches `IndexRecordReadyEvent` to EXT:seal. A listener can only
+change configured target fields; every value must resolve to a scalar or, for a `multiple` field, an array of
+scalars. Values must match the configured type. `event->type` is the index process type; `event->recordType` is the
+TCA record type. For example, use `event->record->get('tasks')` to read a record value,
+`event->tcaSchema->getField('tasks')` to inspect its TCA definition, and
+`event->fieldDefinitions['tasks']['type']` to read the SEAL target type.
+
+Configured fields are added to the per-site SEAL schema, so adapters such as OpenSearch receive their typed mappings
+when the index is created. OpenSearch uses strict mappings and this extension does not migrate an existing index's
+mapping; after changing record fields, use the adapter's safe index-rebuild and reindex procedure. The TYPO3 database
+adapter requires physical database columns for additional fields and rejects unsupported dynamic record fields
+instead of silently dropping them.
+
+Only non-deleted, non-hidden records are selected for indexing. A full index queues all configured records. Page
+partial indexing does not rescan those storage pages. When `datamap` or `cmdmap` partial indexing is enabled, the
+DataHandler hook queues changed records directly. It also de-indexes records that become hidden, are deleted, or move
+out of their configured storage pages. The indexing handler removes records that remain visible but no longer match
+their configured filters. The document identifier is based on table, UID and language, so it does not depend on a URL.
+
 #### Import configuration from files
 
 Comprehensive configurations can be stored in files of your site package and imported via `@import`. So the

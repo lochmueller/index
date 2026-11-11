@@ -28,4 +28,12 @@ enum IndexTechnology: string
             self::None, self::Cache, self::External => false,
         };
     }
+
+    public function supportsRecordIndexing(): bool
+    {
+        return match ($this) {
+            self::Database, self::Frontend, self::Http => true,
+            self::None, self::Cache, self::External, self::Fetch => false,
+        };
+    }
 }

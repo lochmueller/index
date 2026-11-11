@@ -9,6 +9,7 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\QueryHelper;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
+use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionInterface;
 use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -161,6 +162,54 @@ class GenericRepository extends AbstractRepository
             );
 
         return $queryBuilder->executeQuery()->iterateAssociative();
+    }
+
+    /**
+     * Find visible, non-deleted record rows on storage pages.
+     *
+     * @param int[] $storageUids
+     * @return iterable<array<string, mixed>>
+     */
+    public function findRecordsOnStorages(array $storageUids): iterable
+    {
+        $queryBuilder = $this->createQueryBuilder();
+        $queryBuilder->getRestrictions()
+            ->removeAll()
+            ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
+            ->add(GeneralUtility::makeInstance(HiddenRestriction::class))
+            ->add(GeneralUtility::makeInstance(WorkspaceRestriction::class, 0));
+
+        $storageUids[] = -99;
+
+        $queryBuilder->select('*')
+            ->from($this->getTableName())
+            ->where($queryBuilder->expr()->in('pid', $storageUids));
+
+        return $queryBuilder->executeQuery()->iterateAssociative();
+    }
+
+    /**
+     * @param array<class-string<QueryRestrictionInterface>|QueryRestrictionInterface> $restrictions
+     * @return array<string, mixed>|null
+     */
+    public function findByUidWithRestrictions(int $uid, array $restrictions): ?array
+    {
+        $queryBuilder = $this->createQueryBuilder();
+        foreach ($restrictions as $restriction) {
+            /** @var QueryRestrictionInterface $restrictionInstance */
+            $restrictionInstance = is_object($restriction) ? $restriction : GeneralUtility::makeInstance($restriction);
+            $queryBuilder->getRestrictions()->add($restrictionInstance);
+        }
+
+        $row = $queryBuilder
+            ->select('*')
+            ->from($this->getTableName())
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT)))
+            ->setMaxResults(1)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        return $row === false ? null : $row;
     }
 
     /**

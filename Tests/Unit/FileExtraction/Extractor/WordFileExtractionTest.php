@@ -7,6 +7,7 @@ namespace Lochmueller\Index\Tests\Unit\FileExtraction\Extractor;
 use Lochmueller\Index\FileExtraction\Extractor\WordFileExtraction;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use PhpOffice\PhpWord\IOFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TYPO3\CMS\Core\Resource\FileInterface;
 
 class WordFileExtractionTest extends AbstractTest
@@ -63,12 +64,49 @@ class WordFileExtractionTest extends AbstractTest
         }
 
         $file = $this->createStub(FileInterface::class);
+        $file->method('getExtension')->willReturn('docx');
         $file->method('getForLocalProcessing')->willReturn($wordPath);
 
         $subject = new WordFileExtraction();
         $result = $subject->getFileContent($file);
 
-        self::assertIsString($result);
+        self::assertStringContainsString('Test Content', $result);
+    }
+
+    #[DataProvider('wordFiles')]
+    public function testGetFileContentSelectsReaderForFileExtension(string $extension, string $fixture, string $expectedText): void
+    {
+        if (!class_exists(IOFactory::class)) {
+            self::markTestSkipped('Package phpoffice/phpword is not installed');
+        }
+
+        $file = $this->createStub(FileInterface::class);
+        $file->method('getExtension')->willReturn($extension);
+        $file->method('getForLocalProcessing')->willReturn(__DIR__ . '/Fixtures/' . $fixture);
+
+        $result = (new WordFileExtraction())->getFileContent($file);
+
+        self::assertStringContainsString($expectedText, $result);
+    }
+
+    /**
+     * @return array<string, array{string, string, string}>
+     */
+    public static function wordFiles(): array
+    {
+        $legacyText = 'Legacy Word document extraction test.';
+
+        return [
+            'RTF' => ['rtf', 'test.rtf', 'RTF document extraction test.'],
+            'uppercase RTF' => ['RTF', 'test.rtf', 'RTF document extraction test.'],
+            'Word 97-2003' => ['doc', 'test.doc', $legacyText],
+            'uppercase Word 97-2003' => ['DOC', 'test.doc', $legacyText],
+            'Word 97-2003 template' => ['dot', 'test.doc', $legacyText],
+            'Word 2007' => ['docx', 'test.docx', 'Test Content'],
+            'macro-enabled Word 2007' => ['docm', 'test.docx', 'Test Content'],
+            'Word 2007 template' => ['dotx', 'test.docx', 'Test Content'],
+            'macro-enabled Word 2007 template' => ['dotm', 'test.docx', 'Test Content'],
+        ];
     }
 
     public function testGetFileContentThrowsExceptionWhenPhpWordNotInstalled(): void

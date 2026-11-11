@@ -9,6 +9,7 @@ use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Indexing\File\FileIndexingQueue;
 use Lochmueller\Index\Indexing\Http\HttpIndexingQueue;
+use Lochmueller\Index\Indexing\Record\RecordIndexingQueueInterface;
 use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\FinishProcessMessage;
 use Lochmueller\Index\Queue\Message\HttpIndexMessage;
@@ -23,8 +24,11 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 
 class HttpIndexingQueueTest extends AbstractTest
 {
-    private function createConfiguration(int $pageId = 1, ?IndexType $overrideIndexType = null): Configuration
-    {
+    private function createConfiguration(
+        int $pageId = 1,
+        ?IndexType $overrideIndexType = null,
+        array $configuration = [],
+    ): Configuration {
         return new Configuration(
             configurationId: 42,
             pageId: $pageId,
@@ -34,7 +38,7 @@ class HttpIndexingQueueTest extends AbstractTest
             levels: 0,
             fileMounts: [],
             fileTypes: [],
-            configuration: [],
+            configuration: $configuration,
             partialIndexing: [],
             languages: [],
             overrideIndexType: $overrideIndexType,
@@ -77,7 +81,7 @@ class HttpIndexingQueueTest extends AbstractTest
                 $dispatchedMessages[] = $message;
             });
 
-        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration(), true);
 
         self::assertInstanceOf(StartProcessMessage::class, $dispatchedMessages[0]);
@@ -114,7 +118,7 @@ class HttpIndexingQueueTest extends AbstractTest
                 }
             });
 
-        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration(), true);
 
         self::assertCount(2, $httpMessages);
@@ -144,7 +148,7 @@ class HttpIndexingQueueTest extends AbstractTest
                 $fileIndexingCalled = true;
             });
 
-        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration(), false);
 
         self::assertTrue($fileIndexingCalled);
@@ -170,7 +174,7 @@ class HttpIndexingQueueTest extends AbstractTest
                 $fileIndexingCalled = true;
             });
 
-        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration(), true);
 
         self::assertFalse($fileIndexingCalled);
@@ -196,7 +200,7 @@ class HttpIndexingQueueTest extends AbstractTest
                 $dispatchedMessages[] = $message;
             });
 
-        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration(1, IndexType::Partial), true);
 
         self::assertSame(IndexType::Partial, $dispatchedMessages[0]->type);
@@ -222,7 +226,7 @@ class HttpIndexingQueueTest extends AbstractTest
         $fileIndexing = $this->createStub(FileIndexingQueue::class);
         $bus = $this->createStub(Bus::class);
 
-        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration(123), true);
 
         self::assertTrue($siteFinderCalled);
@@ -250,7 +254,7 @@ class HttpIndexingQueueTest extends AbstractTest
                 $processIds[] = $message->indexProcessId;
             });
 
-        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $siteFinder);
+        $subject = new HttpIndexingQueue($bus, $fileIndexing, $pageTraversing, $this->createStub(RecordIndexingQueueInterface::class), $siteFinder);
         $subject->fillQueue($this->createConfiguration(), true);
 
         self::assertCount(3, $processIds);
@@ -264,9 +268,54 @@ class HttpIndexingQueueTest extends AbstractTest
             $this->createStub(Bus::class),
             $this->createStub(FileIndexingQueue::class),
             $this->createStub(PageTraversing::class),
+            $this->createStub(RecordIndexingQueueInterface::class),
             $this->createStub(SiteFinder::class),
         );
 
         self::assertSame(IndexTechnology::Http, $subject->getTechnology());
+    }
+
+    public function testFillQueueDelegatesConfiguredRecordsToTheSharedQueue(): void
+    {
+        $site = $this->createStub(Site::class);
+        $site->method('getIdentifier')->willReturn('test-site');
+
+        $siteFinder = $this->createStub(SiteFinder::class);
+        $siteFinder->method('getSiteByPageId')->willReturn($site);
+
+        $pageTraversing = $this->createStub(PageTraversing::class);
+        $pageTraversing->method('getFrontendInformation')->willReturn([]);
+
+        $configuration = $this->createConfiguration(configuration: [
+            'records' => [[
+                'table' => 'tx_example_domain_model_item',
+                'recordStorages' => [12, 24],
+                'fields' => ['title' => 'title'],
+            ]],
+        ]);
+        $recordIndexingQueue = $this->createMock(RecordIndexingQueueInterface::class);
+        $recordIndexingQueue->expects(self::once())
+            ->method('queueConfiguredRecords')
+            ->with($configuration, $site, self::isString(), IndexType::Full);
+
+        $messages = [];
+        $bus = $this->createMock(Bus::class);
+        $bus->expects(self::exactly(2))
+            ->method('dispatch')
+            ->willReturnCallback(function (object $message) use (&$messages): void {
+                $messages[] = $message;
+            });
+
+        $subject = new HttpIndexingQueue(
+            $bus,
+            $this->createStub(FileIndexingQueue::class),
+            $pageTraversing,
+            $recordIndexingQueue,
+            $siteFinder,
+        );
+        $subject->fillQueue($configuration, true);
+
+        self::assertInstanceOf(StartProcessMessage::class, $messages[0]);
+        self::assertInstanceOf(FinishProcessMessage::class, $messages[1]);
     }
 }

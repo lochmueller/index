@@ -6,8 +6,10 @@ namespace Lochmueller\Index\Tests\Unit\Indexing;
 
 use Lochmueller\Index\Configuration\Configuration;
 use Lochmueller\Index\Enums\IndexTechnology;
+use Lochmueller\Index\Enums\IndexPartialTrigger;
 use Lochmueller\Index\Indexing\ActiveIndexing;
 use Lochmueller\Index\Indexing\IndexQueueInterface;
+use Lochmueller\Index\Indexing\Record\RecordIndexingQueueInterface;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\LoggerInterface;
@@ -22,7 +24,7 @@ class ActiveIndexingTest extends AbstractTest
         $frontendQueue = $this->createQueue(IndexTechnology::Frontend);
         $httpQueue = $this->createQueue(IndexTechnology::Http);
 
-        $subject = new ActiveIndexing([$databaseQueue, $frontendQueue, $httpQueue]);
+        $subject = new ActiveIndexing([$databaseQueue, $frontendQueue, $httpQueue], $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         self::assertSame([[$configuration, false]], $frontendQueue->calls);
@@ -36,7 +38,7 @@ class ActiveIndexingTest extends AbstractTest
 
         $databaseQueue = $this->createQueue(IndexTechnology::Database);
 
-        $subject = new ActiveIndexing([$databaseQueue]);
+        $subject = new ActiveIndexing([$databaseQueue], $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration, true);
 
         self::assertSame([[$configuration, true]], $databaseQueue->calls);
@@ -53,7 +55,7 @@ class ActiveIndexingTest extends AbstractTest
         $ownQueue = $this->createQueue(IndexTechnology::Database);
         $shippedQueue = $this->createQueue(IndexTechnology::Database);
 
-        $subject = new ActiveIndexing([$ownQueue, $shippedQueue]);
+        $subject = new ActiveIndexing([$ownQueue, $shippedQueue], $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         self::assertCount(1, $ownQueue->calls);
@@ -80,7 +82,7 @@ class ActiveIndexingTest extends AbstractTest
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::never())->method('warning');
 
-        $subject = new ActiveIndexing([$queue]);
+        $subject = new ActiveIndexing([$queue], $this->createStub(RecordIndexingQueueInterface::class));
         $subject->setLogger($logger);
         $subject->fillQueue($this->createConfiguration($technology));
 
@@ -99,9 +101,33 @@ class ActiveIndexingTest extends AbstractTest
                 'configurationId' => 1,
             ]);
 
-        $subject = new ActiveIndexing([$this->createQueue(IndexTechnology::Database)]);
+        $subject = new ActiveIndexing([$this->createQueue(IndexTechnology::Database)], $this->createStub(RecordIndexingQueueInterface::class));
         $subject->setLogger($logger);
         $subject->fillQueue($configuration);
+    }
+
+    public function testQueueRecordChangeDelegatesToTheSharedRecordQueue(): void
+    {
+        $recordBeforeChange = ['uid' => 17, 'pid' => 41];
+        $recordAfterChange = ['uid' => 17, 'pid' => 42];
+        $recordIndexingQueue = $this->createMock(RecordIndexingQueueInterface::class);
+        $recordIndexingQueue->expects(self::once())
+            ->method('queueRecordChange')
+            ->with('tx_example_domain_model_item', $recordBeforeChange, $recordAfterChange, IndexPartialTrigger::Cmdmap);
+
+        $subject = new ActiveIndexing([], $recordIndexingQueue);
+        $subject->queueRecordChange('tx_example_domain_model_item', $recordBeforeChange, $recordAfterChange, IndexPartialTrigger::Cmdmap);
+    }
+
+    public function testRecordIndexingIsEnabledOnlyForDatabaseFrontendAndHttp(): void
+    {
+        self::assertTrue(IndexTechnology::Database->supportsRecordIndexing());
+        self::assertTrue(IndexTechnology::Frontend->supportsRecordIndexing());
+        self::assertTrue(IndexTechnology::Http->supportsRecordIndexing());
+        self::assertFalse(IndexTechnology::Fetch->supportsRecordIndexing());
+        self::assertFalse(IndexTechnology::Cache->supportsRecordIndexing());
+        self::assertFalse(IndexTechnology::External->supportsRecordIndexing());
+        self::assertFalse(IndexTechnology::None->supportsRecordIndexing());
     }
 
     private function createQueue(IndexTechnology $technology): IndexQueueInterface

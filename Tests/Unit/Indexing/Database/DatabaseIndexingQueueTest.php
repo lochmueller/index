@@ -9,6 +9,7 @@ use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Indexing\Database\DatabaseIndexingQueue;
 use Lochmueller\Index\Indexing\File\FileIndexingQueue;
+use Lochmueller\Index\Indexing\Record\RecordIndexingQueueInterface;
 use Lochmueller\Index\Queue\Bus;
 use Lochmueller\Index\Queue\Message\DatabaseIndexMessage;
 use Lochmueller\Index\Queue\Message\FinishProcessMessage;
@@ -58,7 +59,7 @@ class DatabaseIndexingQueueTest extends AbstractTest
 
         $fileIndexingQueue = $this->createStub(FileIndexingQueue::class);
 
-        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue);
+        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue, $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         self::assertCount(2, $dispatched);
@@ -124,7 +125,7 @@ class DatabaseIndexingQueueTest extends AbstractTest
 
         $fileIndexingQueue = $this->createStub(FileIndexingQueue::class);
 
-        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue);
+        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue, $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         self::assertCount(4, $dispatched);
@@ -182,7 +183,7 @@ class DatabaseIndexingQueueTest extends AbstractTest
 
         $fileIndexingQueue = $this->createStub(FileIndexingQueue::class);
 
-        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue);
+        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue, $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         /** @var DatabaseIndexMessage $dbMessage */
@@ -233,7 +234,7 @@ class DatabaseIndexingQueueTest extends AbstractTest
 
         $fileIndexingQueue = $this->createStub(FileIndexingQueue::class);
 
-        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue);
+        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue, $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         /** @var StartProcessMessage $startMessage */
@@ -280,7 +281,7 @@ class DatabaseIndexingQueueTest extends AbstractTest
 
         $fileIndexingQueue = $this->createStub(FileIndexingQueue::class);
 
-        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue);
+        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue, $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         self::assertSame(IndexType::Full, $dispatched[0]->type);
@@ -340,7 +341,7 @@ class DatabaseIndexingQueueTest extends AbstractTest
                 $fileIndexingQueueProcessId = $processId;
             });
 
-        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue);
+        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue, $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         $processId = $dispatched[0]->indexProcessId;
@@ -388,7 +389,7 @@ class DatabaseIndexingQueueTest extends AbstractTest
                 $capturedSite = $s;
             });
 
-        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue);
+        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue, $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         self::assertSame($configuration, $capturedConfiguration);
@@ -425,7 +426,7 @@ class DatabaseIndexingQueueTest extends AbstractTest
         $fileIndexingQueue = $this->createMock(FileIndexingQueue::class);
         $fileIndexingQueue->expects(self::never())->method('fillQueue');
 
-        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue);
+        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue, $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration, skipFiles: true);
     }
 
@@ -464,7 +465,7 @@ class DatabaseIndexingQueueTest extends AbstractTest
 
         $fileIndexingQueue = $this->createStub(FileIndexingQueue::class);
 
-        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue);
+        $subject = new DatabaseIndexingQueue($bus, $siteFinder, $pageTraversing, $fileIndexingQueue, $this->createStub(RecordIndexingQueueInterface::class));
         $subject->fillQueue($configuration);
 
         /** @var StartProcessMessage $startMessage */
@@ -488,8 +489,45 @@ class DatabaseIndexingQueueTest extends AbstractTest
             $this->createStub(SiteFinder::class),
             $this->createStub(PageTraversing::class),
             $this->createStub(FileIndexingQueue::class),
+            $this->createStub(RecordIndexingQueueInterface::class),
         );
 
         self::assertSame(IndexTechnology::Database, $subject->getTechnology());
+    }
+
+    public function testFillQueueDelegatesConfiguredRecordsToTheSharedQueue(): void
+    {
+        $configuration = new Configuration(
+            configurationId: 7,
+            pageId: 1,
+            technology: IndexTechnology::Database,
+            skipNoSearchPages: false,
+            contentIndexing: true,
+            levels: 0,
+            fileMounts: [],
+            fileTypes: [],
+            configuration: ['records' => [['table' => 'tx_example_domain_model_item', 'recordStorages' => [12]]]],
+            partialIndexing: [],
+            languages: [],
+        );
+        $site = $this->createStub(Site::class);
+        $siteFinder = $this->createStub(SiteFinder::class);
+        $siteFinder->method('getSiteByPageId')->willReturn($site);
+        $pageTraversing = $this->createStub(PageTraversing::class);
+        $pageTraversing->method('getFrontendInformation')->willReturn([]);
+
+        $recordIndexingQueue = $this->createMock(RecordIndexingQueueInterface::class);
+        $recordIndexingQueue->expects(self::once())
+            ->method('queueConfiguredRecords')
+            ->with($configuration, $site, self::isString(), IndexType::Full);
+
+        $subject = new DatabaseIndexingQueue(
+            $this->createStub(Bus::class),
+            $siteFinder,
+            $pageTraversing,
+            $this->createStub(FileIndexingQueue::class),
+            $recordIndexingQueue,
+        );
+        $subject->fillQueue($configuration, true);
     }
 }

@@ -8,6 +8,8 @@ use Lochmueller\Index\Configuration\Configuration;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Lochmueller\Index\Enums\IndexPartialTrigger;
+use Lochmueller\Index\Indexing\Record\RecordIndexingQueueInterface;
 
 /**
  * Entry point for every index process that is started actively - by the queue command, by the
@@ -23,6 +25,7 @@ class ActiveIndexing implements LoggerAwareInterface
     public function __construct(
         #[AutowireIterator('index.technology')]
         private readonly iterable $indexQueues,
+        private readonly RecordIndexingQueueInterface $recordIndexingQueue,
     ) {}
 
     public function fillQueue(Configuration $configuration, bool $skipFiles = false): void
@@ -43,5 +46,18 @@ class ActiveIndexing implements LoggerAwareInterface
             'technology' => $configuration->technology->value,
             'configurationId' => $configuration->configurationId,
         ]);
+    }
+
+    /**
+     * @param array<string, mixed>|null $recordBeforeChange
+     * @param array<string, mixed>|null $recordAfterChange
+     */
+    public function queueRecordChange(
+        string $table,
+        ?array $recordBeforeChange,
+        ?array $recordAfterChange,
+        IndexPartialTrigger $trigger,
+    ): void {
+        $this->recordIndexingQueue->queueRecordChange($table, $recordBeforeChange, $recordAfterChange, $trigger);
     }
 }

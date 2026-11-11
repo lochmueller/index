@@ -91,6 +91,63 @@ class RecordSelection
     }
 
     /**
+     * @param int[] $storageUids
+     * @return iterable<Record>
+     */
+    public function findRecordsOnStorages(string $table, array $storageUids): iterable
+    {
+        foreach ($this->findRawRecordsOnStorages($table, $storageUids) as $row) {
+            yield $this->mapRecord($table, $row);
+        }
+    }
+
+    /**
+     * @param int[] $storageUids
+     * @return iterable<array<string, mixed>>
+     */
+    public function findRawRecordsOnStorages(string $table, array $storageUids): iterable
+    {
+        return $this->genericRepository
+            ->setTableName($table)
+            ->findRecordsOnStorages($storageUids);
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    public function getRecordLanguageId(string $table, array $row): int
+    {
+        $schema = $this->tcaSchemaFactory->get($table);
+        if (!$schema->isLanguageAware()) {
+            return 0;
+        }
+
+        /** @var LanguageAwareSchemaCapability $languageCapability */
+        $languageCapability = $schema->getCapability(TcaSchemaCapability::Language);
+        return (int) ($row[$languageCapability->getLanguageField()->getName()] ?? 0);
+    }
+
+    public function findVisibleRecordByUid(string $table, int $uid): ?Record
+    {
+        $row = $this->findVisibleRecordDataByUid($table, $uid);
+
+        return $row === null ? null : $this->mapRecord($table, $row);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function findVisibleRecordDataByUid(string $table, int $uid): ?array
+    {
+        return $this->genericRepository
+            ->setTableName($table)
+            ->findByUidWithRestrictions($uid, [
+                FrontendRestrictionContainer::class,
+                NonContainerElementsRestrictionContainer::class,
+            ]);
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     public function findRenderablePage(int $pageUid, int $language = 0): ?array

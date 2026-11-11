@@ -17,6 +17,7 @@ use Lochmueller\Index\Traversing\RecordSelection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TYPO3\CMS\Core\Configuration\SiteWriter;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -176,6 +177,8 @@ final class RecordIndexingQueueFunctionalTest extends FunctionalTestCase
             'deleted' => 0,
         ]);
         $backendUser = $this->setUpBackendUser((int) $backendUserConnection->lastInsertId());
+        // TYPO3 13.4's DataHandler move path reads the backend language service globally.
+        $GLOBALS['LANG'] = $this->get(LanguageServiceFactory::class)->createFromUserPreferences($backendUser);
 
         $configurationLoader = $this->get(ConfigurationLoader::class);
         $siteFinder = $this->get(SiteFinder::class);

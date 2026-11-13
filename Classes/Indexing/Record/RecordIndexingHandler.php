@@ -9,6 +9,7 @@ use Lochmueller\Index\Configuration\ConfigurationLoader;
 use Lochmueller\Index\Event\DeIndexRecordEvent;
 use Lochmueller\Index\Event\IndexRecordEvent;
 use Lochmueller\Index\Event\IndexRecordReadyEvent;
+use Lochmueller\Index\Indexing\Field\Value\FieldValueResolver;
 use Lochmueller\Index\Queue\Message\RecordIndexMessage;
 use Lochmueller\Index\Traversing\RecordSelection;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -30,6 +31,7 @@ final class RecordIndexingHandler implements LoggerAwareInterface
         private readonly RecordFieldDefinitionResolver $fieldDefinitionResolver,
         private readonly RecordSourceResolver $recordSourceResolver,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly FieldValueResolver $fieldValueResolver,
     ) {}
 
     #[AsMessageHandler]
@@ -86,7 +88,15 @@ final class RecordIndexingHandler implements LoggerAwareInterface
                 record: $record,
                 tcaSchema: $tcaSchema,
                 fieldDefinitions: $definitions,
-                fields: $this->fieldDefinitionResolver->extractValues($recordRow, $definitions),
+                fields: $this->fieldValueResolver->resolve(
+                    $record,
+                    $tcaSchema,
+                    $source->fields,
+                    $definitions,
+                    $this->fieldDefinitionResolver->extractValues($recordRow, $definitions),
+                    $site,
+                    $message->language,
+                ),
             );
             $this->eventDispatcher->dispatch($recordEvent);
 

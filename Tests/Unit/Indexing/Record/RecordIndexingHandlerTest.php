@@ -11,8 +11,9 @@ use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Event\DeIndexRecordEvent;
 use Lochmueller\Index\Event\IndexRecordEvent;
 use Lochmueller\Index\Event\IndexRecordReadyEvent;
-use Lochmueller\Index\Indexing\Record\RecordIndexingHandler;
+use Lochmueller\Index\Indexing\Field\Value\FieldValueResolver;
 use Lochmueller\Index\Indexing\Record\RecordFieldDefinitionResolver;
+use Lochmueller\Index\Indexing\Record\RecordIndexingHandler;
 use Lochmueller\Index\Indexing\Record\RecordSourceResolver;
 use Lochmueller\Index\Queue\Message\RecordIndexMessage;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
@@ -52,14 +53,14 @@ final class RecordIndexingHandlerTest extends AbstractTest
             languages: [],
         );
 
-        $configurationLoader = $this->createStub(ConfigurationLoader::class);
+        $configurationLoader = self::createStub(ConfigurationLoader::class);
         $configurationLoader->method('loadByUid')->willReturn($configuration);
 
-        $record = $this->createStub(Record::class);
+        $record = self::createStub(Record::class);
         $record->method('getPid')->willReturn(12);
         $record->method('getRecordType')->willReturn('item');
 
-        $recordSelection = $this->createStub(RecordSelection::class);
+        $recordSelection = self::createStub(RecordSelection::class);
         $recordSelection->method('findVisibleRecordDataByUid')->willReturn([
             'uid' => 42,
             'pid' => 12,
@@ -68,20 +69,20 @@ final class RecordIndexingHandlerTest extends AbstractTest
         ]);
         $recordSelection->method('mapRecord')->willReturn($record);
 
-        $field = $this->createStub(FieldTypeInterface::class);
+        $field = self::createStub(FieldTypeInterface::class);
         $field->method('getType')->willReturn('input');
         $field->method('getConfiguration')->willReturn([]);
         $field->method('isSearchable')->willReturn(false);
 
-        $schema = $this->createStub(TcaSchema::class);
+        $schema = self::createStub(TcaSchema::class);
         $schema->method('hasField')->willReturn(true);
         $schema->method('getField')->willReturn($field);
 
-        $schemaFactory = $this->createStub(TcaSchemaFactory::class);
+        $schemaFactory = self::createStub(TcaSchemaFactory::class);
         $schemaFactory->method('get')->willReturn($schema);
 
-        $site = $this->createStub(Site::class);
-        $siteFinder = $this->createStub(SiteFinder::class);
+        $site = self::createStub(Site::class);
+        $siteFinder = self::createStub(SiteFinder::class);
         $siteFinder->method('getSiteByIdentifier')->willReturn($site);
 
         $readyEvent = null;
@@ -114,6 +115,7 @@ final class RecordIndexingHandlerTest extends AbstractTest
             new RecordFieldDefinitionResolver($schemaFactory),
             new RecordSourceResolver(),
             $eventDispatcher,
+            new FieldValueResolver(),
         );
         $handler(new RecordIndexMessage(
             siteIdentifier: 'main',
@@ -155,12 +157,12 @@ final class RecordIndexingHandlerTest extends AbstractTest
             partialIndexing: [],
             languages: [],
         );
-        $configurationLoader = $this->createStub(ConfigurationLoader::class);
+        $configurationLoader = self::createStub(ConfigurationLoader::class);
         $configurationLoader->method('loadByUid')->willReturn($configuration);
 
-        $record = $this->createStub(Record::class);
+        $record = self::createStub(Record::class);
         $record->method('getPid')->willReturn(12);
-        $recordSelection = $this->createStub(RecordSelection::class);
+        $recordSelection = self::createStub(RecordSelection::class);
         $recordSelection->method('findVisibleRecordDataByUid')->willReturn([
             'uid' => 42,
             'pid' => 12,
@@ -170,8 +172,8 @@ final class RecordIndexingHandlerTest extends AbstractTest
         $recordSelection->method('mapRecord')->willReturn($record);
         $recordSelection->method('getRecordLanguageId')->willReturn(2);
 
-        $site = $this->createStub(Site::class);
-        $siteFinder = $this->createStub(SiteFinder::class);
+        $site = self::createStub(Site::class);
+        $siteFinder = self::createStub(SiteFinder::class);
         $siteFinder->method('getSiteByIdentifier')->willReturn($site);
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())
@@ -183,9 +185,10 @@ final class RecordIndexingHandlerTest extends AbstractTest
             $siteFinder,
             $configurationLoader,
             $recordSelection,
-            new RecordFieldDefinitionResolver($this->createStub(TcaSchemaFactory::class)),
+            new RecordFieldDefinitionResolver(self::createStub(TcaSchemaFactory::class)),
             new RecordSourceResolver(),
             $eventDispatcher,
+            new FieldValueResolver(),
         );
 
         $handler(new RecordIndexMessage(
@@ -221,15 +224,15 @@ final class RecordIndexingHandlerTest extends AbstractTest
             partialIndexing: [],
             languages: [],
         );
-        $configurationLoader = $this->createStub(ConfigurationLoader::class);
+        $configurationLoader = self::createStub(ConfigurationLoader::class);
         $configurationLoader->method('loadByUid')->willReturn($configuration);
 
-        $record = $this->createStub(Record::class);
+        $record = self::createStub(Record::class);
         $record->method('getPid')->willReturn(13);
-        $site = $this->createStub(Site::class);
-        $siteFinder = $this->createStub(SiteFinder::class);
+        $site = self::createStub(Site::class);
+        $siteFinder = self::createStub(SiteFinder::class);
         $siteFinder->method('getSiteByIdentifier')->willReturn($site);
-        $recordSelection = $this->createStub(RecordSelection::class);
+        $recordSelection = self::createStub(RecordSelection::class);
         $recordSelection->method('findVisibleRecordDataByUid')->willReturn([
             'uid' => 42,
             'pid' => 13,
@@ -248,9 +251,10 @@ final class RecordIndexingHandlerTest extends AbstractTest
             $siteFinder,
             $configurationLoader,
             $recordSelection,
-            new RecordFieldDefinitionResolver($this->createStub(TcaSchemaFactory::class)),
+            new RecordFieldDefinitionResolver(self::createStub(TcaSchemaFactory::class)),
             new RecordSourceResolver(),
             $eventDispatcher,
+            new FieldValueResolver(),
         );
 
         $handler(new RecordIndexMessage(
@@ -286,7 +290,7 @@ final class RecordIndexingHandlerTest extends AbstractTest
             partialIndexing: [],
             languages: [],
         );
-        $configurationLoader = $this->createStub(ConfigurationLoader::class);
+        $configurationLoader = self::createStub(ConfigurationLoader::class);
         $configurationLoader->method('loadByUid')->willReturn($configuration);
 
         $recordSelection = $this->createMock(RecordSelection::class);
@@ -294,12 +298,13 @@ final class RecordIndexingHandlerTest extends AbstractTest
             ->method('findVisibleRecordDataByUid')
             ->willThrowException(new \RuntimeException('Record selection failed'));
         $handler = new RecordIndexingHandler(
-            $this->createStub(SiteFinder::class),
+            self::createStub(SiteFinder::class),
             $configurationLoader,
             $recordSelection,
-            new RecordFieldDefinitionResolver($this->createStub(TcaSchemaFactory::class)),
+            new RecordFieldDefinitionResolver(self::createStub(TcaSchemaFactory::class)),
             new RecordSourceResolver(),
-            $this->createStub(EventDispatcherInterface::class),
+            self::createStub(EventDispatcherInterface::class),
+            new FieldValueResolver(),
         );
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $logger->expects(self::once())->method('error');

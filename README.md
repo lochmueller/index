@@ -177,7 +177,18 @@ empty `uri`. Fetch, Cache and External indexing do not use the `records` configu
       "fields": {
         "title": { "source": "title" },
         "description": { "source": "description" },
-        "departmentId": { "source": "department", "type": "integer", "filterable": true }
+        "departmentId": {
+          "source": "department",
+          "type": "integer",
+          "resolve": "related_record",
+          "resolveField": "uid",
+          "filterable": true
+        },
+        "imageReference": {
+          "source": "image",
+          "type": "integer",
+          "resolve": "file_reference_uid"
+        }
       }
     }
   ]
@@ -190,14 +201,36 @@ Each table can be configured once. `recordStorages` is required and contains the
 `text`, `integer`, `float`, `boolean` or `datetime`. Text fields are searchable by default. Numeric, boolean and date
 fields are filterable or sortable only when those options are enabled. A `title` field is required.
 
-The asynchronous `Lochmueller\Index\Event\IndexRecordEvent` is dispatched after the configured raw database values
-are loaded. It exposes the TYPO3 `Record`, its `recordType`, the table's `TcaSchema`, and the resolved
-`fieldDefinitions` (including each field's inferred or configured type and `multiple` setting). Listeners can use
-those TYPO3 APIs to resolve relations or inspect field configuration, then change values in the mutable `fields`
-array before the handler normalizes them and dispatches `IndexRecordReadyEvent` to EXT:seal. A listener can only
-change configured target fields; every value must resolve to a scalar or, for a `multiple` field, an array of
-scalars. Values must match the configured type. `event->type` is the index process type; `event->recordType` is the
-TCA record type. For example, use `event->record->get('tasks')` to read a record value,
+Text relation fields resolve to the related record's TCA `ctrl.label` field by default. Set `resolveField` to use
+another related field. For non-text relations, select `resolve: related_record` and set `resolveField` explicitly.
+File fields support `resolve: file_reference_uid` for the `sys_file_reference` UID or
+`resolve: file_reference_public_url` for the generated public URL. Rich-text fields with `enableRichtext` use
+TYPO3's `ContentObjectRenderer::parseFunc` with `lib.parseFunc_RTE` when a frontend TypoScript request is available,
+then become normalized plain text with TYPO3's `HtmlParser`. If no request is available, the shared frontend request
+builder prepares one for the record's site and language. If TYPO3 cannot prepare the context, indexing logs at debug
+level and uses the `HtmlParser` fallback. `transform: html_to_text` applies the same conversion explicitly.
+
+The shared `Lochmueller\Index\Indexing\Field\Value\FieldValueResolver` works with any TYPO3 `RecordInterface` and
+`TcaSchema`, so both record indexing and future page-field indexing can use the same strategies. Resolvers and
+transformers are DI extension points. Definitions live in `Indexing/Field/Definition`; value resolution, resolver
+strategies and transformers live under `Indexing/Field/Value`. Implement
+`Lochmueller\Index\Indexing\Field\Value\Resolver\FieldResolverInterface` or
+`Lochmueller\Index\Indexing\Field\Value\Transformer\FieldTransformerInterface` and give the service an
+`#[AsTaggedItem(index: 'my_identifier')]` attribute. Implement `supportsByDefault()` to apply a strategy automatically,
+or select it in configuration with `resolve` or `transform`. The interfaces register the `index.field_resolver` and
+`index.field_transformer` tags.
+If an individual resolver or transformer cannot process a value, the failure is logged and indexing continues with
+the source or resolved value. Invalid field schemas still stop indexing because their target shape is not safe to
+guess.
+
+The asynchronous `Lochmueller\Index\Event\IndexRecordEvent` is dispatched after the configured values have been
+loaded and built-in relation, file and rich-text resolution has run. It exposes the TYPO3 `Record`, its
+`recordType`, the table's `TcaSchema`, and the resolved `fieldDefinitions` (including each field's inferred or
+configured type and `multiple` setting). Listeners can inspect or override the mutable `fields` array before the
+handler normalizes it and dispatches `IndexRecordReadyEvent` to EXT:seal. A listener can only change configured
+target fields; every value must resolve to a scalar or, for a `multiple` field, an array of scalars. Values must
+match the configured type. `event->type` is the index process type; `event->recordType` is the TCA record type.
+For example, use `event->record->get('tasks')` to read a record value,
 `event->tcaSchema->getField('tasks')` to inspect its TCA definition, and
 `event->fieldDefinitions['tasks']['type']` to read the SEAL target type.
 

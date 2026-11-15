@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Lochmueller\Index\Tests\Unit\Indexing\Record;
+namespace Lochmueller\Index\Tests\Unit\Indexing\Field\Definition;
 
-use Lochmueller\Index\Indexing\Record\RecordFieldDefinitionResolver;
+use Lochmueller\Index\Indexing\Field\Definition\FieldDefinitionResolver;
 use Lochmueller\Index\Tests\Unit\AbstractTest;
 use TYPO3\CMS\Core\Schema\Field\FieldTypeInterface;
 use TYPO3\CMS\Core\Schema\TcaSchema;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 
-class RecordFieldDefinitionResolverTest extends AbstractTest
+class FieldDefinitionResolverTest extends AbstractTest
 {
     public function testResolveInfersIntegerTypeFromTcaInputEval(): void
     {
@@ -26,7 +26,7 @@ class RecordFieldDefinitionResolverTest extends AbstractTest
         $schemaFactory = self::createStub(TcaSchemaFactory::class);
         $schemaFactory->method('get')->willReturn($schema);
 
-        $definitions = (new RecordFieldDefinitionResolver($schemaFactory))->resolve('tx_example_domain_model_item', [
+        $definitions = (new FieldDefinitionResolver($schemaFactory))->resolve('tx_example_domain_model_item', [
             'departmentId' => ['source' => 'department'],
         ]);
 
@@ -44,7 +44,7 @@ class RecordFieldDefinitionResolverTest extends AbstractTest
         $schemaFactory->method('get')->willReturn($schema);
 
         $this->expectException(\InvalidArgumentException::class);
-        (new RecordFieldDefinitionResolver($schemaFactory))->resolve('tx_example_domain_model_item', [
+        (new FieldDefinitionResolver($schemaFactory))->resolve('tx_example_domain_model_item', [
             'title' => ['source' => 'missing_field'],
         ]);
     }
@@ -63,7 +63,7 @@ class RecordFieldDefinitionResolverTest extends AbstractTest
         $schemaFactory = self::createStub(TcaSchemaFactory::class);
         $schemaFactory->method('get')->willReturn($schema);
 
-        $resolver = new RecordFieldDefinitionResolver($schemaFactory);
+        $resolver = new FieldDefinitionResolver($schemaFactory);
         $definitions = $resolver->resolve('tx_example_domain_model_item', [
             'title' => 'title',
             'departments' => ['source' => 'department_ids', 'multiple' => true],
@@ -97,7 +97,7 @@ class RecordFieldDefinitionResolverTest extends AbstractTest
         $schemaFactory = self::createStub(TcaSchemaFactory::class);
         $schemaFactory->method('get')->willReturn($schema);
 
-        $definitions = (new RecordFieldDefinitionResolver($schemaFactory))->resolve('tx_example_domain_model_item', [
+        $definitions = (new FieldDefinitionResolver($schemaFactory))->resolve('tx_example_domain_model_item', [
             'title' => 'title',
         ]);
 
@@ -106,7 +106,7 @@ class RecordFieldDefinitionResolverTest extends AbstractTest
 
     public function testNormalizeValuesPreservesFalseBooleanValues(): void
     {
-        $resolver = new RecordFieldDefinitionResolver(self::createStub(TcaSchemaFactory::class));
+        $resolver = new FieldDefinitionResolver(self::createStub(TcaSchemaFactory::class));
 
         self::assertSame(
             ['enabled' => false],
@@ -118,7 +118,7 @@ class RecordFieldDefinitionResolverTest extends AbstractTest
 
     public function testNormalizeValuesRejectsFractionalIntegerValues(): void
     {
-        $resolver = new RecordFieldDefinitionResolver(self::createStub(TcaSchemaFactory::class));
+        $resolver = new FieldDefinitionResolver(self::createStub(TcaSchemaFactory::class));
 
         $this->expectException(\UnexpectedValueException::class);
         $resolver->normalizeValues(['count' => 1.5], [
